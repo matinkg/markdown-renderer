@@ -362,6 +362,31 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
+        // Helper specifically for Ordered List multi-line prefixing
+        const insertOrderedListPrefix = (placeholder = 'List item') => {
+            let currentLineStart = textBefore.lastIndexOf('\n') + 1;
+            let prefixNum = 1;
+
+            if (selectedText && selectedText.includes('\n')) {
+                const lines = selectedText.split('\n');
+                const firstSelectedLineStart = textBefore.lastIndexOf('\n') + 1;
+                const textBeforeSelectionStart = markdownInput.value.substring(0, firstSelectedLineStart);
+                const textAfterSelectionEnd = textAfter;
+
+                const prefixedLines = lines.map((line, index) => `${index + 1}. ${line}`).join('\n');
+                newText = `${textBeforeSelectionStart}${prefixedLines}${textAfterSelectionEnd}`;
+
+                cursorPos = end + (lines.length * 3) + (String(lines.length).length - 1); // Approximation
+                markdownInput.value = newText;
+                markdownInput.setSelectionRange(firstSelectedLineStart + 3, cursorPos); // Select modified block
+            } else {
+                // For single line or no selection, use the simple prefix function
+                insertAtLineStart(`${prefixNum}. `, selectedText || placeholder);
+            }
+        };
+
+
+        // --- Syntax Application Logic ---
         switch (syntaxType) {
             case 'bold':
                 wrapSelection('**', '**', 'bold text');
@@ -381,14 +406,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     wrapSelection('[', `](${url})`, selectedText || 'link text');
                 } else { return; } // Don't change if prompt cancelled or empty
                 break;
+            case 'code-block':
+                const language = prompt("Enter code language (optional):", "");
+                const langStr = language ? language.trim() : '';
+                const codePlaceholder = 'Your code here';
+                const beforeBlock = `\n\`\`\`${langStr}\n`;
+                const afterBlock = `\n\`\`\`\n`;
+
+                if (selectedText) {
+                    newText = `${textBefore}${beforeBlock}${selectedText}${afterBlock}${textAfter}`;
+                    // Position cursor after the inserted block
+                    cursorPos = start + beforeBlock.length + selectedText.length + afterBlock.length;
+                } else {
+                    newText = `${textBefore}${beforeBlock}${codePlaceholder}${afterBlock}${textAfter}`;
+                    // Position cursor to select the placeholder
+                    cursorPos = start + beforeBlock.length;
+                    markdownInput.value = newText; // Update value first
+                    markdownInput.setSelectionRange(cursorPos, cursorPos + codePlaceholder.length); // Select placeholder
+                    return; // Exit early as selection is set
+                }
+                markdownInput.value = newText;
+                markdownInput.setSelectionRange(cursorPos, cursorPos);
+                break;
             case 'image':
                 const altText = prompt("Enter image description (alt text):", "");
-                // Check if altText prompt was cancelled (returns null)
                 if (altText === null) return;
                 const imgUrl = prompt("Enter image URL:", "https://");
-                // Check if imgUrl prompt was cancelled or empty
                 if (!imgUrl) return;
-                // Images are typically block elements, insert on a new line if needed
                 let prefix = (textBefore.length > 0 && textBefore.slice(-1) !== '\n') ? '\n' : '';
                 let suffix = (textAfter.length > 0 && textAfter[0] !== '\n') ? '\n' : '';
                 newText = `${textBefore}${prefix}![${altText || ''}](${imgUrl})${suffix}${textAfter}`;
@@ -406,10 +450,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 insertAtLineStart('### ', 'Heading 3');
                 break;
             case 'ul-list':
+                // Note: Multi-line selection just prefixes each line with '- '
                 insertAtLineStart('- ', 'List item');
+                break;
+            case 'ol-list':
+                insertOrderedListPrefix('List item'); // Use the specialized handler
                 break;
             case 'blockquote':
                 insertAtLineStart('> ', 'Blockquote');
+                break;
+            case 'hr':
+                newText = `${textBefore}\n\n---\n\n${textAfter}`;
+                cursorPos = start + 5; // Position cursor after the '---' and the newline
+                markdownInput.value = newText;
+                markdownInput.setSelectionRange(cursorPos, cursorPos);
                 break;
         }
 
