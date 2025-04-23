@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const textDirRtlBtn = document.getElementById('textDirRtlBtn');
     const codeDirLtrBtn = document.getElementById('codeDirLtrBtn');
     const codeDirRtlBtn = document.getElementById('codeDirRtlBtn');
+    const markdownToolbar = document.getElementById('markdown-toolbar'); // New Selector
 
     // --- State Variables ---
     let isAutoRenderEnabled = true; // Default state
@@ -241,6 +242,110 @@ document.addEventListener('DOMContentLoaded', () => {
         codeDirRtlBtn.classList.toggle('active', direction === 'rtl');
     }
 
+    // --- Markdown Toolbar Functionality ---
+    function applyMarkdownSyntax(syntaxType) {
+        const start = markdownInput.selectionStart;
+        const end = markdownInput.selectionEnd;
+        const selectedText = markdownInput.value.substring(start, end);
+        const textBefore = markdownInput.value.substring(0, start);
+        const textAfter = markdownInput.value.substring(end);
+        let newText = '';
+        let cursorPos = start; // Default cursor position after insertion
+
+        const wrapSelection = (beforeSyntax, afterSyntax, placeholder = '') => {
+            if (selectedText) {
+                newText = `${textBefore}${beforeSyntax}${selectedText}${afterSyntax}${textAfter}`;
+                cursorPos = start + beforeSyntax.length + selectedText.length + afterSyntax.length;
+            } else {
+                newText = `${textBefore}${beforeSyntax}${placeholder}${afterSyntax}${textAfter}`;
+                cursorPos = start + beforeSyntax.length + placeholder.length; // Position cursor after placeholder
+            }
+            markdownInput.value = newText;
+            markdownInput.setSelectionRange(cursorPos, cursorPos);
+        };
+
+        const insertAtLineStart = (prefix, placeholder = '') => {
+            const lineStart = textBefore.lastIndexOf('\n') + 1;
+            const textBeforeLine = markdownInput.value.substring(0, lineStart);
+            const textAfterLineStart = markdownInput.value.substring(lineStart);
+
+            // If selection spans multiple lines, prefix each line
+            if (selectedText && selectedText.includes('\n')) {
+                const lines = selectedText.split('\n');
+                const prefixedLines = lines.map(line => `${prefix}${line}`).join('\n');
+                newText = `${textBefore}${prefixedLines}${textAfter}`;
+                cursorPos = end + (lines.length * prefix.length); // Approx end position
+                markdownInput.value = newText;
+                markdownInput.setSelectionRange(start + prefix.length, cursorPos); // Select the modified block
+
+            } else if (selectedText) { // Single line selection
+                newText = `${textBeforeLine}${prefix}${selectedText}${textAfterLineStart}`;
+                cursorPos = start + prefix.length;
+                markdownInput.value = newText;
+                markdownInput.setSelectionRange(cursorPos, end + prefix.length); // Keep selection if any
+            }
+            else { // No selection, insert at current line start
+                newText = `${textBeforeLine}${prefix}${placeholder}${textAfterLineStart}`;
+                cursorPos = lineStart + prefix.length + placeholder.length;
+                markdownInput.value = newText;
+                markdownInput.setSelectionRange(cursorPos, cursorPos);
+            }
+        };
+
+        switch (syntaxType) {
+            case 'bold':
+                wrapSelection('**', '**', 'bold text');
+                break;
+            case 'italic':
+                wrapSelection('*', '*', 'italic text');
+                break;
+            case 'strikethrough':
+                wrapSelection('~~', '~~', 'strikethrough');
+                break;
+            case 'inline-code':
+                wrapSelection('`', '`', 'code');
+                break;
+            case 'link':
+                const url = prompt("Enter link URL:", "https://");
+                if (url) {
+                    wrapSelection('[', `](${url})`, selectedText || 'link text');
+                }
+                break;
+            case 'image':
+                const altText = prompt("Enter image description (alt text):", "");
+                const imgUrl = prompt("Enter image URL:", "https://");
+                if (imgUrl) { // Alt text can be empty
+                    // Images are typically on their own line, insert logic is simpler
+                    newText = `${textBefore}![${altText || ''}](${imgUrl})${textAfter}`;
+                    cursorPos = start + `![${altText || ''}](${imgUrl})`.length;
+                    markdownInput.value = newText;
+                    markdownInput.setSelectionRange(cursorPos, cursorPos);
+                }
+                break;
+            case 'h1':
+                insertAtLineStart('# ', 'Heading 1');
+                break;
+            case 'h2':
+                insertAtLineStart('## ', 'Heading 2');
+                break;
+            case 'h3':
+                insertAtLineStart('### ', 'Heading 3');
+                break;
+            case 'ul-list':
+                insertAtLineStart('- ', 'List item');
+                break;
+            case 'blockquote':
+                insertAtLineStart('> ', 'Blockquote');
+                break;
+        }
+
+        markdownInput.focus(); // Keep focus on the textarea
+        // Trigger input event for auto-rendering
+        if (isAutoRenderEnabled) {
+            markdownInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    }
+
 
     // --- Event Listeners Setup ---
     const debouncedRender = debounce(renderMarkdown, 300); // Debounced render
@@ -269,6 +374,15 @@ document.addEventListener('DOMContentLoaded', () => {
     textDirRtlBtn.addEventListener('click', () => setTextDirection('rtl'));
     codeDirLtrBtn.addEventListener('click', () => setCodeDirection('ltr'));
     codeDirRtlBtn.addEventListener('click', () => setCodeDirection('rtl'));
+
+    // Markdown Toolbar Event Listener (using event delegation)
+    markdownToolbar.addEventListener('click', (event) => {
+        const button = event.target.closest('button'); // Find the clicked button
+        if (button && button.dataset.syntax) {
+            event.preventDefault(); // Prevent potential default button actions
+            applyMarkdownSyntax(button.dataset.syntax);
+        }
+    });
 
     // --- Initial Setup on Load ---
 

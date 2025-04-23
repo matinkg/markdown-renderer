@@ -62,6 +62,7 @@ header {
 /* Style for Panel Headers (Placeholder and Controls) */
 .panel-header-placeholder,
 .panel-header-controls {
+	/* Now applies to both toolbar and output controls */
 	min-height: var(--panel-header-height);
 	/* Add vertical padding to center content if needed, or rely on align-items */
 	/* padding-top: 0.25rem; */
@@ -69,10 +70,15 @@ header {
 	/* Ensure flex alignment works */
 	display: flex;
 	align-items: center;
+	flex-wrap: wrap; /* Allow wrapping on smaller screens */
+	gap: 0.5rem; /* Add some gap between controls/groups */
 }
 /* Specific alignment for controls */
-.panel-header-controls {
+.panel-header-controls#direction-controls-container {
 	justify-content: flex-end;
+}
+.panel-header-controls#markdown-toolbar {
+	justify-content: flex-start; /* Align toolbar buttons to the left */
 }
 /* Specific alignment for placeholder (if content added) */
 .panel-header-placeholder {
@@ -84,7 +90,6 @@ header {
 	resize: none;
 	/* flex-grow-1 handles height within the flex column */
 	/* height: 100%; NO LONGER NEEDED */
-	min-height: 150px; /* Maintain a reasonable min-height */
 }
 
 #markdown-output {
@@ -95,7 +100,6 @@ header {
 	transition: background-color 0.3s ease, border-color 0.3s ease;
 	/* flex-grow-1 handles height */
 	/* height: 100%; NO LONGER NEEDED */
-	min-height: 150px; /* Maintain a reasonable min-height */
 }
 
 /* --- Text Direction Styling --- */
@@ -299,9 +303,10 @@ header {
 		min-height: auto;
 		height: auto; /* Allow natural height */
 	}
-	/* Ensure text areas still have decent min height */
+	/* Let textarea grow naturally within flex column */
 	#markdown-input,
 	#markdown-output {
+		/* No specific min-height needed here, flex will handle it */
 		min-height: 300px; /* Increase min-height for usability */
 		flex-grow: 0; /* Don't force grow when height is auto */
 	}
@@ -325,9 +330,15 @@ header {
 	/* Adjust panel headers on small screens */
 	.panel-header-controls,
 	.panel-header-placeholder {
-		justify-content: flex-start; /* Align left */
-		flex-wrap: wrap; /* Allow controls to wrap */
+		/* border-bottom: 1px solid var(--border-color); Ensure border remains */
+		/* justify-content: flex-start; Align left (already default due to flex-wrap) */
+		/* flex-wrap: wrap; Already added above */
 		min-height: auto; /* Allow height to adjust if wrapped */
 		height: auto;
+	}
+	/* Ensure toolbar border is consistent */
+	#markdown-toolbar {
+		border-bottom: 1px solid var(--border-color);
+		padding-bottom: 0.5rem !important; /* Adjust padding when wrapped */
 	}
 }
