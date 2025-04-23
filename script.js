@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const header = document.createElement('div');
             header.classList.add('code-block-header');
 
-            // Language Span (left)
+            // Language Span (left in LTR, right in RTL due to flex reverse)
             const langSpan = document.createElement('span');
             langSpan.classList.add('language');
             langSpan.textContent = language;
@@ -120,17 +120,18 @@ document.addEventListener('DOMContentLoaded', () => {
             copyButton.innerHTML = '<i class="bi bi-clipboard"></i>'; // Use icon
             copyButton.title = 'Copy code to clipboard';
             copyButton.setAttribute('aria-label', 'Copy code to clipboard');
-            copyButton.style.marginLeft = 'auto'; // Push button towards the right, before the icon
-            copyButton.style.marginRight = '0.5rem'; // Add space before the collapse icon
+            // REMOVED: copyButton.style.marginLeft = 'auto'; // Let CSS handle this
+            // REMOVED: copyButton.style.marginRight = '0.5rem'; // Let CSS handle this
 
-            // Collapse Icon (right)
+            // Collapse Icon (rightmost in LTR, leftmost in RTL)
             const iconSpan = document.createElement('span');
             iconSpan.classList.add('collapse-icon');
             iconSpan.title = 'Toggle Collapse';
 
-            // --- Append elements to header in desired order ---
+            // --- Append elements to header ---
+            // The order here matters for the DOM, but visual order is controlled by CSS direction/flex
             header.appendChild(langSpan);
-            header.appendChild(copyButton); // <<< Append copy button HERE (before icon)
+            header.appendChild(copyButton);
             header.appendChild(iconSpan);
 
             // Insert header before the <pre> element
@@ -157,7 +158,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             header.addEventListener('click', (event) => { // Added event parameter
-                if (!copyButton.contains(event.target)) {
+                // Ensure clicking the copy button itself doesn't trigger collapse
+                if (!copyButton.contains(event.target) && !copyButton === event.target) {
                     wrapper.classList.toggle('collapsed');
                 }
             });

@@ -9,8 +9,8 @@
 	--code-header-color: #495057;
 	--code-border-color: rgba(0, 0, 0, 0.1);
 	--link-color: #0d6efd;
-    /* Define a height for the panel headers */
-    --panel-header-height: 31px; /* Adjust based on inspection if needed */
+	/* Define a height for the panel headers */
+	--panel-header-height: 31px; /* Adjust based on inspection if needed */
 }
 
 /* --- Dark Mode Overrides --- */
@@ -34,47 +34,55 @@ body {
 	transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-h1, h2, h3, h4, h5, h6 { font-weight: 700; }
-header { border-bottom-color: var(--border-color) !important; }
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-weight: 700;
+}
+header {
+	border-bottom-color: var(--border-color) !important;
+}
 
 /* Input/Output areas */
 /* Container row sets the overall available height */
 .preview-container {
 	min-height: calc(100vh - 100px); /* Adjust if header height changes */
-    /* Ensure row takes height if columns need it */
-    align-items: stretch;
+	/* Ensure row takes height if columns need it */
+	align-items: stretch;
 }
 /* Flex containers within columns take full height */
 #input-column > .h-100,
 #output-column > .h-100 {
-    height: 100%; /* Make sure h-100 works */
+	height: 100%; /* Make sure h-100 works */
 }
 
 /* Style for Panel Headers (Placeholder and Controls) */
 .panel-header-placeholder,
 .panel-header-controls {
-    min-height: var(--panel-header-height);
-    /* Add vertical padding to center content if needed, or rely on align-items */
-    /* padding-top: 0.25rem; */
-    /* padding-bottom: 0.25rem; */
-    /* Ensure flex alignment works */
-    display: flex;
-    align-items: center;
+	min-height: var(--panel-header-height);
+	/* Add vertical padding to center content if needed, or rely on align-items */
+	/* padding-top: 0.25rem; */
+	/* padding-bottom: 0.25rem; */
+	/* Ensure flex alignment works */
+	display: flex;
+	align-items: center;
 }
 /* Specific alignment for controls */
 .panel-header-controls {
-    justify-content: flex-end;
+	justify-content: flex-end;
 }
 /* Specific alignment for placeholder (if content added) */
 .panel-header-placeholder {
-     justify-content: flex-start;
+	justify-content: flex-start;
 }
-
 
 #markdown-input {
 	font-family: monospace;
 	resize: none;
-    /* flex-grow-1 handles height within the flex column */
+	/* flex-grow-1 handles height within the flex column */
 	/* height: 100%; NO LONGER NEEDED */
 	min-height: 150px; /* Maintain a reasonable min-height */
 }
@@ -85,106 +93,200 @@ header { border-bottom-color: var(--border-color) !important; }
 	word-wrap: break-word;
 	color: var(--body-color);
 	transition: background-color 0.3s ease, border-color 0.3s ease;
-    /* flex-grow-1 handles height */
-    /* height: 100%; NO LONGER NEEDED */
-    min-height: 150px; /* Maintain a reasonable min-height */
+	/* flex-grow-1 handles height */
+	/* height: 100%; NO LONGER NEEDED */
+	min-height: 150px; /* Maintain a reasonable min-height */
 }
 
 /* --- Text Direction Styling --- */
-#markdown-output[data-text-direction="ltr"] { direction: ltr; text-align: left; }
-#markdown-output[data-text-direction="rtl"] { direction: rtl; text-align: right; }
-#markdown-output[data-text-direction="rtl"] ul,
-#markdown-output[data-text-direction="rtl"] ol { padding-right: 2rem; padding-left: 0; }
-#markdown-output[data-text-direction="rtl"] blockquote {
-    border-right: 0.25em solid var(--border-color); border-left: none;
-    padding-right: 1rem; padding-left: 0;
-    margin-right: 0; margin-left: 0;
+#markdown-output[data-text-direction="ltr"] {
+	direction: ltr;
+	text-align: left;
 }
-#markdown-output a { color: var(--link-color); }
-#markdown-output a:hover { filter: brightness(85%); }
-
+#markdown-output[data-text-direction="rtl"] {
+	direction: rtl;
+	text-align: right;
+}
+#markdown-output[data-text-direction="rtl"] ul,
+#markdown-output[data-text-direction="rtl"] ol {
+	padding-right: 2rem;
+	padding-left: 0;
+}
+#markdown-output[data-text-direction="rtl"] blockquote {
+	border-right: 0.25em solid var(--border-color);
+	border-left: none;
+	padding-right: 1rem;
+	padding-left: 0;
+	margin-right: 0;
+	margin-left: 0;
+}
+#markdown-output a {
+	color: var(--link-color);
+}
+#markdown-output a:hover {
+	filter: brightness(85%);
+}
 
 /* --- Code Block Enhancements --- */
 .code-block-wrapper {
-	position: relative; margin-bottom: 1rem;
+	position: relative;
+	margin-bottom: 1rem;
 	background-color: var(--code-wrapper-bg);
 	border: 1px solid var(--code-border-color);
-	border-radius: 0.3rem; overflow: hidden;
+	border-radius: 0.3rem;
+	overflow: hidden;
 	transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 /* --- Code Block Direction Styling --- */
-.code-block-wrapper[data-code-direction="ltr"] { direction: ltr; }
-.code-block-wrapper[data-code-direction="rtl"] { direction: rtl; }
+.code-block-wrapper[data-code-direction="ltr"] {
+	direction: ltr;
+}
+.code-block-wrapper[data-code-direction="rtl"] {
+	direction: rtl;
+}
 .code-block-wrapper[data-code-direction="ltr"] pre,
-.code-block-wrapper[data-code-direction="ltr"] code { text-align: left; }
+.code-block-wrapper[data-code-direction="ltr"] code {
+	text-align: left;
+}
 .code-block-wrapper[data-code-direction="rtl"] pre,
-.code-block-wrapper[data-code-direction="rtl"] code { text-align: right; }
-.code-block-wrapper[data-code-direction="rtl"] .code-block-header .language { text-align: left; }
+.code-block-wrapper[data-code-direction="rtl"] code {
+	text-align: right;
+} /* Keep code text aligned if needed */
+/* Ensure Language name remains LTR within the RTL header */
+.code-block-wrapper[data-code-direction="rtl"] .code-block-header .language {
+	text-align: left;
+}
 
 /* Code Block Header */
 .code-block-header {
-	display: flex; align-items: center;
-	padding: 0.5rem 1rem; background-color: var(--code-header-bg);
-	color: var(--code-header-color); font-size: 0.85em;
-	cursor: pointer; user-select: none;
+	display: flex;
+	align-items: center;
+	padding: 0.5rem 1rem;
+	background-color: var(--code-header-bg);
+	color: var(--code-header-color);
+	font-size: 0.85em;
+	cursor: pointer;
+	user-select: none;
 	border-bottom: 1px solid var(--code-border-color);
-	transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+	transition: background-color 0.3s ease, color 0.3s ease,
+		border-color 0.3s ease;
+	/* Use gap for spacing between elements */
+	gap: 0.5rem;
 }
-.code-block-header .language { font-weight: bold; text-transform: uppercase; margin-right: 1rem; }
-.code-block-header .collapse-icon { display: inline-flex; align-items: center; }
+.code-block-header .language {
+	font-weight: bold;
+	text-transform: uppercase;
+	/* Push the buttons group to the visual end (right in LTR, left in RTL) */
+	/* margin-right: auto; in LTR, margin-left: auto; in RTL */
+	margin-inline-end: auto;
+	/* Ensure some space between buttons and language name in RTL */
+	/* margin-left: 0.5rem; in LTR, margin-right: 0.5rem; in RTL */
+	margin-inline-start: 0.5rem; /* Adjust as needed */
+}
+.code-block-header .collapse-icon {
+	display: inline-flex;
+	align-items: center;
+}
 .code-block-header .collapse-icon::before {
-	content: "−"; display: inline-block; font-weight: bold;
-	font-size: 1.2em; line-height: 1; width: 1em; text-align: center;
+	content: "−";
+	display: inline-block;
+	font-weight: bold;
+	font-size: 1.2em;
+	line-height: 1;
+	width: 1em;
+	text-align: center;
 }
-.code-block-wrapper.collapsed .code-block-header .collapse-icon::before { content: "+"; }
+.code-block-wrapper.collapsed .code-block-header .collapse-icon::before {
+	content: "+";
+}
+
+/* RTL Specific Header Adjustments -
+   Logical properties (margin-inline-*) handle most of this automatically.
+   The flex items reverse order due to direction: rtl on the wrapper.
+   margin-inline-end: auto on the language pushes the buttons left.
+   margin-inline-start: 0.5rem on the language adds space between buttons and language.
+*/
+/* No specific rules needed for copy-button or collapse-icon positioning here,
+   gap and margin-inline-* on language handle the layout */
 
 /* Code Block Pre/Code */
 .code-block-wrapper pre {
-	margin: 0; padding: 1rem; border-radius: 0 0 0.3rem 0.3rem;
-	overflow-x: auto; max-height: 600px;
-	transition: max-height 0.3s ease-out, padding 0.3s ease-out, border 0.3s ease-out;
+	margin: 0;
+	padding: 1rem;
+	border-radius: 0 0 0.3rem 0.3rem;
+	overflow-x: auto;
+	max-height: 600px;
+	transition: max-height 0.3s ease-out, padding 0.3s ease-out,
+		border 0.3s ease-out;
 	border-top: none;
 }
 .code-block-wrapper pre code:not(.hljs) {
-	color: var(--body-color); background-color: var(--code-wrapper-bg);
+	color: var(--body-color);
+	background-color: var(--code-wrapper-bg);
 	font-family: monospace;
 }
 .code-block-wrapper pre code.hljs {
-	padding: 0 !important; background: transparent !important;
-	display: block; line-height: 1.5; color: inherit;
+	padding: 0 !important;
+	background: transparent !important;
+	display: block;
+	line-height: 1.5;
+	color: inherit;
 }
 .code-block-wrapper.collapsed pre {
-	max-height: 0; padding-top: 0; padding-bottom: 0;
-	overflow: hidden; border-width: 0;
+	max-height: 0;
+	padding-top: 0;
+	padding-bottom: 0;
+	overflow: hidden;
+	border-width: 0;
 }
 
 /* Copy Button */
 .copy-code-button {
 	transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-	font-size: 0.75em !important; padding: 0.15rem 0.35rem !important;
-	border: none; line-height: 1.2;
+	font-size: 0.75em !important;
+	padding: 0.15rem 0.35rem !important;
+	border: none;
+	line-height: 1.2;
+	/* No margin styles here - layout handled by flex container (.code-block-header) */
 }
-.copy-code-button:hover { filter: brightness(90%); }
-.copy-code-button.copied { filter: brightness(100%); }
-.copy-code-button .bi { vertical-align: text-bottom; }
+.copy-code-button:hover {
+	filter: brightness(90%);
+}
+.copy-code-button.copied {
+	filter: brightness(100%);
+}
+.copy-code-button .bi {
+	vertical-align: text-bottom;
+}
 
 /* --- Layout Adjustments --- */
-#input-column.hidden { display: none; }
-#output-column.full-width { flex: 0 0 100%; max-width: 100%; }
+#input-column.hidden {
+	display: none;
+}
+#output-column.full-width {
+	flex: 0 0 100%;
+	max-width: 100%;
+}
 
 /* --- Table Styling --- */
 #markdown-output table {
-	width: 100%; max-width: 100%; margin-bottom: 1rem;
-	border-collapse: collapse; background-color: var(--bs-table-bg, var(--body-bg));
+	width: 100%;
+	max-width: 100%;
+	margin-bottom: 1rem;
+	border-collapse: collapse;
+	background-color: var(--bs-table-bg, var(--body-bg));
 	color: var(--bs-table-color, var(--body-color));
 }
-#markdown-output th, #markdown-output td {
+#markdown-output th,
+#markdown-output td {
 	border: 1px solid var(--bs-table-border-color, var(--border-color));
-	padding: 0.75rem; vertical-align: top;
+	padding: 0.75rem;
+	vertical-align: top;
 }
 #markdown-output thead th {
-	vertical-align: bottom; border-bottom: 2px solid var(--bs-table-border-color, var(--border-color));
+	vertical-align: bottom;
+	border-bottom: 2px solid var(--bs-table-border-color, var(--border-color));
 	background-color: var(--bs-table-header-bg, var(--code-header-bg));
 	font-weight: 700;
 }
@@ -195,33 +297,37 @@ header { border-bottom-color: var(--border-color) !important; }
     #input-column > .h-100, /* Reset height on column wrappers */
     #output-column > .h-100 {
 		min-height: auto;
-        height: auto; /* Allow natural height */
+		height: auto; /* Allow natural height */
 	}
-    /* Ensure text areas still have decent min height */
-    #markdown-input,
-    #markdown-output {
-        min-height: 300px; /* Increase min-height for usability */
-        flex-grow: 0; /* Don't force grow when height is auto */
-    }
+	/* Ensure text areas still have decent min height */
+	#markdown-input,
+	#markdown-output {
+		min-height: 300px; /* Increase min-height for usability */
+		flex-grow: 0; /* Don't force grow when height is auto */
+	}
 
-	#output-column.full-width > .h-100 { /* Target wrapper in full width */
-        /* When full width, restore calculated height for output wrapper */
+	#output-column.full-width > .h-100 {
+		/* Target wrapper in full width */
+		/* When full width, restore calculated height for output wrapper */
 		min-height: calc(100vh - 100px); /* Adjust if needed */
-        height: calc(100vh - 100px);
-        /* Re-apply flex-grow to output area when it's full width */
-        #markdown-output {
-            flex-grow: 1;
-        }
+		height: calc(100vh - 100px);
+		/* Re-apply flex-grow to output area when it's full width */
+		#markdown-output {
+			flex-grow: 1;
+		}
 	}
 
-	header { justify-content: flex-start; flex-wrap: wrap; }
+	header {
+		justify-content: flex-start;
+		flex-wrap: wrap;
+	}
 
-    /* Adjust panel headers on small screens */
-    .panel-header-controls,
-    .panel-header-placeholder {
-        justify-content: flex-start; /* Align left */
-        flex-wrap: wrap; /* Allow controls to wrap */
-        min-height: auto; /* Allow height to adjust if wrapped */
-        height: auto;
-    }
+	/* Adjust panel headers on small screens */
+	.panel-header-controls,
+	.panel-header-placeholder {
+		justify-content: flex-start; /* Align left */
+		flex-wrap: wrap; /* Allow controls to wrap */
+		min-height: auto; /* Allow height to adjust if wrapped */
+		height: auto;
+	}
 }
