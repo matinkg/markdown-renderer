@@ -4,6 +4,8 @@ A simple, client-side web application for writing and previewing Markdown text w
 
 This project provides a clean interface to type Markdown on one side and see the rendered HTML output on the other, powered by `marked.js` for parsing and `highlight.js` for code syntax highlighting.
 
+**[Live Demo](https://matinkg.github.io/markdown-renderer/)**
+
 ## Features
 
 *   **Live Preview:** See your Markdown rendered into HTML as you type (can be toggled).
@@ -37,7 +39,7 @@ This is a single-page application (SPA) that runs entirely in the browser.
     ```
 3.  **Open `index.html`:** Simply open the `index.html` file in your preferred web browser.
 
-That's it! The application will load and be ready to use.
+That's it! The application will load and be ready to use. (Or, try the [Live Demo](https://matinkg.github.io/markdown-renderer/)!)
 
 ## Technologies Used
 
