@@ -1,52 +1,98 @@
-/* Ensure columns take full height relative to viewport minus header/margins */
-.preview-container,
-#input-column > div, /* Target inner div for flex */
-#output-column > div {
-	/* Target inner div for height */
-	min-height: calc(
-		100vh - 100px
-	); /* Adjust 100px based on header/footer/margins */
+/* --- CSS Variables for Theming --- */
+:root {
+	--body-bg: #ffffff;
+	--body-color: #212529;
+	--border-color: #dee2e6;
+	--output-bg: #f8f9fa;
+	--code-wrapper-bg: #f6f8fa; /* Light theme code background */
+	--code-header-bg: #e9ecef;
+	--code-header-color: #495057;
+	--code-border-color: rgba(0, 0, 0, 0.1);
+	--link-color: #0d6efd;
 }
 
-/* Ensure textarea fills its flex container */
+/* --- Dark Mode Overrides --- */
+/* Use data-bs-theme for compatibility with Bootstrap's dark mode */
+html[data-bs-theme="dark"] {
+	--body-bg: #212529; /* Bootstrap dark bg */
+	--body-color: #dee2e6; /* Bootstrap dark text */
+	--border-color: #495057; /* Darker border */
+	--output-bg: #343a40; /* Slightly lighter dark bg */
+	--code-wrapper-bg: #282c34; /* Matches github-dark hljs theme */
+	--code-header-bg: rgba(0, 0, 0, 0.3);
+	--code-header-color: #abb2bf;
+	--code-border-color: rgba(255, 255, 255, 0.1);
+	--link-color: #6ea8fe; /* Lighter blue for links */
+}
+
+/* --- General Styles using Variables --- */
+body {
+	background-color: var(--body-bg);
+	color: var(--body-color);
+	transition: background-color 0.3s ease, color 0.3s ease; /* Smooth theme transition */
+}
+
+header {
+	border-bottom-color: var(
+		--border-color
+	) !important; /* Override Bootstrap if needed */
+}
+
+/* Input/Output areas */
+.preview-container,
+#input-column > div,
+#output-column > div {
+	min-height: calc(
+		100vh - 120px
+	); /* Adjusted height slightly for more controls */
+}
+
 #markdown-input {
 	font-family: monospace;
-	resize: none; /* Disable manual resize, rely on flexbox */
-	/* height: 100% is handled by flex-grow-1, but added as fallback */
+	resize: none;
 	height: 100%;
-	/* Prevent disproportionate shrinking */
 	min-height: 200px;
+	/* Input inherits theme from Bootstrap via data-bs-theme */
 }
 
-/* Style the output area */
 #markdown-output {
-	background-color: #f8f9fa; /* Light background for output */
-	word-wrap: break-word; /* Prevent long words from overflowing */
+	background-color: var(--output-bg);
+	border-color: var(--border-color) !important;
+	word-wrap: break-word;
+	color: var(--body-color); /* Ensure text color matches theme */
+	transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+#markdown-output a {
+	color: var(--link-color);
+}
+#markdown-output a:hover {
+	filter: brightness(85%);
 }
 
 /* --- Code Block Enhancements --- */
-
-/* Wrapper for positioning button and handling collapse */
 .code-block-wrapper {
 	position: relative;
-	margin-bottom: 1rem; /* Spacing between code blocks */
-	background-color: #282c34; /* Default dark background (matches github-dark highlightjs theme) */
+	margin-bottom: 1rem;
+	background-color: var(--code-wrapper-bg); /* Use variable */
+	border: 1px solid var(--code-border-color); /* Add subtle border */
 	border-radius: 0.3rem;
-	overflow: hidden; /* Crucial for collapse transition and rounded corners */
+	overflow: hidden;
+	transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Header for language and collapse toggle */
 .code-block-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	padding: 0.5rem 1rem;
-	background-color: rgba(0, 0, 0, 0.2); /* Slightly darker header */
-	color: #abb2bf; /* Text color for header (adjust based on theme) */
+	background-color: var(--code-header-bg); /* Use variable */
+	color: var(--code-header-color); /* Use variable */
 	font-size: 0.85em;
 	cursor: pointer;
-	user-select: none; /* Prevent text selection on header */
-	border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Subtle separator */
+	user-select: none;
+	border-bottom: 1px solid var(--code-border-color); /* Use variable */
+	transition: background-color 0.3s ease, color 0.3s ease,
+		border-color 0.3s ease;
 }
 
 .code-block-header .language {
@@ -55,9 +101,8 @@
 	font-family: sans-serif;
 }
 
-/* Collapse icon using pseudo-element */
 .code-block-header .collapse-icon::before {
-	content: "−"; /* Minus sign for expanded state */
+	content: "−";
 	display: inline-block;
 	font-weight: bold;
 	font-size: 1.2em;
@@ -67,122 +112,129 @@
 	text-align: center;
 }
 
-/* Change icon when collapsed */
 .code-block-wrapper.collapsed .code-block-header .collapse-icon::before {
-	content: "+"; /* Plus sign for collapsed state */
+	content: "+";
 }
 
-/* Style the <pre> tag itself within the wrapper */
 .code-block-wrapper pre {
-	margin: 0; /* Remove default margin */
-	padding: 1rem; /* Add padding inside pre */
-	border-radius: 0 0 0.3rem 0.3rem; /* Round bottom corners only */
-	overflow-x: auto; /* Add horizontal scroll if code lines are long */
-	max-height: 600px; /* Set a maximum height before collapsing/scrolling */
+	margin: 0;
+	padding: 1rem;
+	border-radius: 0 0 0.3rem 0.3rem;
+	overflow-x: auto;
+	max-height: 600px;
 	transition: max-height 0.3s ease-out, padding 0.3s ease-out,
-		border 0.3s ease-out; /* Smooth collapse animation */
-	border-top: none; /* Remove top border as header provides separation */
+		border 0.3s ease-out;
+	border-top: none;
+	/* Background/color set by highlight.js theme link */
 }
 
-/* Style the <code> tag inside <pre> (where highlight.js applies classes) */
+/* Style code tag *only if* not processed by highlight.js (fallback) */
+.code-block-wrapper pre code:not(.hljs) {
+	color: var(--body-color); /* Fallback color */
+	background-color: var(--code-wrapper-bg); /* Fallback background */
+}
+
+/* Ensure hljs uses transparent background to show wrapper bg */
 .code-block-wrapper pre code.hljs {
-	padding: 0 !important; /* Override highlight.js padding if any */
-	background: none !important; /* Use wrapper's background */
-	display: block; /* Ensure block display */
+	padding: 0 !important;
+	background: transparent !important; /* Let wrapper handle background */
+	display: block;
 	line-height: 1.5;
+	color: inherit; /* Inherit color from hljs theme */
 }
 
-/* Collapsed state styling */
 .code-block-wrapper.collapsed pre {
 	max-height: 0;
 	padding-top: 0;
 	padding-bottom: 0;
-	overflow: hidden; /* Hide content and scrollbars */
+	overflow: hidden;
 	border-width: 0;
 }
 
 /* Copy Button Styling */
 .copy-code-button {
 	position: absolute;
-	top: 0.4rem; /* Adjust vertical position */
-	right: 0.5rem; /* Adjust horizontal position */
-	z-index: 10; /* Ensure button is above code content */
-	opacity: 0; /* Hidden by default */
+	top: 0.4rem;
+	right: 0.5rem;
+	z-index: 10;
+	opacity: 0;
 	transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out,
 		color 0.2s ease-in-out;
-	font-size: 0.75em !important; /* Smaller font size */
-	padding: 0.15rem 0.35rem !important; /* Smaller padding */
+	font-size: 0.75em !important;
+	padding: 0.15rem 0.35rem !important;
 	border: none;
 	line-height: 1.2;
+	/* Use theme variables for base button colors if needed, but Bootstrap handles this */
 }
 
-/* Show copy button on wrapper hover */
 .code-block-wrapper:hover .copy-code-button {
-	opacity: 0.7; /* Slightly transparent until hovered directly */
+	opacity: 0.7;
 }
 
-/* Full opacity on button hover */
 .copy-code-button:hover {
 	opacity: 1;
-	background-color: #0d6efd; /* Bootstrap primary */
-	color: white;
 }
 
-/* Styling for 'Copied!' state */
 .copy-code-button.copied {
-	background-color: #198754 !important; /* Bootstrap success */
-	color: white !important;
 	opacity: 1;
+	/* Bootstrap success class handles colors */
+}
+/* Ensure icons in copy button align */
+.copy-code-button .bi {
+	vertical-align: text-bottom;
 }
 
-/* Adjust layout when input is hidden */
+/* --- Layout Adjustments --- */
 #input-column.hidden {
 	display: none;
 }
-/* Ensure output takes full width when input is hidden */
 #output-column.full-width {
 	flex: 0 0 100%;
 	max-width: 100%;
 }
 
-/* Fix potential Bootstrap table styling conflicts */
+/* --- Table Styling (uses Bootstrap vars implicitly) --- */
 #markdown-output table {
-	/* Use Bootstrap table classes if available, otherwise provide defaults */
-	width: 100%; /* Make tables responsive by default */
+	width: 100%;
 	max-width: 100%;
 	margin-bottom: 1rem;
-	border-collapse: collapse; /* Ensure borders connect */
-	background-color: #fff; /* White background for readability */
+	border-collapse: collapse;
+	background-color: var(
+		--bs-table-bg,
+		var(--body-bg)
+	); /* Use BS var or fallback */
+	color: var(--bs-table-color, var(--body-color));
 }
 #markdown-output th,
 #markdown-output td {
-	border: 1px solid #dee2e6; /* Standard Bootstrap border color */
-	padding: 0.75rem; /* Standard Bootstrap padding */
-	vertical-align: top; /* Align content top */
+	border: 1px solid var(--bs-table-border-color, var(--border-color));
+	padding: 0.75rem;
+	vertical-align: top;
 }
 #markdown-output thead th {
 	vertical-align: bottom;
-	border-bottom: 2px solid #dee2e6; /* Heavier border below header */
-	background-color: #e9ecef; /* Light grey background for header */
+	border-bottom: 2px solid var(--bs-table-border-color, var(--border-color));
+	background-color: var(
+		--bs-table-header-bg,
+		var(--code-header-bg)
+	); /* Use BS var or fallback */
 }
 
-/* Basic responsive adjustments */
+/* --- Responsive --- */
 @media (max-width: 991.98px) {
-	/* Below Bootstrap lg breakpoint */
 	.preview-container,
 	#input-column > div,
 	#output-column > div {
-		/* Allow columns to stack naturally, adjust min-height for content */
 		min-height: auto;
-		/* Maybe a smaller min-height when stacked */
-		/* min-height: 40vh; */
 	}
-	/* Ensure textarea is reasonably sized when stacked */
 	#markdown-input {
 		min-height: 300px;
 	}
-	/* Ensure output takes reasonable height when input is hidden on small screens */
 	#output-column.full-width > div {
-		min-height: calc(100vh - 100px); /* Adjust if needed */
+		min-height: calc(100vh - 120px); /* Adjust if needed */
+	}
+	/* Stack header controls nicely */
+	header {
+		justify-content: flex-start; /* Align items to start on smaller screens */
 	}
 }
