@@ -566,10 +566,10 @@ document.addEventListener('DOMContentLoaded', () => {
     setCodeDirection(savedCodeDir);
 
     // Restore previous input if desired (e.g., from localStorage)
-    // const savedInput = localStorage.getItem('markdownInputContent');
-    // if (savedInput) {
-    //     markdownInput.value = savedInput;
-    // }
+    const savedInput = localStorage.getItem('markdownInputContent');
+    if (savedInput) {
+        markdownInput.value = savedInput;
+    }
 
     // Initial Layout based on switch state (usually checked/visible by default)
     toggleInputArea();
@@ -581,11 +581,10 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCounts();
 
     // Optional: Save input content periodically or on unload
-    // markdownInput.addEventListener('input', debounce(() => {
-    //     localStorage.setItem('markdownInputContent', markdownInput.value);
-    // }, 1000));
-    // window.addEventListener('beforeunload', () => {
-    //     localStorage.setItem('markdownInputContent', markdownInput.value);
-    // });
-
+    markdownInput.addEventListener('input', debounce(() => {
+        localStorage.setItem('markdownInputContent', markdownInput.value);
+    }, 1000));
+    window.addEventListener('beforeunload', () => {
+        localStorage.setItem('markdownInputContent', markdownInput.value);
+    });
 });
