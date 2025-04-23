@@ -9,258 +9,219 @@
 	--code-header-color: #495057;
 	--code-border-color: rgba(0, 0, 0, 0.1);
 	--link-color: #0d6efd;
+    /* Define a height for the panel headers */
+    --panel-header-height: 31px; /* Adjust based on inspection if needed */
 }
 
 /* --- Dark Mode Overrides --- */
-/* Use data-bs-theme for compatibility with Bootstrap's dark mode */
 html[data-bs-theme="dark"] {
-	--body-bg: #212529; /* Bootstrap dark bg */
-	--body-color: #dee2e6; /* Bootstrap dark text */
-	--border-color: #495057; /* Darker border */
-	--output-bg: #343a40; /* Slightly lighter dark bg */
-	--code-wrapper-bg: #282c34; /* Matches github-dark hljs theme */
+	--body-bg: #212529;
+	--body-color: #dee2e6;
+	--border-color: #495057;
+	--output-bg: #343a40;
+	--code-wrapper-bg: #282c34;
 	--code-header-bg: rgba(0, 0, 0, 0.3);
 	--code-header-color: #abb2bf;
 	--code-border-color: rgba(255, 255, 255, 0.1);
-	--link-color: #6ea8fe; /* Lighter blue for links */
+	--link-color: #6ea8fe;
 }
 
 /* --- General Styles using Variables --- */
 body {
-	font-family: "Vazirmatn", sans-serif; /* Use Vazirmatn as the default font */
+	font-family: "Vazirmatn", sans-serif;
 	background-color: var(--body-bg);
 	color: var(--body-color);
-	transition: background-color 0.3s ease, color 0.3s ease; /* Smooth theme transition */
+	transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-	font-weight: 700; /* Optional: Ensure headings use the bold weight if available */
-}
-
-header {
-	border-bottom-color: var(
-		--border-color
-	) !important; /* Override Bootstrap if needed */
-}
+h1, h2, h3, h4, h5, h6 { font-weight: 700; }
+header { border-bottom-color: var(--border-color) !important; }
 
 /* Input/Output areas */
-.preview-container,
-#input-column > div,
-#output-column > div {
-	min-height: calc(
-		100vh - 120px
-	); /* Adjusted height slightly for more controls */
+/* Container row sets the overall available height */
+.preview-container {
+	min-height: calc(100vh - 100px); /* Adjust if header height changes */
+    /* Ensure row takes height if columns need it */
+    align-items: stretch;
+}
+/* Flex containers within columns take full height */
+#input-column > .h-100,
+#output-column > .h-100 {
+    height: 100%; /* Make sure h-100 works */
 }
 
+/* Style for Panel Headers (Placeholder and Controls) */
+.panel-header-placeholder,
+.panel-header-controls {
+    min-height: var(--panel-header-height);
+    /* Add vertical padding to center content if needed, or rely on align-items */
+    /* padding-top: 0.25rem; */
+    /* padding-bottom: 0.25rem; */
+    /* Ensure flex alignment works */
+    display: flex;
+    align-items: center;
+}
+/* Specific alignment for controls */
+.panel-header-controls {
+    justify-content: flex-end;
+}
+/* Specific alignment for placeholder (if content added) */
+.panel-header-placeholder {
+     justify-content: flex-start;
+}
+
+
 #markdown-input {
-	font-family: monospace; /* Keep monospace for the input textarea */
+	font-family: monospace;
 	resize: none;
-	height: 100%;
-	min-height: 200px;
-	/* Input inherits theme from Bootstrap via data-bs-theme */
+    /* flex-grow-1 handles height within the flex column */
+	/* height: 100%; NO LONGER NEEDED */
+	min-height: 150px; /* Maintain a reasonable min-height */
 }
 
 #markdown-output {
 	background-color: var(--output-bg);
 	border-color: var(--border-color) !important;
 	word-wrap: break-word;
-	color: var(--body-color); /* Ensure text color matches theme */
+	color: var(--body-color);
 	transition: background-color 0.3s ease, border-color 0.3s ease;
+    /* flex-grow-1 handles height */
+    /* height: 100%; NO LONGER NEEDED */
+    min-height: 150px; /* Maintain a reasonable min-height */
 }
-#markdown-output a {
-	color: var(--link-color);
+
+/* --- Text Direction Styling --- */
+#markdown-output[data-text-direction="ltr"] { direction: ltr; text-align: left; }
+#markdown-output[data-text-direction="rtl"] { direction: rtl; text-align: right; }
+#markdown-output[data-text-direction="rtl"] ul,
+#markdown-output[data-text-direction="rtl"] ol { padding-right: 2rem; padding-left: 0; }
+#markdown-output[data-text-direction="rtl"] blockquote {
+    border-right: 0.25em solid var(--border-color); border-left: none;
+    padding-right: 1rem; padding-left: 0;
+    margin-right: 0; margin-left: 0;
 }
-#markdown-output a:hover {
-	filter: brightness(85%);
-}
+#markdown-output a { color: var(--link-color); }
+#markdown-output a:hover { filter: brightness(85%); }
+
 
 /* --- Code Block Enhancements --- */
 .code-block-wrapper {
-	position: relative;
-	margin-bottom: 1rem;
-	background-color: var(--code-wrapper-bg); /* Use variable */
-	border: 1px solid var(--code-border-color); /* Add subtle border */
-	border-radius: 0.3rem;
-	overflow: hidden;
+	position: relative; margin-bottom: 1rem;
+	background-color: var(--code-wrapper-bg);
+	border: 1px solid var(--code-border-color);
+	border-radius: 0.3rem; overflow: hidden;
 	transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
+/* --- Code Block Direction Styling --- */
+.code-block-wrapper[data-code-direction="ltr"] { direction: ltr; }
+.code-block-wrapper[data-code-direction="rtl"] { direction: rtl; }
+.code-block-wrapper[data-code-direction="ltr"] pre,
+.code-block-wrapper[data-code-direction="ltr"] code { text-align: left; }
+.code-block-wrapper[data-code-direction="rtl"] pre,
+.code-block-wrapper[data-code-direction="rtl"] code { text-align: right; }
+.code-block-wrapper[data-code-direction="rtl"] .code-block-header .language { text-align: left; }
+
+/* Code Block Header */
 .code-block-header {
-	display: flex;
-	/* justify-content: space-between; <-- Removed, using margin auto on button */
-	align-items: center;
-	padding: 0.5rem 1rem;
-	background-color: var(--code-header-bg); /* Use variable */
-	color: var(--code-header-color); /* Use variable */
-	font-size: 0.85em;
-	cursor: pointer;
-	user-select: none;
-	border-bottom: 1px solid var(--code-border-color); /* Use variable */
-	transition: background-color 0.3s ease, color 0.3s ease,
-		border-color 0.3s ease;
+	display: flex; align-items: center;
+	padding: 0.5rem 1rem; background-color: var(--code-header-bg);
+	color: var(--code-header-color); font-size: 0.85em;
+	cursor: pointer; user-select: none;
+	border-bottom: 1px solid var(--code-border-color);
+	transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
-
-.code-block-header .language {
-	font-weight: bold; /* Use font-weight instead of Vazirmatn bold for this small text */
-	text-transform: uppercase;
-	/* font-family: sans-serif; <-- Remove this to inherit Vazirmatn from body */
-	margin-right: 1rem; /* Add some space after language */
-}
-
-.code-block-header .collapse-icon {
-	display: inline-flex; /* Helps alignment */
-	align-items: center;
-}
-
+.code-block-header .language { font-weight: bold; text-transform: uppercase; margin-right: 1rem; }
+.code-block-header .collapse-icon { display: inline-flex; align-items: center; }
 .code-block-header .collapse-icon::before {
-	content: "−";
-	display: inline-block;
-	font-weight: bold;
-	font-size: 1.2em;
-	line-height: 1;
-	/* margin-left: 0.5rem; <-- Removed, spacing handled by button margin */
-	width: 1em;
-	text-align: center;
+	content: "−"; display: inline-block; font-weight: bold;
+	font-size: 1.2em; line-height: 1; width: 1em; text-align: center;
 }
+.code-block-wrapper.collapsed .code-block-header .collapse-icon::before { content: "+"; }
 
-.code-block-wrapper.collapsed .code-block-header .collapse-icon::before {
-	content: "+";
-}
-
+/* Code Block Pre/Code */
 .code-block-wrapper pre {
-	margin: 0;
-	padding: 1rem;
-	border-radius: 0 0 0.3rem 0.3rem;
-	overflow-x: auto;
-	max-height: 600px;
-	transition: max-height 0.3s ease-out, padding 0.3s ease-out,
-		border 0.3s ease-out;
+	margin: 0; padding: 1rem; border-radius: 0 0 0.3rem 0.3rem;
+	overflow-x: auto; max-height: 600px;
+	transition: max-height 0.3s ease-out, padding 0.3s ease-out, border 0.3s ease-out;
 	border-top: none;
-	/* Background/color set by highlight.js theme link */
-	/* Font family for code blocks is handled by highlight.js or browser defaults (monospace) */
 }
-
-/* Style code tag *only if* not processed by highlight.js (fallback) */
 .code-block-wrapper pre code:not(.hljs) {
-	color: var(--body-color); /* Fallback color */
-	background-color: var(--code-wrapper-bg); /* Fallback background */
-	font-family: monospace; /* Ensure monospace fallback */
+	color: var(--body-color); background-color: var(--code-wrapper-bg);
+	font-family: monospace;
 }
-
-/* Ensure hljs uses transparent background to show wrapper bg */
 .code-block-wrapper pre code.hljs {
-	padding: 0 !important;
-	background: transparent !important; /* Let wrapper handle background */
-	display: block;
-	line-height: 1.5;
-	color: inherit; /* Inherit color from hljs theme */
-	/* Font family is controlled by the loaded hljs theme */
+	padding: 0 !important; background: transparent !important;
+	display: block; line-height: 1.5; color: inherit;
 }
-
 .code-block-wrapper.collapsed pre {
-	max-height: 0;
-	padding-top: 0;
-	padding-bottom: 0;
-	overflow: hidden;
-	border-width: 0;
+	max-height: 0; padding-top: 0; padding-bottom: 0;
+	overflow: hidden; border-width: 0;
 }
 
-/* Copy Button Styling (Revised) */
+/* Copy Button */
 .copy-code-button {
-	/* position: absolute; <-- REMOVE */
-	/* top: 0.4rem;       <-- REMOVE */
-	/* right: 0.5rem;      <-- REMOVE */
-	/* z-index: 10;        <-- REMOVE */
-	/* opacity: 0;         <-- REMOVE (button is now always visible) */
-	transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; /* Keep transition for feedback */
-	font-size: 0.75em !important;
-	padding: 0.15rem 0.35rem !important;
-	border: none;
-	line-height: 1.2;
-	/* Margins are now set inline via JS for positioning */
-	/* Use theme variables for base button colors if needed, but Bootstrap handles this */
-	/* Font family will inherit from body (Vazirmatn) */
+	transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+	font-size: 0.75em !important; padding: 0.15rem 0.35rem !important;
+	border: none; line-height: 1.2;
 }
-
-/* Remove the wrapper hover effect for opacity */
-/* .code-block-wrapper:hover .copy-code-button { */
-/* 	opacity: 0.7; <-- REMOVE */
-/* } */
-
-.copy-code-button:hover {
-	/* opacity: 1; <-- Opacity is always 1 now, maybe slightly change background */
-	filter: brightness(90%);
-}
-
-.copy-code-button.copied {
-	/* opacity: 1; <-- Opacity is always 1 */
-	/* Bootstrap success class handles colors */
-	filter: brightness(100%); /* Ensure it's full bright when copied */
-}
-
-/* Ensure icons in copy button align */
-.copy-code-button .bi {
-	vertical-align: text-bottom; /* Keep this for good alignment */
-}
+.copy-code-button:hover { filter: brightness(90%); }
+.copy-code-button.copied { filter: brightness(100%); }
+.copy-code-button .bi { vertical-align: text-bottom; }
 
 /* --- Layout Adjustments --- */
-#input-column.hidden {
-	display: none;
-}
-#output-column.full-width {
-	flex: 0 0 100%;
-	max-width: 100%;
-}
+#input-column.hidden { display: none; }
+#output-column.full-width { flex: 0 0 100%; max-width: 100%; }
 
-/* --- Table Styling (uses Bootstrap vars implicitly) --- */
+/* --- Table Styling --- */
 #markdown-output table {
-	width: 100%;
-	max-width: 100%;
-	margin-bottom: 1rem;
-	border-collapse: collapse;
-	background-color: var(
-		--bs-table-bg,
-		var(--body-bg)
-	); /* Use BS var or fallback */
+	width: 100%; max-width: 100%; margin-bottom: 1rem;
+	border-collapse: collapse; background-color: var(--bs-table-bg, var(--body-bg));
 	color: var(--bs-table-color, var(--body-color));
-	/* Font family inherits from body */
 }
-#markdown-output th,
-#markdown-output td {
+#markdown-output th, #markdown-output td {
 	border: 1px solid var(--bs-table-border-color, var(--border-color));
-	padding: 0.75rem;
-	vertical-align: top;
+	padding: 0.75rem; vertical-align: top;
 }
 #markdown-output thead th {
-	vertical-align: bottom;
-	border-bottom: 2px solid var(--bs-table-border-color, var(--border-color));
-	background-color: var(
-		--bs-table-header-bg,
-		var(--code-header-bg)
-	); /* Use BS var or fallback */
-	font-weight: 700; /* Make table headers bold */
+	vertical-align: bottom; border-bottom: 2px solid var(--bs-table-border-color, var(--border-color));
+	background-color: var(--bs-table-header-bg, var(--code-header-bg));
+	font-weight: 700;
 }
 
 /* --- Responsive --- */
 @media (max-width: 991.98px) {
 	.preview-container,
-	#input-column > div,
-	#output-column > div {
+    #input-column > .h-100, /* Reset height on column wrappers */
+    #output-column > .h-100 {
 		min-height: auto;
+        height: auto; /* Allow natural height */
 	}
-	#markdown-input {
-		min-height: 300px;
+    /* Ensure text areas still have decent min height */
+    #markdown-input,
+    #markdown-output {
+        min-height: 300px; /* Increase min-height for usability */
+        flex-grow: 0; /* Don't force grow when height is auto */
+    }
+
+	#output-column.full-width > .h-100 { /* Target wrapper in full width */
+        /* When full width, restore calculated height for output wrapper */
+		min-height: calc(100vh - 100px); /* Adjust if needed */
+        height: calc(100vh - 100px);
+        /* Re-apply flex-grow to output area when it's full width */
+        #markdown-output {
+            flex-grow: 1;
+        }
 	}
-	#output-column.full-width > div {
-		min-height: calc(100vh - 120px); /* Adjust if needed */
-	}
-	/* Stack header controls nicely */
-	header {
-		justify-content: flex-start; /* Align items to start on smaller screens */
-	}
+
+	header { justify-content: flex-start; flex-wrap: wrap; }
+
+    /* Adjust panel headers on small screens */
+    .panel-header-controls,
+    .panel-header-placeholder {
+        justify-content: flex-start; /* Align left */
+        flex-wrap: wrap; /* Allow controls to wrap */
+        min-height: auto; /* Allow height to adjust if wrapped */
+        height: auto;
+    }
 }

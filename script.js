@@ -12,9 +12,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const hljsThemeLightLink = document.getElementById('hljs-theme-light');
     const hljsThemeDarkLink = document.getElementById('hljs-theme-dark');
     const rootElement = document.documentElement; // Get the <html> element
+    // New Direction Selectors
+    const textDirLtrBtn = document.getElementById('textDirLtrBtn');
+    const textDirRtlBtn = document.getElementById('textDirRtlBtn');
+    const codeDirLtrBtn = document.getElementById('codeDirLtrBtn');
+    const codeDirRtlBtn = document.getElementById('codeDirRtlBtn');
 
     // --- State Variables ---
     let isAutoRenderEnabled = true; // Default state
+    let currentTextDirection = 'ltr'; // Default
+    let currentCodeDirection = 'ltr'; // Default
 
     // --- Debounce function ---
     function debounce(func, delay) {
@@ -57,6 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Enhance Code Blocks (Add Copy Button, Collapse, etc.)
             enhanceCodeBlocks();
 
+            // Ensure code blocks have the correct direction attribute after rendering
+            applyCodeDirectionToBlocks(currentCodeDirection);
+
+
         } catch (error) {
             console.error("Markdown parsing error:", error);
             markdownOutput.innerHTML = `<div class="alert alert-danger">Error parsing Markdown. Please check your input.</div>`;
@@ -77,6 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const wrapper = document.createElement('div');
             wrapper.classList.add('code-block-wrapper');
+            // Apply current code direction when creating the wrapper
+            wrapper.dataset.codeDirection = currentCodeDirection;
             preElement.parentNode.insertBefore(wrapper, preElement);
             wrapper.appendChild(preElement);
             processedPres.add(preElement);
@@ -138,21 +151,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     }, 2000);
                 }).catch(err => {
                     console.error('Failed to copy code: ', err);
-                    // Use an error icon, Bootstrap icons recommended
                     copyButton.innerHTML = '<i class="bi bi-x-octagon-fill text-danger"></i>';
                     setTimeout(() => { copyButton.innerHTML = '<i class="bi bi-clipboard"></i>'; }, 2000);
                 });
             });
 
             header.addEventListener('click', (event) => { // Added event parameter
-                // Only collapse if the click wasn't on the button itself or inside it
                 if (!copyButton.contains(event.target)) {
                     wrapper.classList.toggle('collapsed');
                 }
             });
         });
     }
-
 
     // --- Toggle Input Area Visibility ---
     function toggleInputArea() {
@@ -183,14 +193,11 @@ document.addEventListener('DOMContentLoaded', () => {
             hljsThemeDarkLink.setAttribute('disabled', 'true');
         }
         localStorage.setItem('markdownRendererTheme', theme); // Save preference
-
-        // Re-render to apply potential theme-specific code block styles if necessary
-        // (Though highlight.js themes handle most of it)
-        renderMarkdown();
+        renderMarkdown(); // Re-render might be needed if themes affect layout/highlighting
     }
 
     function toggleTheme() {
-        const currentTheme = rootElement.getAttribute('data-bs-theme');
+        const currentTheme = rootElement.getAttribute('data-bs-theme') || 'light'; // Ensure default
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         applyTheme(newTheme);
     }
@@ -201,6 +208,37 @@ document.addEventListener('DOMContentLoaded', () => {
         manualRenderButton.disabled = isAutoRenderEnabled; // Disable button if auto is on
         localStorage.setItem('markdownRendererAutoRender', isAutoRenderEnabled); // Save preference
     }
+
+    // --- Text Direction Control ---
+    function setTextDirection(direction) { // 'ltr' or 'rtl'
+        currentTextDirection = direction;
+        markdownOutput.dataset.textDirection = direction; // Apply data attribute for CSS
+        localStorage.setItem('markdownRendererTextDir', direction); // Save preference
+
+        // Update button active state
+        textDirLtrBtn.classList.toggle('active', direction === 'ltr');
+        textDirRtlBtn.classList.toggle('active', direction === 'rtl');
+        // Optionally, re-render if direction affects layout significantly, but CSS should handle it.
+        // renderMarkdown();
+    }
+
+    // --- Code Block Direction Control ---
+    function applyCodeDirectionToBlocks(direction) {
+        markdownOutput.querySelectorAll('.code-block-wrapper').forEach(wrapper => {
+            wrapper.dataset.codeDirection = direction; // Apply data attribute for CSS
+        });
+    }
+
+    function setCodeDirection(direction) { // 'ltr' or 'rtl'
+        currentCodeDirection = direction;
+        applyCodeDirectionToBlocks(direction); // Apply to all existing code blocks
+        localStorage.setItem('markdownRendererCodeDir', direction); // Save preference
+
+        // Update button active state
+        codeDirLtrBtn.classList.toggle('active', direction === 'ltr');
+        codeDirRtlBtn.classList.toggle('active', direction === 'rtl');
+    }
+
 
     // --- Event Listeners Setup ---
     const debouncedRender = debounce(renderMarkdown, 300); // Debounced render
@@ -224,22 +262,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // Manual Render Button
     manualRenderButton.addEventListener('click', renderMarkdown); // Call directly, no debounce
 
+    // Direction Button Events
+    textDirLtrBtn.addEventListener('click', () => setTextDirection('ltr'));
+    textDirRtlBtn.addEventListener('click', () => setTextDirection('rtl'));
+    codeDirLtrBtn.addEventListener('click', () => setCodeDirection('ltr'));
+    codeDirRtlBtn.addEventListener('click', () => setCodeDirection('rtl'));
+
     // --- Initial Setup on Load ---
 
-    // Set initial theme based on localStorage or system preference (optional)
+    // Set initial theme
     const savedTheme = localStorage.getItem('markdownRendererTheme');
-    // const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; // Optional: Detect system preference
-    const initialTheme = savedTheme || 'dark'; // Default to dark if no preference saved
+    const initialTheme = savedTheme || 'dark'; // Default dark
     applyTheme(initialTheme);
-    themeSwitch.checked = (initialTheme === 'dark'); // Set switch state
+    themeSwitch.checked = (initialTheme === 'dark');
 
     // Set initial auto-render state
     const savedAutoRender = localStorage.getItem('markdownRendererAutoRender');
     isAutoRenderEnabled = savedAutoRender !== null ? (savedAutoRender === 'true') : true; // Default true
     autoRenderSwitch.checked = isAutoRenderEnabled;
-    updateAutoRenderState(); // Update button state based on loaded preference
+    updateAutoRenderState(); // Update button state
 
-    // Initial Render
+    // Set initial text direction
+    const savedTextDir = localStorage.getItem('markdownRendererTextDir');
+    setTextDirection(savedTextDir || 'ltr'); // Default LTR
+
+    // Set initial code direction
+    const savedCodeDir = localStorage.getItem('markdownRendererCodeDir');
+    setCodeDirection(savedCodeDir || 'ltr'); // Default LTR
+
+    // Initial Render (will also apply initial code direction via enhanceCodeBlocks)
     renderMarkdown();
 
     // Initial Layout
