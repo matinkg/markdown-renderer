@@ -1,0 +1,159 @@
+/* Ensure columns take full height */
+.preview-container,
+#input-column,
+#output-column,
+#input-column > div, /* Ensure inner div takes height */
+#output-column > div {
+	/* Ensure inner div takes height */
+	min-height: calc(
+		100vh - 100px
+	); /* Adjust 100px based on header/footer/margins */
+}
+
+#markdown-input {
+	font-family: monospace;
+	resize: none; /* Disable manual resize, rely on flexbox */
+	height: 100%; /* Redundant due to flex-grow-1 but good fallback */
+}
+
+#markdown-output {
+	background-color: #f8f9fa; /* Light background for output */
+}
+
+/* --- Code Block Enhancements --- */
+
+/* Wrapper for positioning button and handling collapse */
+.code-block-wrapper {
+	position: relative;
+	margin-bottom: 1rem; /* Spacing between code blocks */
+	background-color: #282c34; /* Default dark background consistent with many themes */
+	border-radius: 0.3rem;
+	overflow: hidden; /* Needed for collapse transition */
+}
+
+/* Header for language and collapse toggle */
+.code-block-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0.5rem 1rem;
+	background-color: rgba(0, 0, 0, 0.2); /* Slightly darker header */
+	color: #abb2bf; /* Text color for header */
+	font-size: 0.85em;
+	cursor: pointer;
+	user-select: none; /* Prevent text selection on header */
+}
+
+.code-block-header .language {
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+.code-block-header .collapse-icon::before {
+	content: "−"; /* Minus sign for expanded */
+	display: inline-block;
+	font-weight: bold;
+	margin-left: 0.5rem;
+}
+
+.code-block-wrapper.collapsed .code-block-header .collapse-icon::before {
+	content: "+"; /* Plus sign for collapsed */
+}
+
+/* Style the <pre> tag itself */
+.code-block-wrapper pre {
+	margin: 0; /* Remove default margin */
+	padding: 1rem; /* Add padding inside pre */
+	border-radius: 0 0 0.3rem 0.3rem; /* Round bottom corners */
+	overflow-x: auto; /* Add horizontal scroll if needed */
+	max-height: 600px; /* Or your preferred max height */
+	transition: max-height 0.3s ease-out, padding 0.3s ease-out; /* Smooth collapse */
+}
+
+/* Style the <code> tag inside <pre> */
+.code-block-wrapper pre code.hljs {
+	padding: 0; /* highlight.js might add padding, remove it */
+	background: none; /* Use wrapper background */
+	display: block; /* Ensure block display */
+	line-height: 1.5;
+}
+
+/* Collapsed state */
+.code-block-wrapper.collapsed pre {
+	max-height: 0;
+	padding-top: 0;
+	padding-bottom: 0;
+	overflow: hidden; /* Hide content */
+}
+
+/* Copy Button Styling */
+.copy-code-button {
+	position: absolute;
+	top: 0.4rem;
+	right: 0.5rem;
+	z-index: 1; /* Above the header potentially */
+	opacity: 0.6;
+	transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
+	font-size: 0.8em !important; /* Override Bootstrap */
+	padding: 0.2rem 0.4rem !important;
+}
+
+.code-block-wrapper:hover .copy-code-button {
+	opacity: 1;
+}
+
+.copy-code-button:hover {
+	background-color: #0d6efd; /* Bootstrap primary hover */
+	color: white;
+}
+
+.copy-code-button.copied {
+	background-color: #198754; /* Bootstrap success color */
+	color: white;
+	opacity: 1;
+}
+
+/* Adjust layout when input is hidden */
+#input-column.hidden {
+	display: none;
+}
+#output-column.full-width {
+	flex: 0 0 100%;
+	max-width: 100%;
+}
+
+/* Fix potential Bootstrap table styling conflicts */
+#markdown-output table {
+	width: auto; /* Let markdown decide width initially */
+	margin-bottom: 1rem;
+}
+#markdown-output table th,
+#markdown-output table td {
+	border: 1px solid #dee2e6;
+	padding: 0.5rem;
+}
+#markdown-output table thead th {
+	vertical-align: bottom;
+	border-bottom: 2px solid #dee2e6;
+}
+
+/* Basic responsive adjustments if needed beyond Bootstrap */
+@media (max-width: 991.98px) {
+	/* Below lg breakpoint */
+	.preview-container,
+	#input-column,
+	#output-column,
+	#input-column > div,
+	#output-column > div {
+		min-height: 50vh; /* Adjust height for stacked view */
+		height: auto;
+	}
+	#markdown-input {
+		min-height: 300px; /* Ensure minimum size when stacked */
+	}
+	#output-column.full-width {
+		min-height: calc(
+			100vh - 100px
+		); /* Take full height when input hidden */
+	}
+}
