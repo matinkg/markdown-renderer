@@ -27,9 +27,19 @@ html[data-bs-theme="dark"] {
 
 /* --- General Styles using Variables --- */
 body {
+	font-family: "Vazirmatn", sans-serif; /* Use Vazirmatn as the default font */
 	background-color: var(--body-bg);
 	color: var(--body-color);
 	transition: background-color 0.3s ease, color 0.3s ease; /* Smooth theme transition */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-weight: 700; /* Optional: Ensure headings use the bold weight if available */
 }
 
 header {
@@ -48,7 +58,7 @@ header {
 }
 
 #markdown-input {
-	font-family: monospace;
+	font-family: monospace; /* Keep monospace for the input textarea */
 	resize: none;
 	height: 100%;
 	min-height: 200px;
@@ -96,9 +106,9 @@ header {
 }
 
 .code-block-header .language {
-	font-weight: bold;
+	font-weight: bold; /* Use font-weight instead of Vazirmatn bold for this small text */
 	text-transform: uppercase;
-	font-family: sans-serif;
+	/* font-family: sans-serif; <-- Remove this to inherit Vazirmatn from body */
 	margin-right: 1rem; /* Add some space after language */
 }
 
@@ -132,12 +142,14 @@ header {
 		border 0.3s ease-out;
 	border-top: none;
 	/* Background/color set by highlight.js theme link */
+	/* Font family for code blocks is handled by highlight.js or browser defaults (monospace) */
 }
 
 /* Style code tag *only if* not processed by highlight.js (fallback) */
 .code-block-wrapper pre code:not(.hljs) {
 	color: var(--body-color); /* Fallback color */
 	background-color: var(--code-wrapper-bg); /* Fallback background */
+	font-family: monospace; /* Ensure monospace fallback */
 }
 
 /* Ensure hljs uses transparent background to show wrapper bg */
@@ -147,6 +159,7 @@ header {
 	display: block;
 	line-height: 1.5;
 	color: inherit; /* Inherit color from hljs theme */
+	/* Font family is controlled by the loaded hljs theme */
 }
 
 .code-block-wrapper.collapsed pre {
@@ -171,6 +184,7 @@ header {
 	line-height: 1.2;
 	/* Margins are now set inline via JS for positioning */
 	/* Use theme variables for base button colors if needed, but Bootstrap handles this */
+	/* Font family will inherit from body (Vazirmatn) */
 }
 
 /* Remove the wrapper hover effect for opacity */
@@ -214,6 +228,7 @@ header {
 		var(--body-bg)
 	); /* Use BS var or fallback */
 	color: var(--bs-table-color, var(--body-color));
+	/* Font family inherits from body */
 }
 #markdown-output th,
 #markdown-output td {
@@ -228,6 +243,7 @@ header {
 		--bs-table-header-bg,
 		var(--code-header-bg)
 	); /* Use BS var or fallback */
+	font-weight: 700; /* Make table headers bold */
 }
 
 /* --- Responsive --- */
