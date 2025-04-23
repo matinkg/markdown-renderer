@@ -12,12 +12,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const hljsThemeLightLink = document.getElementById('hljs-theme-light');
     const hljsThemeDarkLink = document.getElementById('hljs-theme-dark');
     const rootElement = document.documentElement; // Get the <html> element
-    // New Direction Selectors
+    // Direction Selectors
     const textDirLtrBtn = document.getElementById('textDirLtrBtn');
     const textDirRtlBtn = document.getElementById('textDirRtlBtn');
     const codeDirLtrBtn = document.getElementById('codeDirLtrBtn');
     const codeDirRtlBtn = document.getElementById('codeDirRtlBtn');
-    const markdownToolbar = document.getElementById('markdown-toolbar'); // New Selector
+    const markdownToolbar = document.getElementById('markdown-toolbar');
+    // Count Display Selectors (New)
+    const charCountSpan = document.getElementById('char-count');
+    const wordCountSpan = document.getElementById('word-count');
+
 
     // --- State Variables ---
     let isAutoRenderEnabled = true; // Default state
@@ -33,6 +37,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 func.apply(this, args);
             }, delay);
         };
+    }
+
+    // --- Update Character/Word Counts --- (New Function)
+    function updateCounts() {
+        const text = markdownInput.value;
+        const charCount = text.length;
+        // Simple word count: split by whitespace, filter empty strings
+        const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+        // Handle case where input is only whitespace (trim results in empty string)
+        const wordCount = text.trim() === '' ? 0 : words.length;
+
+        if (charCountSpan) { // Check if element exists
+            charCountSpan.textContent = `Chars: ${charCount}`;
+        }
+        if (wordCountSpan) { // Check if element exists
+            wordCountSpan.textContent = `Words: ${wordCount}`;
+        }
     }
 
     // --- Render Markdown ---
@@ -121,8 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
             copyButton.innerHTML = '<i class="bi bi-clipboard"></i>'; // Use icon
             copyButton.title = 'Copy code to clipboard';
             copyButton.setAttribute('aria-label', 'Copy code to clipboard');
-            // REMOVED: copyButton.style.marginLeft = 'auto'; // Let CSS handle this
-            // REMOVED: copyButton.style.marginRight = '0.5rem'; // Let CSS handle this
 
             // Collapse Icon (rightmost in LTR, leftmost in RTL)
             const iconSpan = document.createElement('span');
@@ -130,7 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
             iconSpan.title = 'Toggle Collapse';
 
             // --- Append elements to header ---
-            // The order here matters for the DOM, but visual order is controlled by CSS direction/flex
             header.appendChild(langSpan);
             header.appendChild(copyButton);
             header.appendChild(iconSpan);
@@ -309,18 +327,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const url = prompt("Enter link URL:", "https://");
                 if (url) {
                     wrapSelection('[', `](${url})`, selectedText || 'link text');
+                } else { // If user cancels, don't change selection/text
+                    return;
                 }
                 break;
             case 'image':
                 const altText = prompt("Enter image description (alt text):", "");
+                // Check if altText prompt was cancelled (returns null)
+                if (altText === null) return;
                 const imgUrl = prompt("Enter image URL:", "https://");
-                if (imgUrl) { // Alt text can be empty
-                    // Images are typically on their own line, insert logic is simpler
-                    newText = `${textBefore}![${altText || ''}](${imgUrl})${textAfter}`;
-                    cursorPos = start + `![${altText || ''}](${imgUrl})`.length;
-                    markdownInput.value = newText;
-                    markdownInput.setSelectionRange(cursorPos, cursorPos);
-                }
+                // Check if imgUrl prompt was cancelled or empty
+                if (!imgUrl) return;
+                // Images are typically on their own line, insert logic is simpler
+                newText = `${textBefore}![${altText || ''}](${imgUrl})${textAfter}`;
+                cursorPos = start + `![${altText || ''}](${imgUrl})`.length;
+                markdownInput.value = newText;
+                markdownInput.setSelectionRange(cursorPos, cursorPos);
                 break;
             case 'h1':
                 insertAtLineStart('# ', 'Heading 1');
@@ -340,9 +362,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         markdownInput.focus(); // Keep focus on the textarea
-        // Trigger input event for auto-rendering
+        updateCounts(); // <<< UPDATE COUNTS AFTER APPLYING SYNTAX
+        // Trigger input event for auto-rendering if needed
         if (isAutoRenderEnabled) {
+            // Create and dispatch the event *after* updating the value and counts
             markdownInput.dispatchEvent(new Event('input', { bubbles: true }));
+        } else {
+            // If auto-render is off, we might still want to manually trigger a render
+            // if the user expects the preview to update after a toolbar action,
+            // or rely on them clicking the manual render button. For now, let's
+            // keep it simple and only dispatch the input event if auto-render is on.
         }
     }
 
@@ -352,6 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Markdown Input Event
     markdownInput.addEventListener('input', () => {
+        updateCounts(); // Update counts immediately on any input
         if (isAutoRenderEnabled) {
             debouncedRender();
         }
@@ -408,6 +438,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial Render (will also apply initial code direction via enhanceCodeBlocks)
     renderMarkdown();
+
+    // Initial Count Update (New)
+    updateCounts(); // Call updateCounts initially after potential initial render
 
     // Initial Layout
     toggleInputArea();

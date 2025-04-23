@@ -59,15 +59,10 @@ header {
 	height: 100%; /* Make sure h-100 works */
 }
 
-/* Style for Panel Headers (Placeholder and Controls) */
-.panel-header-placeholder,
+/* Style for Panel Headers (Toolbar and Controls) */
 .panel-header-controls {
 	/* Now applies to both toolbar and output controls */
 	min-height: var(--panel-header-height);
-	/* Add vertical padding to center content if needed, or rely on align-items */
-	/* padding-top: 0.25rem; */
-	/* padding-bottom: 0.25rem; */
-	/* Ensure flex alignment works */
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap; /* Allow wrapping on smaller screens */
@@ -79,17 +74,20 @@ header {
 }
 .panel-header-controls#markdown-toolbar {
 	justify-content: flex-start; /* Align toolbar buttons to the left */
-}
-/* Specific alignment for placeholder (if content added) */
-.panel-header-placeholder {
-	justify-content: flex-start;
+	/* Add bottom border to visually separate from textarea */
+	border-bottom: 1px solid var(--border-color);
+	/* Adjust padding slightly */
+	padding-bottom: 0.5rem !important;
 }
 
 #markdown-input {
 	font-family: monospace;
 	resize: none;
 	/* flex-grow-1 handles height within the flex column */
-	/* height: 100%; NO LONGER NEEDED */
+	/* Remove top border as the toolbar now has a bottom border */
+	border-top: none;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
 }
 
 #markdown-output {
@@ -99,7 +97,6 @@ header {
 	color: var(--body-color);
 	transition: background-color 0.3s ease, border-color 0.3s ease;
 	/* flex-grow-1 handles height */
-	/* height: 100%; NO LONGER NEEDED */
 }
 
 /* --- Text Direction Styling --- */
@@ -181,11 +178,7 @@ header {
 .code-block-header .language {
 	font-weight: bold;
 	text-transform: uppercase;
-	/* Push the buttons group to the visual end (right in LTR, left in RTL) */
-	/* margin-right: auto; in LTR, margin-left: auto; in RTL */
 	margin-inline-end: auto;
-	/* Ensure some space between buttons and language name in RTL */
-	/* margin-left: 0.5rem; in LTR, margin-right: 0.5rem; in RTL */
 	margin-inline-start: 0.5rem; /* Adjust as needed */
 }
 .code-block-header .collapse-icon {
@@ -204,15 +197,6 @@ header {
 .code-block-wrapper.collapsed .code-block-header .collapse-icon::before {
 	content: "+";
 }
-
-/* RTL Specific Header Adjustments -
-   Logical properties (margin-inline-*) handle most of this automatically.
-   The flex items reverse order due to direction: rtl on the wrapper.
-   margin-inline-end: auto on the language pushes the buttons left.
-   margin-inline-start: 0.5rem on the language adds space between buttons and language.
-*/
-/* No specific rules needed for copy-button or collapse-icon positioning here,
-   gap and margin-inline-* on language handle the layout */
 
 /* Code Block Pre/Code */
 .code-block-wrapper pre {
@@ -252,7 +236,6 @@ header {
 	padding: 0.15rem 0.35rem !important;
 	border: none;
 	line-height: 1.2;
-	/* No margin styles here - layout handled by flex container (.code-block-header) */
 }
 .copy-code-button:hover {
 	filter: brightness(90%);
@@ -262,6 +245,12 @@ header {
 }
 .copy-code-button .bi {
 	vertical-align: text-bottom;
+}
+
+/* --- Input Counts Display --- */
+#input-counts {
+	white-space: nowrap; /* Prevent counts from wrapping */
+	/* Additional styling if needed, but Bootstrap classes handle most */
 }
 
 /* --- Layout Adjustments --- */
@@ -328,17 +317,21 @@ header {
 	}
 
 	/* Adjust panel headers on small screens */
-	.panel-header-controls,
-	.panel-header-placeholder {
-		/* border-bottom: 1px solid var(--border-color); Ensure border remains */
-		/* justify-content: flex-start; Align left (already default due to flex-wrap) */
-		/* flex-wrap: wrap; Already added above */
+	.panel-header-controls {
 		min-height: auto; /* Allow height to adjust if wrapped */
 		height: auto;
 	}
-	/* Ensure toolbar border is consistent */
+	/* Ensure toolbar keeps its border */
 	#markdown-toolbar {
 		border-bottom: 1px solid var(--border-color);
 		padding-bottom: 0.5rem !important; /* Adjust padding when wrapped */
+	}
+	/* Ensure counts display doesn't cause issues when wrapping */
+	#input-counts {
+		/* Allow it to take full width if needed when wrapped */
+		margin-left: 0 !important; /* Override ms-auto */
+		width: 100%;
+		justify-content: flex-end; /* Keep counts aligned right */
+		padding-top: 0.25rem; /* Add a bit of space when wrapped */
 	}
 }
