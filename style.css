@@ -82,7 +82,7 @@ header {
 
 .code-block-header {
 	display: flex;
-	justify-content: space-between;
+	/* justify-content: space-between; <-- Removed, using margin auto on button */
 	align-items: center;
 	padding: 0.5rem 1rem;
 	background-color: var(--code-header-bg); /* Use variable */
@@ -99,6 +99,12 @@ header {
 	font-weight: bold;
 	text-transform: uppercase;
 	font-family: sans-serif;
+	margin-right: 1rem; /* Add some space after language */
+}
+
+.code-block-header .collapse-icon {
+	display: inline-flex; /* Helps alignment */
+	align-items: center;
 }
 
 .code-block-header .collapse-icon::before {
@@ -107,7 +113,7 @@ header {
 	font-weight: bold;
 	font-size: 1.2em;
 	line-height: 1;
-	margin-left: 0.5rem;
+	/* margin-left: 0.5rem; <-- Removed, spacing handled by button margin */
 	width: 1em;
 	text-align: center;
 }
@@ -151,37 +157,41 @@ header {
 	border-width: 0;
 }
 
-/* Copy Button Styling */
+/* Copy Button Styling (Revised) */
 .copy-code-button {
-	position: absolute;
-	top: 0.4rem;
-	right: 0.5rem;
-	z-index: 10;
-	opacity: 0;
-	transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out,
-		color 0.2s ease-in-out;
+	/* position: absolute; <-- REMOVE */
+	/* top: 0.4rem;       <-- REMOVE */
+	/* right: 0.5rem;      <-- REMOVE */
+	/* z-index: 10;        <-- REMOVE */
+	/* opacity: 0;         <-- REMOVE (button is now always visible) */
+	transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; /* Keep transition for feedback */
 	font-size: 0.75em !important;
 	padding: 0.15rem 0.35rem !important;
 	border: none;
 	line-height: 1.2;
+	/* Margins are now set inline via JS for positioning */
 	/* Use theme variables for base button colors if needed, but Bootstrap handles this */
 }
 
-.code-block-wrapper:hover .copy-code-button {
-	opacity: 0.7;
-}
+/* Remove the wrapper hover effect for opacity */
+/* .code-block-wrapper:hover .copy-code-button { */
+/* 	opacity: 0.7; <-- REMOVE */
+/* } */
 
 .copy-code-button:hover {
-	opacity: 1;
+	/* opacity: 1; <-- Opacity is always 1 now, maybe slightly change background */
+	filter: brightness(90%);
 }
 
 .copy-code-button.copied {
-	opacity: 1;
+	/* opacity: 1; <-- Opacity is always 1 */
 	/* Bootstrap success class handles colors */
+	filter: brightness(100%); /* Ensure it's full bright when copied */
 }
+
 /* Ensure icons in copy button align */
 .copy-code-button .bi {
-	vertical-align: text-bottom;
+	vertical-align: text-bottom; /* Keep this for good alignment */
 }
 
 /* --- Layout Adjustments --- */

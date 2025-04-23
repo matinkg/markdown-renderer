@@ -64,10 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Enhance Code Blocks (Add Copy Button, Collapse) ---
-    // (Keep the existing enhanceCodeBlocks function as it is)
     function enhanceCodeBlocks() {
         const processedPres = new Set();
         markdownOutput.querySelectorAll('pre').forEach((preElement) => {
+            // Keep the initial checks the same...
             if (processedPres.has(preElement) || preElement.parentElement.classList.contains('code-block-wrapper')) {
                 processedPres.add(preElement);
                 return;
@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
             wrapper.appendChild(preElement);
             processedPres.add(preElement);
 
+            // Determine language (keep this logic the same)
             let language = 'plaintext';
             const langClass = Array.from(codeElement.classList).find(cls => cls.startsWith('language-'));
             if (langClass) {
@@ -91,27 +92,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (!codeElement.className.includes('language-')) codeElement.classList.add('language-plaintext');
             }
 
+            // --- Create Header ---
             const header = document.createElement('div');
             header.classList.add('code-block-header');
+
+            // Language Span (left)
             const langSpan = document.createElement('span');
             langSpan.classList.add('language');
             langSpan.textContent = language;
-            const iconSpan = document.createElement('span');
-            iconSpan.classList.add('collapse-icon');
-            iconSpan.title = 'Toggle Collapse';
-            header.appendChild(langSpan);
-            header.appendChild(iconSpan);
-            wrapper.insertBefore(header, preElement);
 
+            // --- Create Copy Button ---
             const copyButton = document.createElement('button');
             copyButton.classList.add('btn', 'btn-secondary', 'btn-sm', 'copy-code-button');
             copyButton.innerHTML = '<i class="bi bi-clipboard"></i>'; // Use icon
             copyButton.title = 'Copy code to clipboard';
             copyButton.setAttribute('aria-label', 'Copy code to clipboard');
-            wrapper.appendChild(copyButton);
+            copyButton.style.marginLeft = 'auto'; // Push button towards the right, before the icon
+            copyButton.style.marginRight = '0.5rem'; // Add space before the collapse icon
 
+            // Collapse Icon (right)
+            const iconSpan = document.createElement('span');
+            iconSpan.classList.add('collapse-icon');
+            iconSpan.title = 'Toggle Collapse';
+
+            // --- Append elements to header in desired order ---
+            header.appendChild(langSpan);
+            header.appendChild(copyButton); // <<< Append copy button HERE (before icon)
+            header.appendChild(iconSpan);
+
+            // Insert header before the <pre> element
+            wrapper.insertBefore(header, preElement);
+
+            // --- Add Event Listeners (Keep these the same) ---
             copyButton.addEventListener('click', (e) => {
-                e.stopPropagation();
+                e.stopPropagation(); // Prevent header click/collapse when clicking button
                 const codeToCopy = codeElement.innerText;
                 navigator.clipboard.writeText(codeToCopy).then(() => {
                     copyButton.innerHTML = '<i class="bi bi-check-lg"></i>'; // Check icon
@@ -124,13 +138,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     }, 2000);
                 }).catch(err => {
                     console.error('Failed to copy code: ', err);
-                    copyButton.textContent = 'Error';
+                    // Use an error icon, Bootstrap icons recommended
+                    copyButton.innerHTML = '<i class="bi bi-x-octagon-fill text-danger"></i>';
                     setTimeout(() => { copyButton.innerHTML = '<i class="bi bi-clipboard"></i>'; }, 2000);
                 });
             });
 
-            header.addEventListener('click', () => {
-                wrapper.classList.toggle('collapsed');
+            header.addEventListener('click', (event) => { // Added event parameter
+                // Only collapse if the click wasn't on the button itself or inside it
+                if (!copyButton.contains(event.target)) {
+                    wrapper.classList.toggle('collapsed');
+                }
             });
         });
     }
