@@ -1,23 +1,27 @@
-/* Ensure columns take full height */
+/* Ensure columns take full height relative to viewport minus header/margins */
 .preview-container,
-#input-column,
-#output-column,
-#input-column > div, /* Ensure inner div takes height */
+#input-column > div, /* Target inner div for flex */
 #output-column > div {
-	/* Ensure inner div takes height */
+	/* Target inner div for height */
 	min-height: calc(
 		100vh - 100px
 	); /* Adjust 100px based on header/footer/margins */
 }
 
+/* Ensure textarea fills its flex container */
 #markdown-input {
 	font-family: monospace;
 	resize: none; /* Disable manual resize, rely on flexbox */
-	height: 100%; /* Redundant due to flex-grow-1 but good fallback */
+	/* height: 100% is handled by flex-grow-1, but added as fallback */
+	height: 100%;
+	/* Prevent disproportionate shrinking */
+	min-height: 200px;
 }
 
+/* Style the output area */
 #markdown-output {
 	background-color: #f8f9fa; /* Light background for output */
+	word-wrap: break-word; /* Prevent long words from overflowing */
 }
 
 /* --- Code Block Enhancements --- */
@@ -26,9 +30,9 @@
 .code-block-wrapper {
 	position: relative;
 	margin-bottom: 1rem; /* Spacing between code blocks */
-	background-color: #282c34; /* Default dark background consistent with many themes */
+	background-color: #282c34; /* Default dark background (matches github-dark highlightjs theme) */
 	border-radius: 0.3rem;
-	overflow: hidden; /* Needed for collapse transition */
+	overflow: hidden; /* Crucial for collapse transition and rounded corners */
 }
 
 /* Header for language and collapse toggle */
@@ -38,78 +42,96 @@
 	align-items: center;
 	padding: 0.5rem 1rem;
 	background-color: rgba(0, 0, 0, 0.2); /* Slightly darker header */
-	color: #abb2bf; /* Text color for header */
+	color: #abb2bf; /* Text color for header (adjust based on theme) */
 	font-size: 0.85em;
 	cursor: pointer;
 	user-select: none; /* Prevent text selection on header */
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Subtle separator */
 }
 
 .code-block-header .language {
 	font-weight: bold;
 	text-transform: uppercase;
+	font-family: sans-serif;
 }
 
+/* Collapse icon using pseudo-element */
 .code-block-header .collapse-icon::before {
-	content: "−"; /* Minus sign for expanded */
+	content: "−"; /* Minus sign for expanded state */
 	display: inline-block;
 	font-weight: bold;
+	font-size: 1.2em;
+	line-height: 1;
 	margin-left: 0.5rem;
+	width: 1em;
+	text-align: center;
 }
 
+/* Change icon when collapsed */
 .code-block-wrapper.collapsed .code-block-header .collapse-icon::before {
-	content: "+"; /* Plus sign for collapsed */
+	content: "+"; /* Plus sign for collapsed state */
 }
 
-/* Style the <pre> tag itself */
+/* Style the <pre> tag itself within the wrapper */
 .code-block-wrapper pre {
 	margin: 0; /* Remove default margin */
 	padding: 1rem; /* Add padding inside pre */
-	border-radius: 0 0 0.3rem 0.3rem; /* Round bottom corners */
-	overflow-x: auto; /* Add horizontal scroll if needed */
-	max-height: 600px; /* Or your preferred max height */
-	transition: max-height 0.3s ease-out, padding 0.3s ease-out; /* Smooth collapse */
+	border-radius: 0 0 0.3rem 0.3rem; /* Round bottom corners only */
+	overflow-x: auto; /* Add horizontal scroll if code lines are long */
+	max-height: 600px; /* Set a maximum height before collapsing/scrolling */
+	transition: max-height 0.3s ease-out, padding 0.3s ease-out,
+		border 0.3s ease-out; /* Smooth collapse animation */
+	border-top: none; /* Remove top border as header provides separation */
 }
 
-/* Style the <code> tag inside <pre> */
+/* Style the <code> tag inside <pre> (where highlight.js applies classes) */
 .code-block-wrapper pre code.hljs {
-	padding: 0; /* highlight.js might add padding, remove it */
-	background: none; /* Use wrapper background */
+	padding: 0 !important; /* Override highlight.js padding if any */
+	background: none !important; /* Use wrapper's background */
 	display: block; /* Ensure block display */
 	line-height: 1.5;
 }
 
-/* Collapsed state */
+/* Collapsed state styling */
 .code-block-wrapper.collapsed pre {
 	max-height: 0;
 	padding-top: 0;
 	padding-bottom: 0;
-	overflow: hidden; /* Hide content */
+	overflow: hidden; /* Hide content and scrollbars */
+	border-width: 0;
 }
 
 /* Copy Button Styling */
 .copy-code-button {
 	position: absolute;
-	top: 0.4rem;
-	right: 0.5rem;
-	z-index: 1; /* Above the header potentially */
-	opacity: 0.6;
-	transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
-	font-size: 0.8em !important; /* Override Bootstrap */
-	padding: 0.2rem 0.4rem !important;
+	top: 0.4rem; /* Adjust vertical position */
+	right: 0.5rem; /* Adjust horizontal position */
+	z-index: 10; /* Ensure button is above code content */
+	opacity: 0; /* Hidden by default */
+	transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out,
+		color 0.2s ease-in-out;
+	font-size: 0.75em !important; /* Smaller font size */
+	padding: 0.15rem 0.35rem !important; /* Smaller padding */
+	border: none;
+	line-height: 1.2;
 }
 
+/* Show copy button on wrapper hover */
 .code-block-wrapper:hover .copy-code-button {
-	opacity: 1;
+	opacity: 0.7; /* Slightly transparent until hovered directly */
 }
 
+/* Full opacity on button hover */
 .copy-code-button:hover {
-	background-color: #0d6efd; /* Bootstrap primary hover */
+	opacity: 1;
+	background-color: #0d6efd; /* Bootstrap primary */
 	color: white;
 }
 
+/* Styling for 'Copied!' state */
 .copy-code-button.copied {
-	background-color: #198754; /* Bootstrap success color */
-	color: white;
+	background-color: #198754 !important; /* Bootstrap success */
+	color: white !important;
 	opacity: 1;
 }
 
@@ -117,6 +139,7 @@
 #input-column.hidden {
 	display: none;
 }
+/* Ensure output takes full width when input is hidden */
 #output-column.full-width {
 	flex: 0 0 100%;
 	max-width: 100%;
@@ -124,36 +147,42 @@
 
 /* Fix potential Bootstrap table styling conflicts */
 #markdown-output table {
-	width: auto; /* Let markdown decide width initially */
+	/* Use Bootstrap table classes if available, otherwise provide defaults */
+	width: 100%; /* Make tables responsive by default */
+	max-width: 100%;
 	margin-bottom: 1rem;
+	border-collapse: collapse; /* Ensure borders connect */
+	background-color: #fff; /* White background for readability */
 }
-#markdown-output table th,
-#markdown-output table td {
-	border: 1px solid #dee2e6;
-	padding: 0.5rem;
+#markdown-output th,
+#markdown-output td {
+	border: 1px solid #dee2e6; /* Standard Bootstrap border color */
+	padding: 0.75rem; /* Standard Bootstrap padding */
+	vertical-align: top; /* Align content top */
 }
-#markdown-output table thead th {
+#markdown-output thead th {
 	vertical-align: bottom;
-	border-bottom: 2px solid #dee2e6;
+	border-bottom: 2px solid #dee2e6; /* Heavier border below header */
+	background-color: #e9ecef; /* Light grey background for header */
 }
 
-/* Basic responsive adjustments if needed beyond Bootstrap */
+/* Basic responsive adjustments */
 @media (max-width: 991.98px) {
-	/* Below lg breakpoint */
+	/* Below Bootstrap lg breakpoint */
 	.preview-container,
-	#input-column,
-	#output-column,
 	#input-column > div,
 	#output-column > div {
-		min-height: 50vh; /* Adjust height for stacked view */
-		height: auto;
+		/* Allow columns to stack naturally, adjust min-height for content */
+		min-height: auto;
+		/* Maybe a smaller min-height when stacked */
+		/* min-height: 40vh; */
 	}
+	/* Ensure textarea is reasonably sized when stacked */
 	#markdown-input {
-		min-height: 300px; /* Ensure minimum size when stacked */
+		min-height: 300px;
 	}
-	#output-column.full-width {
-		min-height: calc(
-			100vh - 100px
-		); /* Take full height when input hidden */
+	/* Ensure output takes reasonable height when input is hidden on small screens */
+	#output-column.full-width > div {
+		min-height: calc(100vh - 100px); /* Adjust if needed */
 	}
 }
