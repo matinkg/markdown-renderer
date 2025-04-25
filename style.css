@@ -382,7 +382,6 @@ html.full-height-mode .container-fluid {
 	display: flex;
 	flex-direction: column;
 	padding-top: 0 !important; /* Override default mt-3 */
-	margin-top: 0 !important; /* Override default mt-3 */
 	padding-bottom: 0.5rem; /* Some padding at the bottom */
 	min-height: 0; /* Prevent flex blowout */
 	overflow: hidden; /* Prevent container scroll */
@@ -450,7 +449,7 @@ html.full-height-mode #markdown-output {
 	overflow-y: auto; /* Enable vertical scroll IN THE ELEMENT */
 	resize: none; /* Ensure textarea cannot be resized manually */
 	border: none !important; /* Remove border, parent handles structure */
-	padding: 0.5rem !important; /* Adjust padding */
+	padding: 0.8rem !important; /* Adjust padding */
 	border-radius: 0 !important; /* Remove rounding */
 	background-color: transparent; /* Inherit background from column if needed, or keep distinct */
 }
