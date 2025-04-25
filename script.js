@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const hljsThemeLightLink = document.getElementById('hljs-theme-light');
     const hljsThemeDarkLink = document.getElementById('hljs-theme-dark');
     const rootElement = document.documentElement; // Get the <html> element
+    const fullHeightModeSwitch = document.getElementById('fullHeightModeSwitch'); // New selector
     // Direction Selectors
     const textDirLtrBtn = document.getElementById('textDirLtrBtn');
     const textDirRtlBtn = document.getElementById('textDirRtlBtn');
@@ -32,6 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTextDirection = 'ltr'; // Default
     let currentInlineCodeDirection = 'ltr'; // Default for `code`
     let currentCodeDirection = 'ltr'; // Default for ```code```
+    let isFullHeightModeEnabled = false; // Default state for new mode
+
 
     // --- Debounce function ---
     function debounce(func, delay) {
@@ -439,6 +442,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- START: Full Height Mode ---
+    function applyFullHeightMode(enabled) {
+        if (enabled) {
+            rootElement.classList.add('full-height-mode');
+        } else {
+            rootElement.classList.remove('full-height-mode');
+        }
+        // Optional: Trigger resize if layout changes affect internal components
+        // window.dispatchEvent(new Event('resize'));
+    }
+
+    function toggleFullHeightMode() {
+        isFullHeightModeEnabled = fullHeightModeSwitch.checked;
+        applyFullHeightMode(isFullHeightModeEnabled);
+        localStorage.setItem('markdownRendererFullHeightMode', isFullHeightModeEnabled);
+    }
+    // --- END: Full Height Mode ---
+
 
     // --- Event Listeners Setup ---
     const debouncedRender = debounce(renderMarkdown, 300);
@@ -454,6 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
     themeSwitch.addEventListener('change', toggleTheme);
     autoRenderSwitch.addEventListener('change', updateAutoRenderState);
     manualRenderButton.addEventListener('click', renderMarkdown);
+    fullHeightModeSwitch.addEventListener('change', toggleFullHeightMode); // Add listener
 
     // Direction Button Events
     textDirLtrBtn.addEventListener('click', () => setTextDirection('ltr'));
@@ -490,35 +512,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Initial Setup on Load ---
 
+    // Theme
     const savedTheme = localStorage.getItem('markdownRendererTheme') || 'dark';
     applyTheme(savedTheme);
     themeSwitch.checked = (savedTheme === 'dark');
 
+    // Auto Render
     const savedAutoRender = localStorage.getItem('markdownRendererAutoRender');
     isAutoRenderEnabled = savedAutoRender !== null ? (savedAutoRender === 'true') : true;
     autoRenderSwitch.checked = isAutoRenderEnabled;
-    updateAutoRenderState();
+    updateAutoRenderState(); // Applies state
 
+    // Text Direction
     const savedTextDir = localStorage.getItem('markdownRendererTextDir') || 'ltr';
-    setTextDirection(savedTextDir);
+    setTextDirection(savedTextDir); // Applies state
 
-    // -- START: Load Inline Code Direction --
+    // Inline Code Direction
     const savedInlineCodeDir = localStorage.getItem('markdownRendererInlineCodeDir') || 'ltr';
-    setInlineCodeDirection(savedInlineCodeDir); // Set state and apply to any initial content
-    // -- END: Load Inline Code Direction --
+    setInlineCodeDirection(savedInlineCodeDir); // Applies state
 
+    // Code Block Direction
     const savedCodeDir = localStorage.getItem('markdownRendererCodeDir') || 'ltr'; // For ``` blocks
-    setCodeDirection(savedCodeDir); // Set state and apply to any initial content
+    setCodeDirection(savedCodeDir); // Applies state
 
+    // Full Height Mode (New)
+    const savedFullHeightMode = localStorage.getItem('markdownRendererFullHeightMode');
+    isFullHeightModeEnabled = savedFullHeightMode === 'true'; // Default false if null/not 'true'
+    fullHeightModeSwitch.checked = isFullHeightModeEnabled;
+    applyFullHeightMode(isFullHeightModeEnabled); // Apply initial state
+
+    // Input Content
     const savedInput = localStorage.getItem('markdownInputContent');
     if (savedInput) {
         markdownInput.value = savedInput;
     }
 
+    // Apply initial layout states AFTER loading all preferences
     toggleInputArea();
     renderMarkdown(); // Initial render (will apply all loaded directions)
     updateCounts();
 
+    // Save input content periodically and on close
     markdownInput.addEventListener('input', debounce(() => {
         localStorage.setItem('markdownInputContent', markdownInput.value);
     }, 1000));

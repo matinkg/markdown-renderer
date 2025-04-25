@@ -62,7 +62,7 @@ header {
 
 /* Input/Output areas */
 .preview-container {
-	min-height: calc(100vh - 100px);
+	min-height: calc(100vh - 100px); /* Default min height */
 	align-items: stretch;
 }
 #input-column > .h-100,
@@ -87,7 +87,7 @@ header {
 
 #markdown-input {
 	font-family: monospace;
-	resize: none;
+	resize: none; /* Changed from none to vertical by default maybe? Re-setting to none */
 }
 
 #markdown-output {
@@ -135,7 +135,7 @@ header {
 	font-size: 85%;
 	white-space: break-spaces; /* Allow breaking */
 	background-color: var(--inline-code-bg); /* optional */
-	/* color: var(--inline-code-color) */; /* optional */
+	/* color: var(--inline-code-color) */ /* optional */
 	border-radius: 6px;
 	display: inline; /* Ensure it remains inline */
 	unicode-bidi: embed; /* Needed for direction */
@@ -229,7 +229,7 @@ header {
 	padding: 1rem;
 	border-radius: 0 0 0.3rem 0.3rem;
 	overflow-x: auto;
-	max-height: 600px;
+	max-height: 600px; /* Default max height */
 	transition: max-height 0.3s ease-out, padding 0.3s ease-out,
 		border 0.3s ease-out;
 	border-top: none;
@@ -316,6 +316,7 @@ header {
 
 /* --- Responsive --- */
 @media (max-width: 991.98px) {
+	/* Default responsive behavior (non-full-height mode) */
 	.preview-container,
 	#input-column > .h-100,
 	#output-column > .h-100 {
@@ -325,15 +326,15 @@ header {
 	#markdown-input,
 	#markdown-output {
 		min-height: 300px;
-		flex-grow: 0;
+		flex-grow: 0; /* Don't grow by default on small screens */
 	}
 
 	#output-column.full-width > .h-100 {
 		min-height: calc(100vh - 100px);
-		height: calc(100vh - 100px);
-		#markdown-output {
-			flex-grow: 1;
-		}
+		height: calc(100vh - 100px); /* Approximate height when input hidden */
+	}
+	#output-column.full-width > .h-100 #markdown-output {
+		flex-grow: 1; /* Allow output to grow when input is hidden */
 	}
 
 	header {
@@ -362,3 +363,158 @@ header {
 	z-index: 1; /* Bring active button slightly forward */
 	/* Bootstrap's default active styling is usually sufficient */
 }
+
+/* --- START: Full Height Mode Styles --- */
+html.full-height-mode {
+	height: 100vh; /* Use viewport height */
+	overflow-y: hidden; /* Prevent html scroll */
+}
+
+html.full-height-mode body {
+	height: 100vh; /* Full viewport height */
+	overflow-y: hidden; /* Prevent body scroll */
+	display: flex; /* Use flexbox for body */
+	flex-direction: column; /* Stack container vertically */
+}
+
+html.full-height-mode .container-fluid {
+	flex-grow: 1; /* Make container take remaining height */
+	display: flex;
+	flex-direction: column;
+	padding-top: 0 !important; /* Override default mt-3 */
+	margin-top: 0 !important; /* Override default mt-3 */
+	padding-bottom: 0.5rem; /* Some padding at the bottom */
+	min-height: 0; /* Prevent flex blowout */
+	overflow: hidden; /* Prevent container scroll */
+}
+
+html.full-height-mode header {
+	flex-shrink: 0; /* Prevent header from shrinking */
+	margin-bottom: 0.5rem !important; /* Reduce margin in full height mode */
+	padding-bottom: 0.5rem !important; /* Slightly reduce padding */
+}
+
+html.full-height-mode .row.preview-container {
+	flex-grow: 1; /* Make the row take remaining vertical space */
+	min-height: 0; /* Override default min-height & prevent flex blowout */
+	height: 100%; /* Take full height of flex parent */
+	overflow: hidden; /* Prevent row scroll */
+	margin-left: 0; /* Remove default row gutters */
+	margin-right: 0;
+	gap: 0; /* Override g-3 */
+}
+
+html.full-height-mode #input-column,
+html.full-height-mode #output-column {
+	/* Columns already stretch via Bootstrap row, but ensure they handle inner content */
+	height: 100%; /* Take full height of the row */
+	overflow: hidden; /* Prevent column scroll */
+	padding-left: 0.5rem !important; /* Adjust padding */
+	padding-right: 0.5rem !important; /* Adjust padding */
+	margin-bottom: 0; /* Reset any bottom margin */
+}
+html.full-height-mode #input-column:not(.hidden) + #output-column {
+	border-left: 1px solid var(--border-color); /* Add divider */
+}
+html.full-height-mode #output-column.full-width {
+	border-left: none; /* No divider when full width */
+}
+
+html.full-height-mode #input-column > .h-100,
+html.full-height-mode #output-column > .h-100 {
+	/* These are the direct flex children inside columns */
+	height: 100%;
+	min-height: 0; /* Override potential min-height issues */
+	display: flex;
+	flex-direction: column;
+}
+
+html.full-height-mode #markdown-toolbar,
+html.full-height-mode #direction-controls-container {
+	flex-shrink: 0; /* Prevent panel headers from shrinking */
+	min-height: 0; /* Reset min-height */
+	height: auto; /* Allow wrapping */
+	padding-bottom: 0.5rem !important; /* Consistent padding */
+	margin-bottom: 0.5rem !important; /* Space before content */
+	border-bottom: 1px solid var(--border-color); /* Add separator */
+}
+html.full-height-mode #direction-controls-container {
+	margin-bottom: 0.5rem !important; /* Consistent spacing */
+}
+
+html.full-height-mode #markdown-input,
+html.full-height-mode #markdown-output {
+	flex-grow: 1; /* Take remaining space in the column */
+	height: 100%; /* Fill the flex space */
+	min-height: 0; /* Override min-height */
+	overflow-y: auto; /* Enable vertical scroll IN THE ELEMENT */
+	resize: none; /* Ensure textarea cannot be resized manually */
+	border: none !important; /* Remove border, parent handles structure */
+	padding: 0.5rem !important; /* Adjust padding */
+	border-radius: 0 !important; /* Remove rounding */
+	background-color: transparent; /* Inherit background from column if needed, or keep distinct */
+}
+html.full-height-mode #markdown-output {
+	background-color: var(--output-bg); /* Keep output bg distinct */
+}
+html.full-height-mode #markdown-input {
+	background-color: var(--body-bg); /* Input bg same as body */
+}
+
+/* Reset responsive overrides when in full-height mode */
+@media (max-width: 991.98px) {
+	/* These styles apply ONLY when full-height-mode is active AND screen is small */
+	html.full-height-mode .preview-container,
+	html.full-height-mode #input-column > .h-100,
+	html.full-height-mode #output-column > .h-100 {
+		min-height: 0; /* Ensure no min-height conflicts */
+		height: 100%; /* Ensure height is still 100% of parent */
+	}
+
+	html.full-height-mode #markdown-input,
+	html.full-height-mode #markdown-output {
+		min-height: 0; /* Ensure no min-height conflicts */
+		flex-grow: 1; /* Ensure they still grow */
+		height: 100%;
+	}
+
+	html.full-height-mode #output-column.full-width > .h-100 {
+		min-height: 0; /* Ensure no min-height conflicts */
+		height: 100%; /* Ensure height is still 100% */
+	}
+	html.full-height-mode .container-fluid {
+		padding-top: 0 !important; /* Reset padding */
+		padding-bottom: 0.5rem;
+	}
+	/* Stack columns vertically on small screens in full height mode */
+	html.full-height-mode .row.preview-container {
+		flex-direction: column;
+		height: auto; /* Let content determine height in column mode */
+		flex-grow: 1;
+	}
+	html.full-height-mode #input-column,
+	html.full-height-mode #output-column {
+		height: 50vh; /* Split height roughly, adjust as needed */
+		flex-grow: 1; /* Allow flex grow */
+		width: 100%; /* Take full width */
+		max-width: 100%;
+		flex-basis: auto;
+		padding-left: 0.5rem !important;
+		padding-right: 0.5rem !important;
+		border-left: none; /* Remove divider in vertical mode */
+	}
+	html.full-height-mode #input-column:not(.hidden) {
+		border-bottom: 1px solid var(--border-color); /* Add divider between stacked columns */
+	}
+
+	html.full-height-mode #input-column.hidden {
+		height: 0; /* Collapse hidden column */
+		padding: 0 !important;
+		border-bottom: none;
+	}
+	html.full-height-mode #output-column.full-width {
+		height: 100%; /* Take full available height when input hidden */
+		border-left: none;
+	}
+}
+/* --- END: Full Height Mode Styles --- */
