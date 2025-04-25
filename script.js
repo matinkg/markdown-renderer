@@ -15,8 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Direction Selectors
     const textDirLtrBtn = document.getElementById('textDirLtrBtn');
     const textDirRtlBtn = document.getElementById('textDirRtlBtn');
-    const codeDirLtrBtn = document.getElementById('codeDirLtrBtn');
-    const codeDirRtlBtn = document.getElementById('codeDirRtlBtn');
+    // -- START: Inline Code Direction Selectors --
+    const inlineCodeDirLtrBtn = document.getElementById('inlineCodeDirLtrBtn');
+    const inlineCodeDirRtlBtn = document.getElementById('inlineCodeDirRtlBtn');
+    // -- END: Inline Code Direction Selectors --
+    const codeDirLtrBtn = document.getElementById('codeDirLtrBtn'); // For ``` blocks
+    const codeDirRtlBtn = document.getElementById('codeDirRtlBtn'); // For ``` blocks
     const markdownToolbar = document.getElementById('markdown-toolbar');
     // Count Display Selectors (New)
     const charCountSpan = document.getElementById('char-count');
@@ -26,7 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- State Variables ---
     let isAutoRenderEnabled = true; // Default state
     let currentTextDirection = 'ltr'; // Default
-    let currentCodeDirection = 'ltr'; // Default
+    let currentInlineCodeDirection = 'ltr'; // Default for `code`
+    let currentCodeDirection = 'ltr'; // Default for ```code```
 
     // --- Debounce function ---
     function debounce(func, delay) {
@@ -39,19 +44,17 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // --- Update Character/Word Counts --- (New Function)
+    // --- Update Character/Word Counts ---
     function updateCounts() {
         const text = markdownInput.value;
         const charCount = text.length;
-        // Simple word count: split by whitespace, filter empty strings
         const words = text.trim().split(/\s+/).filter(word => word.length > 0);
-        // Handle case where input is only whitespace (trim results in empty string)
         const wordCount = text.trim() === '' ? 0 : words.length;
 
-        if (charCountSpan) { // Check if element exists
+        if (charCountSpan) {
             charCountSpan.textContent = `Chars: ${charCount}`;
         }
-        if (wordCountSpan) { // Check if element exists
+        if (wordCountSpan) {
             wordCountSpan.textContent = `Words: ${wordCount}`;
         }
     }
@@ -60,18 +63,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderMarkdown() {
         const markdownText = markdownInput.value;
 
-        // Configure marked (WITHOUT the highlight option)
         marked.setOptions({
-            breaks: true, // Convert single line breaks to <br>
-            gfm: true,    // Enable GitHub Flavored Markdown
+            breaks: true,
+            gfm: true,
         });
 
-        // Parse Markdown
         try {
             const html = marked.parse(markdownText);
-            markdownOutput.innerHTML = html; // Add the generated HTML to the output area
+            markdownOutput.innerHTML = html;
 
-            // Apply Syntax Highlighting AFTER content is in DOM
+            // Apply direction to inline code elements FIRST
+            applyInlineCodeDirectionToElements(currentInlineCodeDirection);
+
+            // Apply Syntax Highlighting to BLOCK code
             markdownOutput.querySelectorAll('pre code').forEach((block) => {
                 if (!block.classList.contains('hljs')) {
                     try {
@@ -83,10 +87,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // Enhance Code Blocks (Add Copy Button, Collapse, etc.)
+            // Enhance Code Blocks (``` ```) - Adds wrapper, copy button etc.
             enhanceCodeBlocks();
 
-            // Ensure code blocks have the correct direction attribute after rendering
+            // Ensure block code wrappers have the correct direction attribute after rendering/enhancing
             applyCodeDirectionToBlocks(currentCodeDirection);
 
 
@@ -96,116 +100,92 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Enhance Code Blocks (Add Copy Button, Collapse) ---
+    // --- Enhance Code Blocks (``` ``` only) ---
     function enhanceCodeBlocks() {
         const processedPres = new Set();
         markdownOutput.querySelectorAll('pre').forEach((preElement) => {
-            // Stop if this <pre> is already inside a wrapper (prevent reprocessing)
             if (processedPres.has(preElement) || preElement.parentElement.classList.contains('code-block-wrapper')) {
-                processedPres.add(preElement); // Still mark as processed even if skipped
+                processedPres.add(preElement);
                 return;
             }
             const codeElement = preElement.querySelector('code');
-            if (!codeElement) return; // Skip if no <code> inside <pre>
+            if (!codeElement) return;
 
             // --- Create Wrapper ---
             const wrapper = document.createElement('div');
             wrapper.classList.add('code-block-wrapper');
-            // Apply current code direction when creating the wrapper
+            // Apply current BLOCK code direction when creating the wrapper
             wrapper.dataset.codeDirection = currentCodeDirection;
 
-            // Replace <pre> with wrapper, then append <pre> to wrapper
             preElement.parentNode.insertBefore(wrapper, preElement);
             wrapper.appendChild(preElement);
-            processedPres.add(preElement); // Mark this <pre> as processed
+            processedPres.add(preElement);
 
             // --- Determine Language ---
             let language = 'plaintext';
-            // Prioritize 'language-xyz' class
             const langClass = Array.from(codeElement.classList).find(cls => cls.startsWith('language-'));
             if (langClass) {
                 language = langClass.replace('language-', '');
             } else {
-                // Fallback: check if any class is a valid hljs language alias
                 const potentialLangClass = Array.from(codeElement.classList).find(cls => hljs.getLanguage(cls));
                 if (potentialLangClass) {
                     language = potentialLangClass;
-                    // Add the official 'language-' class for consistency if missing
                     if (!codeElement.classList.contains(`language-${language}`)) {
                         codeElement.classList.add(`language-${language}`);
                     }
                 } else if (!codeElement.className.includes('language-')) {
-                    // If no language detected, add 'language-plaintext'
                     codeElement.classList.add('language-plaintext');
                 }
             }
-            // Ensure 'hljs' class is present for styling, even if highlighting fails
             if (!codeElement.classList.contains('hljs')) {
                 codeElement.classList.add('hljs');
             }
-
 
             // --- Create Header ---
             const header = document.createElement('div');
             header.classList.add('code-block-header');
 
-            // Language Span
             const langSpan = document.createElement('span');
             langSpan.classList.add('language');
             langSpan.textContent = language;
 
-            // --- Create Copy Button ---
             const copyButton = document.createElement('button');
             copyButton.classList.add('btn', 'btn-secondary', 'btn-sm', 'copy-code-button');
-            copyButton.innerHTML = '<i class="bi bi-clipboard"></i>'; // Bootstrap clipboard icon
+            copyButton.innerHTML = '<i class="bi bi-clipboard"></i>';
             copyButton.title = 'Copy code to clipboard';
             copyButton.setAttribute('aria-label', 'Copy code to clipboard');
 
-            // Collapse Icon Span (for styling the +/-)
             const iconSpan = document.createElement('span');
             iconSpan.classList.add('collapse-icon');
             iconSpan.title = 'Toggle Collapse';
 
-            // --- Append elements to header ---
-            // Order depends on desired layout (e.g., LTR/RTL handling in CSS)
-            header.appendChild(langSpan);   // Language on the left (in LTR)
-            header.appendChild(copyButton); // Copy button next
-            header.appendChild(iconSpan);   // Collapse icon on the right (in LTR)
+            header.appendChild(langSpan);
+            header.appendChild(copyButton);
+            header.appendChild(iconSpan);
 
-            // Insert header *before* the <pre> element inside the wrapper
             wrapper.insertBefore(header, preElement);
 
-            // --- NO LONGER COLLAPSED BY DEFAULT ---
-
-            // --- Add Event Listeners ---
-
-            // Copy Button Click
+            // --- Event Listeners ---
             copyButton.addEventListener('click', (e) => {
-                e.stopPropagation(); // IMPORTANT: Prevent header click event
-                const codeToCopy = codeElement.innerText; // Get text content
+                e.stopPropagation();
+                const codeToCopy = codeElement.innerText;
                 navigator.clipboard.writeText(codeToCopy).then(() => {
-                    // Success feedback
-                    copyButton.innerHTML = '<i class="bi bi-check-lg"></i>'; // Check icon
+                    copyButton.innerHTML = '<i class="bi bi-check-lg"></i>';
                     copyButton.classList.add('copied', 'btn-success');
                     copyButton.classList.remove('btn-secondary');
                     setTimeout(() => {
-                        copyButton.innerHTML = '<i class="bi bi-clipboard"></i>'; // Restore icon
+                        copyButton.innerHTML = '<i class="bi bi-clipboard"></i>';
                         copyButton.classList.remove('copied', 'btn-success');
                         copyButton.classList.add('btn-secondary');
-                    }, 2000); // Revert after 2 seconds
+                    }, 2000);
                 }).catch(err => {
-                    // Error feedback
                     console.error('Failed to copy code: ', err);
-                    // Optional: Provide visual feedback on error
-                    copyButton.innerHTML = '<i class="bi bi-x-octagon-fill text-danger"></i>'; // Error icon
+                    copyButton.innerHTML = '<i class="bi bi-x-octagon-fill text-danger"></i>';
                     setTimeout(() => { copyButton.innerHTML = '<i class="bi bi-clipboard"></i>'; }, 2000);
                 });
             });
 
-            // Header Click for Collapse/Expand
             header.addEventListener('click', (event) => {
-                // Ensure clicking the copy button itself doesn't trigger collapse
-                // Check if the click target IS the copy button OR is INSIDE the copy button
                 if (!copyButton.contains(event.target) && event.target !== copyButton) {
                     wrapper.classList.toggle('collapsed');
                 }
@@ -227,29 +207,25 @@ document.addEventListener('DOMContentLoaded', () => {
             outputColumn.classList.remove('col-lg-6');
             outputColumn.classList.add('full-width', 'col-lg-12');
         }
-        // Re-trigger layout/render if needed, especially if scrollbars change
-        // window.dispatchEvent(new Event('resize')); // Might be overkill
     }
 
     // --- Theme Switching ---
     function applyTheme(theme) { // theme = 'light' or 'dark'
         rootElement.setAttribute('data-bs-theme', theme);
         if (theme === 'dark') {
-            themeSwitchLabel.innerHTML = '<i class="bi bi-sun-fill"></i>'; // Sun icon for dark mode
+            themeSwitchLabel.innerHTML = '<i class="bi bi-sun-fill"></i>';
             hljsThemeDarkLink.removeAttribute('disabled');
             hljsThemeLightLink.setAttribute('disabled', 'true');
         } else {
-            themeSwitchLabel.innerHTML = '<i class="bi bi-moon-stars-fill"></i>'; // Moon icon for light mode
+            themeSwitchLabel.innerHTML = '<i class="bi bi-moon-stars-fill"></i>';
             hljsThemeLightLink.removeAttribute('disabled');
             hljsThemeDarkLink.setAttribute('disabled', 'true');
         }
-        localStorage.setItem('markdownRendererTheme', theme); // Save preference
-        // Optionally re-render if theme significantly changes layout or code block appearance needed immediate update
-        // renderMarkdown(); // Consider if needed, might cause flicker
+        localStorage.setItem('markdownRendererTheme', theme);
     }
 
     function toggleTheme() {
-        const currentTheme = rootElement.getAttribute('data-bs-theme') || 'light'; // Ensure default
+        const currentTheme = rootElement.getAttribute('data-bs-theme') || 'light';
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         applyTheme(newTheme);
     }
@@ -257,46 +233,63 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Auto Render Control ---
     function updateAutoRenderState() {
         isAutoRenderEnabled = autoRenderSwitch.checked;
-        manualRenderButton.disabled = isAutoRenderEnabled; // Disable button if auto is on
-        localStorage.setItem('markdownRendererAutoRender', isAutoRenderEnabled); // Save preference
-        // If switching TO auto-render, render immediately
+        manualRenderButton.disabled = isAutoRenderEnabled;
+        localStorage.setItem('markdownRendererAutoRender', isAutoRenderEnabled);
         if (isAutoRenderEnabled) {
             renderMarkdown();
         }
     }
 
     // --- Text Direction Control ---
-    function setTextDirection(direction) { // 'ltr' or 'rtl'
+    function setTextDirection(direction) {
         currentTextDirection = direction;
-        markdownOutput.dataset.textDirection = direction; // Apply data attribute for CSS
-        localStorage.setItem('markdownRendererTextDir', direction); // Save preference
-
-        // Update button active state
+        markdownOutput.dataset.textDirection = direction;
+        localStorage.setItem('markdownRendererTextDir', direction);
         textDirLtrBtn.classList.toggle('active', direction === 'ltr');
         textDirRtlBtn.classList.toggle('active', direction === 'rtl');
-        // No re-render needed, CSS handles this
     }
 
-    // --- Code Block Direction Control ---
+    // --- START: Inline Code Direction Control ---
+    function applyInlineCodeDirectionToElements(direction) {
+        // Selects <code> elements NOT inside <pre> elements
+        markdownOutput.querySelectorAll('code:not(pre code)').forEach(inlineCode => {
+            inlineCode.dataset.inlineCodeDirection = direction; // Apply data attribute for CSS
+        });
+    }
+
+    function setInlineCodeDirection(direction) {
+        currentInlineCodeDirection = direction;
+        applyInlineCodeDirectionToElements(direction); // Apply to all existing inline code elements
+        localStorage.setItem('markdownRendererInlineCodeDir', direction); // Save preference
+
+        // Update button active state
+        inlineCodeDirLtrBtn.classList.toggle('active', direction === 'ltr');
+        inlineCodeDirRtlBtn.classList.toggle('active', direction === 'rtl');
+        // CSS handles the visual direction change based on the data attribute
+    }
+    // --- END: Inline Code Direction Control ---
+
+
+    // --- Code Block (``` ```) Direction Control ---
     function applyCodeDirectionToBlocks(direction) {
-        // Apply to all existing wrappers
+        // Apply only to the wrappers created by enhanceCodeBlocks
         markdownOutput.querySelectorAll('.code-block-wrapper').forEach(wrapper => {
             wrapper.dataset.codeDirection = direction; // Apply data attribute for CSS
         });
     }
 
-    function setCodeDirection(direction) { // 'ltr' or 'rtl'
+    function setCodeDirection(direction) {
         currentCodeDirection = direction;
-        applyCodeDirectionToBlocks(direction); // Apply to all existing code blocks immediately
+        applyCodeDirectionToBlocks(direction); // Apply to all existing code block wrappers immediately
         localStorage.setItem('markdownRendererCodeDir', direction); // Save preference
 
         // Update button active state
         codeDirLtrBtn.classList.toggle('active', direction === 'ltr');
         codeDirRtlBtn.classList.toggle('active', direction === 'rtl');
-        // No re-render needed, CSS handles this (state is stored for new blocks)
     }
 
     // --- Markdown Toolbar Functionality ---
+    // (No changes needed in applyMarkdownSyntax itself)
     function applyMarkdownSyntax(syntaxType) {
         const start = markdownInput.selectionStart;
         const end = markdownInput.selectionEnd;
@@ -304,20 +297,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const textBefore = markdownInput.value.substring(0, start);
         const textAfter = markdownInput.value.substring(end);
         let newText = '';
-        let cursorPos = start; // Default cursor position after insertion
+        let cursorPos = start;
 
         const wrapSelection = (beforeSyntax, afterSyntax, placeholder = '') => {
             if (selectedText) {
                 newText = `${textBefore}${beforeSyntax}${selectedText}${afterSyntax}${textAfter}`;
-                // Position cursor after the closing syntax
                 cursorPos = start + beforeSyntax.length + selectedText.length + afterSyntax.length;
             } else {
                 newText = `${textBefore}${beforeSyntax}${placeholder}${afterSyntax}${textAfter}`;
-                // Position cursor inside the syntax, selecting the placeholder
                 cursorPos = start + beforeSyntax.length;
-                markdownInput.value = newText; // Update value first
-                markdownInput.setSelectionRange(cursorPos, cursorPos + placeholder.length); // Select placeholder
-                return; // Exit early as selection is set
+                markdownInput.value = newText;
+                markdownInput.setSelectionRange(cursorPos, cursorPos + placeholder.length);
+                return;
             }
             markdownInput.value = newText;
             markdownInput.setSelectionRange(cursorPos, cursorPos);
@@ -325,12 +316,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const insertAtLineStart = (prefix, placeholder = '') => {
             let currentLineStart = textBefore.lastIndexOf('\n') + 1;
-            let indentedPrefix = prefix; // Handle existing list/quote indentation later if needed
+            let indentedPrefix = prefix;
 
-            // If selection spans multiple lines, prefix each line
             if (selectedText && selectedText.includes('\n')) {
                 const lines = selectedText.split('\n');
-                // Determine the start of the first selected line
                 const firstSelectedLineStart = textBefore.lastIndexOf('\n') + 1;
                 const textBeforeSelectionStart = markdownInput.value.substring(0, firstSelectedLineStart);
                 const textAfterSelectionEnd = textAfter;
@@ -338,31 +327,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 const prefixedLines = lines.map(line => `${indentedPrefix}${line}`).join('\n');
                 newText = `${textBeforeSelectionStart}${prefixedLines}${textAfterSelectionEnd}`;
 
-                cursorPos = end + (lines.length * indentedPrefix.length); // Approx end position
+                cursorPos = end + (lines.length * indentedPrefix.length);
                 markdownInput.value = newText;
-                // Select the modified block
                 markdownInput.setSelectionRange(firstSelectedLineStart + indentedPrefix.length, cursorPos);
 
-            } else { // Single line selection or no selection
+            } else {
                 const textBeforeLine = markdownInput.value.substring(0, currentLineStart);
-                const currentLineContent = markdownInput.value.substring(currentLineStart).split('\n')[0]; // Get full current line
+                const currentLineContent = markdownInput.value.substring(currentLineStart).split('\n')[0];
 
-                if (selectedText) { // Single line selection exists
+                if (selectedText) {
                     newText = `${textBeforeLine}${indentedPrefix}${selectedText}${textAfter}`;
-                    cursorPos = start + indentedPrefix.length; // Start of selection + prefix
-                    const selectionEndPos = end + indentedPrefix.length; // End of selection + prefix
+                    cursorPos = start + indentedPrefix.length;
+                    const selectionEndPos = end + indentedPrefix.length;
                     markdownInput.value = newText;
-                    markdownInput.setSelectionRange(cursorPos, selectionEndPos); // Keep selection
-                } else { // No selection, insert prefix and placeholder at current line start
+                    markdownInput.setSelectionRange(cursorPos, selectionEndPos);
+                } else {
                     newText = `${textBeforeLine}${indentedPrefix}${placeholder}${markdownInput.value.substring(currentLineStart)}`;
                     cursorPos = currentLineStart + indentedPrefix.length;
                     markdownInput.value = newText;
-                    markdownInput.setSelectionRange(cursorPos, cursorPos + placeholder.length); // Select placeholder
+                    markdownInput.setSelectionRange(cursorPos, cursorPos + placeholder.length);
                 }
             }
         };
 
-        // Helper specifically for Ordered List multi-line prefixing
         const insertOrderedListPrefix = (placeholder = 'List item') => {
             let currentLineStart = textBefore.lastIndexOf('\n') + 1;
             let prefixNum = 1;
@@ -376,11 +363,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const prefixedLines = lines.map((line, index) => `${index + 1}. ${line}`).join('\n');
                 newText = `${textBeforeSelectionStart}${prefixedLines}${textAfterSelectionEnd}`;
 
-                cursorPos = end + (lines.length * 3) + (String(lines.length).length - 1); // Approximation
+                cursorPos = end + (lines.length * 3) + (String(lines.length).length - 1);
                 markdownInput.value = newText;
-                markdownInput.setSelectionRange(firstSelectedLineStart + 3, cursorPos); // Select modified block
+                markdownInput.setSelectionRange(firstSelectedLineStart + 3, cursorPos);
             } else {
-                // For single line or no selection, use the simple prefix function
                 insertAtLineStart(`${prefixNum}. `, selectedText || placeholder);
             }
         };
@@ -388,23 +374,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Syntax Application Logic ---
         switch (syntaxType) {
-            case 'bold':
-                wrapSelection('**', '**', 'bold text');
-                break;
-            case 'italic':
-                wrapSelection('*', '*', 'italic text');
-                break;
-            case 'strikethrough':
-                wrapSelection('~~', '~~', 'strikethrough');
-                break;
-            case 'inline-code':
-                wrapSelection('`', '`', 'code');
-                break;
+            case 'bold': wrapSelection('**', '**', 'bold text'); break;
+            case 'italic': wrapSelection('*', '*', 'italic text'); break;
+            case 'strikethrough': wrapSelection('~~', '~~', 'strikethrough'); break;
+            case 'inline-code': wrapSelection('`', '`', 'code'); break;
             case 'link':
                 const url = prompt("Enter link URL:", "https://");
-                if (url !== null && url.trim() !== "") { // Proceed if URL is entered
+                if (url !== null && url.trim() !== "") {
                     wrapSelection('[', `](${url})`, selectedText || 'link text');
-                } else { return; } // Don't change if prompt cancelled or empty
+                } else { return; }
                 break;
             case 'code-block':
                 const language = prompt("Enter code language (optional):", "");
@@ -415,15 +393,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (selectedText) {
                     newText = `${textBefore}${beforeBlock}${selectedText}${afterBlock}${textAfter}`;
-                    // Position cursor after the inserted block
                     cursorPos = start + beforeBlock.length + selectedText.length + afterBlock.length;
                 } else {
                     newText = `${textBefore}${beforeBlock}${codePlaceholder}${afterBlock}${textAfter}`;
-                    // Position cursor to select the placeholder
                     cursorPos = start + beforeBlock.length;
-                    markdownInput.value = newText; // Update value first
-                    markdownInput.setSelectionRange(cursorPos, cursorPos + codePlaceholder.length); // Select placeholder
-                    return; // Exit early as selection is set
+                    markdownInput.value = newText;
+                    markdownInput.setSelectionRange(cursorPos, cursorPos + codePlaceholder.length);
+                    return;
                 }
                 markdownInput.value = newText;
                 markdownInput.setSelectionRange(cursorPos, cursorPos);
@@ -440,38 +416,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 markdownInput.value = newText;
                 markdownInput.setSelectionRange(cursorPos, cursorPos);
                 break;
-            case 'h1':
-                insertAtLineStart('# ', 'Heading 1');
-                break;
-            case 'h2':
-                insertAtLineStart('## ', 'Heading 2');
-                break;
-            case 'h3':
-                insertAtLineStart('### ', 'Heading 3');
-                break;
-            case 'ul-list':
-                // Note: Multi-line selection just prefixes each line with '- '
-                insertAtLineStart('- ', 'List item');
-                break;
-            case 'ol-list':
-                insertOrderedListPrefix('List item'); // Use the specialized handler
-                break;
-            case 'blockquote':
-                insertAtLineStart('> ', 'Blockquote');
-                break;
+            case 'h1': insertAtLineStart('# ', 'Heading 1'); break;
+            case 'h2': insertAtLineStart('## ', 'Heading 2'); break;
+            case 'h3': insertAtLineStart('### ', 'Heading 3'); break;
+            case 'ul-list': insertAtLineStart('- ', 'List item'); break;
+            case 'ol-list': insertOrderedListPrefix('List item'); break;
+            case 'blockquote': insertAtLineStart('> ', 'Blockquote'); break;
             case 'hr':
                 newText = `${textBefore}\n\n---\n\n${textAfter}`;
-                cursorPos = start + 5; // Position cursor after the '---' and the newline
+                cursorPos = start + 5;
                 markdownInput.value = newText;
                 markdownInput.setSelectionRange(cursorPos, cursorPos);
                 break;
         }
 
-        markdownInput.focus(); // Keep focus on the textarea
-        updateCounts(); // Update counts immediately after applying syntax
-        // Trigger input event for auto-rendering IF it's enabled
+        markdownInput.focus();
+        updateCounts();
         if (isAutoRenderEnabled) {
-            // Use setTimeout to ensure the event fires after the DOM updates from the syntax application
             setTimeout(() => {
                 markdownInput.dispatchEvent(new Event('input', { bubbles: true }));
             }, 0);
@@ -480,107 +441,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- Event Listeners Setup ---
-    const debouncedRender = debounce(renderMarkdown, 300); // Debounced render
+    const debouncedRender = debounce(renderMarkdown, 300);
 
-    // Markdown Input Event
     markdownInput.addEventListener('input', () => {
-        updateCounts(); // Update counts immediately on any input
+        updateCounts();
         if (isAutoRenderEnabled) {
             debouncedRender();
         }
     });
 
-    // Toggle Input Area Switch
     toggleInputSwitch.addEventListener('change', toggleInputArea);
-
-    // Theme Switch
     themeSwitch.addEventListener('change', toggleTheme);
-
-    // Auto Render Switch
     autoRenderSwitch.addEventListener('change', updateAutoRenderState);
-
-    // Manual Render Button
-    manualRenderButton.addEventListener('click', renderMarkdown); // Call directly, no debounce
+    manualRenderButton.addEventListener('click', renderMarkdown);
 
     // Direction Button Events
     textDirLtrBtn.addEventListener('click', () => setTextDirection('ltr'));
     textDirRtlBtn.addEventListener('click', () => setTextDirection('rtl'));
-    codeDirLtrBtn.addEventListener('click', () => setCodeDirection('ltr'));
-    codeDirRtlBtn.addEventListener('click', () => setCodeDirection('rtl'));
+    // -- START: Inline Code Direction Listeners --
+    inlineCodeDirLtrBtn.addEventListener('click', () => setInlineCodeDirection('ltr'));
+    inlineCodeDirRtlBtn.addEventListener('click', () => setInlineCodeDirection('rtl'));
+    // -- END: Inline Code Direction Listeners --
+    codeDirLtrBtn.addEventListener('click', () => setCodeDirection('ltr')); // For ``` blocks
+    codeDirRtlBtn.addEventListener('click', () => setCodeDirection('rtl')); // For ``` blocks
 
-    // Markdown Toolbar Event Listener (using event delegation)
+
     markdownToolbar.addEventListener('click', (event) => {
-        const button = event.target.closest('button[data-syntax]'); // Find the clicked button with data-syntax
+        const button = event.target.closest('button[data-syntax]');
         if (button) {
-            event.preventDefault(); // Prevent potential default button actions
+            event.preventDefault();
             applyMarkdownSyntax(button.dataset.syntax);
         }
     });
 
-    // Add keyboard shortcuts for toolbar actions
     markdownInput.addEventListener('keydown', (event) => {
-        if (event.ctrlKey || event.metaKey) { // Check for Ctrl (Windows/Linux) or Command (Mac)
+        if (event.ctrlKey || event.metaKey) {
             let handled = false;
             switch (event.key.toLowerCase()) {
-                case 'b': // Bold
-                    applyMarkdownSyntax('bold');
-                    handled = true;
-                    break;
-                case 'i': // Italic
-                    applyMarkdownSyntax('italic');
-                    handled = true;
-                    break;
-                case 'k': // Link
-                    applyMarkdownSyntax('link');
-                    handled = true;
-                    break;
-                // Add more shortcuts as needed
+                case 'b': applyMarkdownSyntax('bold'); handled = true; break;
+                case 'i': applyMarkdownSyntax('italic'); handled = true; break;
+                case 'k': applyMarkdownSyntax('link'); handled = true; break;
             }
             if (handled) {
-                event.preventDefault(); // Prevent default browser actions (like bookmarking for Ctrl+B)
+                event.preventDefault();
             }
         }
     });
 
     // --- Initial Setup on Load ---
 
-    // Set initial theme based on saved preference or system preference (if implementing)
-    const savedTheme = localStorage.getItem('markdownRendererTheme');
-    // Default to dark if no preference saved
-    const initialTheme = savedTheme || 'dark';
-    applyTheme(initialTheme);
-    themeSwitch.checked = (initialTheme === 'dark'); // Sync switch state
+    const savedTheme = localStorage.getItem('markdownRendererTheme') || 'dark';
+    applyTheme(savedTheme);
+    themeSwitch.checked = (savedTheme === 'dark');
 
-    // Set initial auto-render state
     const savedAutoRender = localStorage.getItem('markdownRendererAutoRender');
-    isAutoRenderEnabled = savedAutoRender !== null ? (savedAutoRender === 'true') : true; // Default true
+    isAutoRenderEnabled = savedAutoRender !== null ? (savedAutoRender === 'true') : true;
     autoRenderSwitch.checked = isAutoRenderEnabled;
-    updateAutoRenderState(); // Update button disabled state based on initial check
+    updateAutoRenderState();
 
-    // Set initial text direction
-    const savedTextDir = localStorage.getItem('markdownRendererTextDir') || 'ltr'; // Default LTR
+    const savedTextDir = localStorage.getItem('markdownRendererTextDir') || 'ltr';
     setTextDirection(savedTextDir);
 
-    // Set initial code direction
-    const savedCodeDir = localStorage.getItem('markdownRendererCodeDir') || 'ltr'; // Default LTR
-    setCodeDirection(savedCodeDir);
+    // -- START: Load Inline Code Direction --
+    const savedInlineCodeDir = localStorage.getItem('markdownRendererInlineCodeDir') || 'ltr';
+    setInlineCodeDirection(savedInlineCodeDir); // Set state and apply to any initial content
+    // -- END: Load Inline Code Direction --
 
-    // Restore previous input if desired (e.g., from localStorage)
+    const savedCodeDir = localStorage.getItem('markdownRendererCodeDir') || 'ltr'; // For ``` blocks
+    setCodeDirection(savedCodeDir); // Set state and apply to any initial content
+
     const savedInput = localStorage.getItem('markdownInputContent');
     if (savedInput) {
         markdownInput.value = savedInput;
     }
 
-    // Initial Layout based on switch state (usually checked/visible by default)
     toggleInputArea();
-
-    // Initial Render (important to do this AFTER setting up theme, directions, etc.)
-    renderMarkdown();
-
-    // Initial Count Update
+    renderMarkdown(); // Initial render (will apply all loaded directions)
     updateCounts();
 
-    // Optional: Save input content periodically or on unload
     markdownInput.addEventListener('input', debounce(() => {
         localStorage.setItem('markdownInputContent', markdownInput.value);
     }, 1000));

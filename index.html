@@ -5,9 +5,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A simple, client-side Markdown editor and live renderer with syntax highlighting, theme switching, and enhanced code blocks. Write and preview Markdown easily.">
+    <meta name="description"
+        content="A simple, client-side Markdown editor and live renderer with syntax highlighting, theme switching, and enhanced code blocks. Write and preview Markdown easily.">
     <meta name="google-site-verification" content="IpfD0P8v_7fwmmxe8nO-zcNdoJeLPwC-qgYjT0Vq_EQ" />
-    
+
     <title>Markdown Renderer - Live Editor & Preview</title>
 
     <!-- Google Fonts: Vazirmatn -->
@@ -30,7 +31,7 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
-    
+
 </head>
 
 <body>
@@ -123,6 +124,7 @@
                     <!-- Direction Controls Container (acts as header) -->
                     <div class="d-flex flex-wrap justify-content-end gap-3 mb-2 panel-header-controls"
                         id="direction-controls-container">
+                        <!-- Text Direction -->
                         <div class="d-flex align-items-center gap-2" title="Set Text Direction">
                             <span class="text-nowrap small text-muted"><i class="bi bi-fonts"></i></span>
                             <div class="btn-group btn-group-sm" role="group" aria-label="Text Direction">
@@ -130,7 +132,19 @@
                                 <button type="button" class="btn btn-outline-secondary" id="textDirRtlBtn">RTL</button>
                             </div>
                         </div>
-                        <div class="d-flex align-items-center gap-2" title="Set Code Block Direction">
+                        <!-- START: Inline Code Direction -->
+                        <div class="d-flex align-items-center gap-2" title="Set Inline Code Direction (`code`)">
+                            <span class="text-nowrap small text-muted"><i class="bi bi-code"></i></span>
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Inline Code Direction">
+                                <button type="button" class="btn btn-outline-secondary"
+                                    id="inlineCodeDirLtrBtn">LTR</button>
+                                <button type="button" class="btn btn-outline-secondary"
+                                    id="inlineCodeDirRtlBtn">RTL</button>
+                            </div>
+                        </div>
+                        <!-- END: Inline Code Direction -->
+                        <!-- Code Block Direction -->
+                        <div class="d-flex align-items-center gap-2" title="Set Code Block Direction (```code```)">
                             <span class="text-nowrap small text-muted"><i class="bi bi-code-slash"></i></span>
                             <div class="btn-group btn-group-sm" role="group" aria-label="Code Block Direction">
                                 <button type="button" class="btn btn-outline-secondary" id="codeDirLtrBtn">LTR</button>
@@ -142,6 +156,7 @@
                     <div id="markdown-output" class="border p-3 rounded flex-grow-1 overflow-auto"
                         data-text-direction="ltr" data-code-direction="ltr">
                         <!-- Rendered HTML will appear here -->
+                        <!-- The inline code direction is applied via CSS/JS, not a data attribute here -->
                     </div>
                 </div>
             </div>

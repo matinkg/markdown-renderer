@@ -8,6 +8,13 @@
 	--code-header-bg: #e9ecef;
 	--code-header-color: #495057;
 	--code-border-color: rgba(0, 0, 0, 0.1);
+	--inline-code-bg: rgba(
+		175,
+		184,
+		193,
+		0.2
+	); /* Default light inline code bg */
+	--inline-code-color: inherit; /* Default inline code color */
 	--link-color: #0d6efd;
 	/* Define a height for the panel headers */
 	--panel-header-height: 31px; /* Adjust based on inspection if needed */
@@ -23,6 +30,13 @@ html[data-bs-theme="dark"] {
 	--code-header-bg: rgba(0, 0, 0, 0.3);
 	--code-header-color: #abb2bf;
 	--code-border-color: rgba(255, 255, 255, 0.1);
+	--inline-code-bg: rgba(
+		110,
+		118,
+		129,
+		0.4
+	); /* Default dark inline code bg */
+	--inline-code-color: #c9d1d9; /* Default dark inline code color */
 	--link-color: #6ea8fe;
 }
 
@@ -47,41 +61,33 @@ header {
 }
 
 /* Input/Output areas */
-/* Container row sets the overall available height */
 .preview-container {
-	min-height: calc(100vh - 100px); /* Adjust if header height changes */
-	/* Ensure row takes height if columns need it */
+	min-height: calc(100vh - 100px);
 	align-items: stretch;
 }
-/* Flex containers within columns take full height */
 #input-column > .h-100,
 #output-column > .h-100 {
-	height: 100%; /* Make sure h-100 works */
+	height: 100%;
 }
 
-/* Style for Panel Headers (Toolbar and Controls) */
 .panel-header-controls {
-	/* Now applies to both toolbar and output controls */
 	min-height: var(--panel-header-height);
 	display: flex;
 	align-items: center;
-	flex-wrap: wrap; /* Allow wrapping on smaller screens */
-	gap: 0.5rem; /* Add some gap between controls/groups */
+	flex-wrap: wrap;
+	gap: 0.5rem;
 }
-/* Specific alignment for controls */
 .panel-header-controls#direction-controls-container {
 	justify-content: flex-end;
 }
 .panel-header-controls#markdown-toolbar {
-	justify-content: flex-start; /* Align toolbar buttons to the left */
-	/* Adjust padding slightly */
+	justify-content: flex-start;
 	padding-bottom: 0.5rem !important;
 }
 
 #markdown-input {
 	font-family: monospace;
 	resize: none;
-	/* flex-grow-1 handles height within the flex column */
 }
 
 #markdown-output {
@@ -90,7 +96,6 @@ header {
 	word-wrap: break-word;
 	color: var(--body-color);
 	transition: background-color 0.3s ease, border-color 0.3s ease;
-	/* flex-grow-1 handles height */
 }
 
 /* --- Text Direction Styling --- */
@@ -122,7 +127,33 @@ header {
 	filter: brightness(85%);
 }
 
-/* --- Code Block Enhancements --- */
+/* --- START: Inline Code Styling & Direction --- */
+/* Base styling for inline code (outside pre) */
+#markdown-output code:not(pre code) {
+	padding: 0.2em 0.4em;
+	margin: 0;
+	font-size: 85%;
+	white-space: break-spaces; /* Allow breaking */
+	background-color: var(--inline-code-bg); /* optional */
+	/* color: var(--inline-code-color) */; /* optional */
+	border-radius: 6px;
+	display: inline; /* Ensure it remains inline */
+	unicode-bidi: embed; /* Needed for direction */
+	/* Default direction will be inherited, but we override below */
+}
+/* LTR direction for inline code */
+#markdown-output code:not(pre code)[data-inline-code-direction="ltr"] {
+	direction: ltr;
+	text-align: left;
+}
+/* RTL direction for inline code */
+#markdown-output code:not(pre code)[data-inline-code-direction="rtl"] {
+	direction: rtl;
+	text-align: right;
+}
+/* --- END: Inline Code Styling & Direction --- */
+
+/* --- Code Block Enhancements (``` ```) --- */
 .code-block-wrapper {
 	position: relative;
 	margin-bottom: 1rem;
@@ -133,7 +164,7 @@ header {
 	transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* --- Code Block Direction Styling --- */
+/* --- Code Block (``` ```) Direction Styling --- */
 .code-block-wrapper[data-code-direction="ltr"] {
 	direction: ltr;
 }
@@ -142,15 +173,16 @@ header {
 }
 .code-block-wrapper[data-code-direction="ltr"] pre,
 .code-block-wrapper[data-code-direction="ltr"] code {
+	/* Target both */
 	text-align: left;
 }
 .code-block-wrapper[data-code-direction="rtl"] pre,
 .code-block-wrapper[data-code-direction="rtl"] code {
+	/* Target both */
 	text-align: right;
-} /* Keep code text aligned if needed */
-/* Ensure Language name remains LTR within the RTL header */
+}
 .code-block-wrapper[data-code-direction="rtl"] .code-block-header .language {
-	text-align: left;
+	text-align: left; /* Keep lang name LTR */
 }
 
 /* Code Block Header */
@@ -166,14 +198,13 @@ header {
 	border-bottom: 1px solid var(--code-border-color);
 	transition: background-color 0.3s ease, color 0.3s ease,
 		border-color 0.3s ease;
-	/* Use gap for spacing between elements */
 	gap: 0.5rem;
 }
 .code-block-header .language {
 	font-weight: bold;
 	text-transform: uppercase;
 	margin-inline-end: auto;
-	margin-inline-start: 0.5rem; /* Adjust as needed */
+	margin-inline-start: 0.5rem;
 }
 .code-block-header .collapse-icon {
 	display: inline-flex;
@@ -203,17 +234,23 @@ header {
 		border 0.3s ease-out;
 	border-top: none;
 }
+/* Styling for code inside pre when NOT highlighted */
 .code-block-wrapper pre code:not(.hljs) {
 	color: var(--body-color);
 	background-color: var(--code-wrapper-bg);
 	font-family: monospace;
+	padding: 0 !important; /* Reset padding for non-hljs */
+	display: block; /* Ensure it behaves like a block */
+	white-space: pre; /* Keep whitespace for non-hljs too */
 }
+/* Styling for code inside pre when highlighted */
 .code-block-wrapper pre code.hljs {
 	padding: 0 !important;
 	background: transparent !important;
 	display: block;
 	line-height: 1.5;
-	color: inherit;
+	color: inherit; /* Inherit color from hljs theme */
+	white-space: pre; /* Ensure hljs uses pre formatting */
 }
 .code-block-wrapper.collapsed pre {
 	max-height: 0;
@@ -243,8 +280,7 @@ header {
 
 /* --- Input Counts Display --- */
 #input-counts {
-	white-space: nowrap; /* Prevent counts from wrapping */
-	/* Additional styling if needed, but Bootstrap classes handle most */
+	white-space: nowrap;
 }
 
 /* --- Layout Adjustments --- */
@@ -281,25 +317,20 @@ header {
 /* --- Responsive --- */
 @media (max-width: 991.98px) {
 	.preview-container,
-    #input-column > .h-100, /* Reset height on column wrappers */
-    #output-column > .h-100 {
+	#input-column > .h-100,
+	#output-column > .h-100 {
 		min-height: auto;
-		height: auto; /* Allow natural height */
+		height: auto;
 	}
-	/* Let textarea grow naturally within flex column */
 	#markdown-input,
 	#markdown-output {
-		/* No specific min-height needed here, flex will handle it */
-		min-height: 300px; /* Increase min-height for usability */
-		flex-grow: 0; /* Don't force grow when height is auto */
+		min-height: 300px;
+		flex-grow: 0;
 	}
 
 	#output-column.full-width > .h-100 {
-		/* Target wrapper in full width */
-		/* When full width, restore calculated height for output wrapper */
-		min-height: calc(100vh - 100px); /* Adjust if needed */
+		min-height: calc(100vh - 100px);
 		height: calc(100vh - 100px);
-		/* Re-apply flex-grow to output area when it's full width */
 		#markdown-output {
 			flex-grow: 1;
 		}
@@ -310,22 +341,24 @@ header {
 		flex-wrap: wrap;
 	}
 
-	/* Adjust panel headers on small screens */
 	.panel-header-controls {
-		min-height: auto; /* Allow height to adjust if wrapped */
+		min-height: auto;
 		height: auto;
 	}
-	/* Ensure toolbar keeps its border */
 	#markdown-toolbar {
 		border-bottom: 1px solid var(--border-color);
-		padding-bottom: 0.5rem !important; /* Adjust padding when wrapped */
+		padding-bottom: 0.5rem !important;
 	}
-	/* Ensure counts display doesn't cause issues when wrapping */
 	#input-counts {
-		/* Allow it to take full width if needed when wrapped */
-		margin-left: 0 !important; /* Override ms-auto */
+		margin-left: 0 !important;
 		width: 100%;
-		justify-content: flex-end; /* Keep counts aligned right */
-		padding-top: 0.25rem; /* Add a bit of space when wrapped */
+		justify-content: flex-end;
+		padding-top: 0.25rem;
 	}
+}
+
+/* Style for active direction buttons */
+.btn-group > .btn.active {
+	z-index: 1; /* Bring active button slightly forward */
+	/* Bootstrap's default active styling is usually sufficient */
 }
