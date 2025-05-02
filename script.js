@@ -1,3 +1,4 @@
+// markdown-renderer/script.js
 document.addEventListener('DOMContentLoaded', () => {
     // --- Selectors ---
     const markdownInput = document.getElementById('markdown-input');
@@ -294,6 +295,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update button active states
         textDirLtrBtn.classList.toggle('active', direction === 'ltr');
         textDirRtlBtn.classList.toggle('active', direction === 'rtl');
+        // Re-render needed if math layout depends on parent direction initially
+        // (KaTeX CSS fix should handle this, but re-render ensures consistency)
+        renderMarkdown();
     }
 
     // --- START: Inline Code Direction Control ---
@@ -313,6 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
         inlineCodeDirLtrBtn.classList.toggle('active', direction === 'ltr');
         inlineCodeDirRtlBtn.classList.toggle('active', direction === 'rtl');
         // CSS handles the visual direction change based on the data attribute
+        // No re-render needed as this is applied after initial render
     }
     // --- END: Inline Code Direction Control ---
 
@@ -334,6 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
         codeDirLtrBtn.classList.toggle('active', direction === 'ltr');
         codeDirRtlBtn.classList.toggle('active', direction === 'rtl');
         // CSS uses the data-code-direction attribute on the wrapper
+        // No re-render needed as this is applied after initial render
     }
 
     // --- Markdown Toolbar Functionality ---
@@ -463,8 +469,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const langStr = language ? language.trim() : ''; // Use language if provided
                 const codePlaceholder = 'Your code here';
                 // Ensure newlines around the block for proper parsing
-                const beforeBlock = (textBefore.length === 0 || textBefore.endsWith('\n\n')) ? `\`\`\`${langStr}\n` : `\n\`\`\`${langStr}\n`;
-                const afterBlock = `\n\`\`\`\n`;
+                const beforeBlock = (textBefore.length === 0 || textBefore.endsWith('\n\n') || textBefore.endsWith('\n')) ? `\`\`\`${langStr}\n` : `\n\`\`\`${langStr}\n`;
+                const afterBlock = `\n\`\`\`` + (textAfter.startsWith('\n') ? '' : '\n');
 
                 if (selectedText) {
                     newText = `${textBefore}${beforeBlock}${selectedText}${afterBlock}${textAfter}`;
@@ -509,10 +515,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (textBefore.length === 0) {
                     hrPrefix = ''; // No prefix needed if at the very beginning
                 }
-                let hrSuffix = '\n\n';
-                if (textAfter.length > 0 && !textAfter.startsWith('\n\n')) {
-                    hrSuffix = textAfter.startsWith('\n') ? '\n' : '\n\n';
-                }
+                let hrSuffix = '\n'; // Only need one newline after ---
 
 
                 newText = `${textBefore}${hrPrefix}---\n${textAfter}`; // Keep it simple, add one newline after
@@ -639,15 +642,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Text Direction
     const savedTextDir = localStorage.getItem('markdownRendererTextDir') || 'ltr'; // Default LTR
-    setTextDirection(savedTextDir); // Apply saved or default direction
+    setTextDirection(savedTextDir); // Apply saved or default direction (this will trigger initial render)
 
     // 4. Inline Code Direction
     const savedInlineCodeDir = localStorage.getItem('markdownRendererInlineCodeDir') || 'ltr'; // Default LTR
-    setInlineCodeDirection(savedInlineCodeDir); // Apply saved or default
+    setInlineCodeDirection(savedInlineCodeDir); // Apply saved or default (applies after render)
 
     // 5. Code Block Direction (``` blocks)
     const savedCodeDir = localStorage.getItem('markdownRendererCodeDir') || 'ltr'; // Default LTR
-    setCodeDirection(savedCodeDir); // Apply saved or default
+    setCodeDirection(savedCodeDir); // Apply saved or default (applies after render)
 
     // 6. Full Height Mode
     const savedFullHeightMode = localStorage.getItem('markdownRendererFullHeightMode');
@@ -671,8 +674,8 @@ document.addEventListener('DOMContentLoaded', () => {
         markdownInput.value = savedInput; // Load saved Markdown text
     }
 
-    // 9. Initial Render and Counts
-    renderMarkdown(); // Perform the first render based on loaded content and settings
+    // 9. Initial Render and Counts (Render is already triggered by setTextDirection)
+    // renderMarkdown(); // Perform the first render based on loaded content and settings - Removed as setTextDirection calls it
     updateCounts(); // Calculate initial counts
 
     // 10. Save input content on window close/refresh as a fallback

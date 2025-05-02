@@ -1,3 +1,4 @@
+/* markdown-renderer/style.css */
 /* --- CSS Variables for Theming --- */
 :root {
 	--body-bg: #ffffff;
@@ -312,6 +313,20 @@ header {
 	border-bottom: 2px solid var(--bs-table-border-color, var(--border-color));
 	background-color: var(--bs-table-header-bg, var(--code-header-bg));
 	font-weight: 700;
+}
+
+/* --- KaTeX Math Direction Fix --- */
+/* Ensure KaTeX elements maintain LTR directionality, regardless of parent */
+#markdown-output .katex,
+#markdown-output .katex-display {
+	direction: ltr !important; /* Force LTR for math */
+	unicode-bidi: embed !important; /* Isolate directionality */
+	text-align: initial !important; /* Reset alignment inherited from RTL parent */
+}
+/* Center display math specifically */
+#markdown-output .katex-display {
+	text-align: center !important; /* Center display math visually */
+	display: block; /* Ensure block display for centering */
 }
 
 /* --- Responsive --- */
