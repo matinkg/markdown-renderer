@@ -67,6 +67,20 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderMarkdown() {
         const markdownText = markdownInput.value;
 
+        // --- START: MathJax/KaTeX block processing ---
+        // Temporarily replace block-level math expressions ($$ ... $$) with placeholders
+        // to prevent `marked` from interfering with them (e.g., adding <p> tags inside).
+        const mathBlocks = [];
+        const textWithPlaceholders = markdownText.replace(/\$\$([\s\S]*?)\$\$/g, (match, content) => {
+            const id = mathBlocks.length;
+            // Note: We wrap the content in a div to ensure it's treated as a block element.
+            // The extra newlines help `marked` treat this as a distinct block.
+            mathBlocks.push(match);
+            return `\n<div class="math-placeholder" data-id="${id}"></div>\n`;
+        });
+        // --- END: MathJax/KaTeX block processing ---
+
+
         // Configure marked
         marked.setOptions({
             breaks: true, // Convert single line breaks to <br>
@@ -74,11 +88,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         try {
-            // 1. Parse Markdown to HTML
-            const html = marked.parse(markdownText);
+            // 1. Parse Markdown to HTML using the text with placeholders
+            const html = marked.parse(textWithPlaceholders);
             markdownOutput.innerHTML = html;
 
-            // 2. Render LaTeX math using KaTeX auto-render
+            // --- START: Restore Math Blocks ---
+            // Find the placeholders and replace them with their original math content.
+            markdownOutput.querySelectorAll('div.math-placeholder').forEach(placeholder => {
+                const id = parseInt(placeholder.dataset.id, 10);
+                if (id >= 0 && id < mathBlocks.length) {
+                    // Create a text node with the raw math content
+                    const mathTextNode = document.createTextNode(mathBlocks[id]);
+                    // Replace the placeholder div with the text node.
+                    // The parent will typically be the markdownOutput itself or a block-level element.
+                    placeholder.parentNode.replaceChild(mathTextNode, placeholder);
+                }
+            });
+            // --- END: Restore Math Blocks ---
+
+            // 2. Render LaTeX math using KaTeX auto-render on the restored content
             renderMathInElement(markdownOutput, {
                 delimiters: [
                     { left: '$$', right: '$$', display: true },
