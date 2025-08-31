@@ -180,10 +180,11 @@
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
         crossorigin="anonymous"></script>
 
-    <!-- KaTeX JS (Core + Auto-render extension) - Load before our script -->
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"
-        crossorigin="anonymous"></script>
+    <!-- KaTeX JS (Core) - Load before our script -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+    
+    <!-- marked-katex-extension -->
+    <script src="https://cdn.jsdelivr.net/npm/marked-katex-extension/lib/index.umd.min.js"></script>
 
     <!-- Our Custom Script -->
     <script src="script.js"></script>

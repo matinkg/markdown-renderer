@@ -67,6 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderMarkdown() {
         const markdownText = markdownInput.value;
 
+        // Configure marked with KaTeX extension
+        const katexExtension = markedKatex(
+            {
+                throwOnError: false
+            }
+        );
+        marked.use(katexExtension);
+
         // Configure marked
         marked.setOptions({
             breaks: true, // Convert single line breaks to <br>
@@ -99,25 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 5. Ensure block code wrappers have the correct direction attribute AFTER enhancing
             applyCodeDirectionToBlocks(currentCodeDirection);
-
-            // 6. Apply KaTeX Auto-Rendering for LaTeX Math
-            // Must run AFTER initial HTML is set and potentially after code highlighting/enhancement
-            if (typeof renderMathInElement === 'function') {
-                renderMathInElement(markdownOutput, {
-                    // Delimiters to look for math
-                    delimiters: [
-                        { left: '$$', right: '$$', display: true },    // Display math
-                        { left: '$', right: '$', display: false },     // Inline math
-                        { left: '\\(', right: '\\)', display: false }, // Inline math (LaTeX style)
-                        { left: '\\[', right: '\\]', display: true }  // Display math (LaTeX style)
-                    ],
-                    // Don't throw an error for invalid LaTeX syntax
-                    throwOnError: false
-                });
-            } else {
-                // Only log warning if KaTeX function isn't available
-                console.warn("KaTeX auto-render function (renderMathInElement) not found. Math will not be rendered.");
-            }
 
         } catch (error) {
             // Catch errors during Markdown parsing or subsequent steps
