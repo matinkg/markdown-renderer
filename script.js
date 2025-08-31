@@ -67,14 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderMarkdown() {
         const markdownText = markdownInput.value;
 
-        // Configure marked with KaTeX extension
-        const katexExtension = markedKatex(
-            {
-                throwOnError: false
-            }
-        );
-        marked.use(katexExtension);
-
         // Configure marked
         marked.setOptions({
             breaks: true, // Convert single line breaks to <br>
@@ -86,10 +78,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const html = marked.parse(markdownText);
             markdownOutput.innerHTML = html;
 
-            // 2. Apply direction to inline code elements FIRST
+            // 2. Render LaTeX math using KaTeX auto-render
+            renderMathInElement(markdownOutput, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '$', right: '$', display: false }
+                ],
+                throwOnError: false
+            });
+
+            // 3. Apply direction to inline code elements FIRST
             applyInlineCodeDirectionToElements(currentInlineCodeDirection);
 
-            // 3. Apply Syntax Highlighting to BLOCK code
+            // 4. Apply Syntax Highlighting to BLOCK code
             markdownOutput.querySelectorAll('pre code').forEach((block) => {
                 // Check if already highlighted to avoid re-processing
                 if (!block.classList.contains('hljs')) {
@@ -102,10 +103,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // 4. Enhance Code Blocks (``` ```) - Adds wrapper, copy button etc.
+            // 5. Enhance Code Blocks (``` ```) - Adds wrapper, copy button etc.
             enhanceCodeBlocks(); // This adds wrappers and might re-apply hljs if needed
 
-            // 5. Ensure block code wrappers have the correct direction attribute AFTER enhancing
+            // 6. Ensure block code wrappers have the correct direction attribute AFTER enhancing
             applyCodeDirectionToBlocks(currentCodeDirection);
 
         } catch (error) {
