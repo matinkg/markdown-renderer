@@ -45,6 +45,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeFileId = null;
     let nextFileId = 1;
 
+    // --- Header Height Sync (Tabs/Direction) ---
+    function syncHeaderHeights() {
+        const tabsHeader = document.getElementById('file-tabs-container');
+        const dirHeader = document.getElementById('direction-controls-container');
+        if (!tabsHeader || !dirHeader) return;
+        // Reset to natural height for accurate measurement
+        tabsHeader.style.height = '';
+        dirHeader.style.height = '';
+        // Measure and set to the max
+        const maxH = Math.max(tabsHeader.offsetHeight, dirHeader.offsetHeight);
+        tabsHeader.style.height = `${maxH}px`;
+        dirHeader.style.height = `${maxH}px`;
+    }
+
 
     // --- File Management Functions ---
     function createNewFile(name = null, content = '') {
@@ -78,6 +92,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         updateTabsUI();
+        
+        // Scroll to show the active tab
+        setTimeout(() => {
+            const activeTab = document.querySelector('.file-tab.active');
+            if (activeTab) {
+                activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }, 50);
     }
 
     function deleteFile(fileId) {
@@ -127,6 +149,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const tabElement = createTabElement(file);
             fileTabsList.appendChild(tabElement);
         });
+    // After updating tabs, re-sync header heights
+    syncHeaderHeights();
+    }
+
+    function scrollTabsToEnd() {
+        // Scroll the tab list to the end to show the newest tab
+        fileTabsList.scrollLeft = fileTabsList.scrollWidth;
     }
 
     function initializeFiles() {
@@ -401,6 +430,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // Persist state
         localStorage.setItem('markdownRendererInputVisible', isInputVisible);
+    // Re-sync header heights when layout changes
+    syncHeaderHeights();
     }
 
     // --- Theme Switching ---
@@ -702,6 +733,8 @@ document.addEventListener('DOMContentLoaded', () => {
         applyFullHeightMode(fullHeightModeSwitch.checked);
         // Save preference
         localStorage.setItem('markdownRendererFullHeightMode', fullHeightModeSwitch.checked);
+    // Re-sync heights in case borders/margins changed
+    syncHeaderHeights();
     }
     // --- END: Full Height Mode ---
 
@@ -776,6 +809,8 @@ document.addEventListener('DOMContentLoaded', () => {
     addTabBtn.addEventListener('click', () => {
         const newFileId = createNewFile();
         switchToFile(newFileId);
+        // Scroll to show the new tab after a brief delay to ensure DOM is updated
+        setTimeout(scrollTabsToEnd, 50);
     });
 
     // Tab interactions (using event delegation)
@@ -902,6 +937,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial Render and Counts (Render is already triggered by setTextDirection)
     // renderMarkdown(); // Perform the first render based on loaded content and settings - Removed as setTextDirection calls it
     updateCounts(); // Calculate initial counts
+    // Initial header height sync after DOM laid out
+    syncHeaderHeights();
+
+    // Keep headers in sync on window resize (debounced)
+    const debouncedSyncHeaders = debounce(syncHeaderHeights, 100);
+    window.addEventListener('resize', debouncedSyncHeaders);
 
     // Save files on window close/refresh as a fallback
     window.addEventListener('beforeunload', () => {

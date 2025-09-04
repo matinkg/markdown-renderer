@@ -81,9 +81,6 @@ header {
 .panel-header-controls#direction-controls-container {
 	justify-content: flex-end;
 }
-.panel-header-controls#file-tabs-container {
-	justify-content: flex-start;
-}
 
 
 #markdown-input {
@@ -444,7 +441,8 @@ html.full-height-mode #output-column > .h-100 {
 }
 
 html.full-height-mode #markdown-toolbar,
-html.full-height-mode #direction-controls-container {
+html.full-height-mode #direction-controls-container,
+html.full-height-mode #file-tabs-container {
 	flex-shrink: 0; /* Prevent panel headers from shrinking */
 	min-height: 0; /* Reset min-height */
 	height: auto; /* Allow wrapping */
@@ -539,26 +537,24 @@ html.full-height-mode #markdown-input {
 }
 
 #file-tabs-container {
-    /* Remove absolute positioning, now positioned normally at top */
-    position: relative;
-    min-height: var(--panel-header-height);
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    padding-bottom: 0.5rem !important;
+	/* Minimal container without background */
+	position: relative;
+	display: flex;
+	align-items: stretch;
+	gap: 0.5rem;
+	margin-bottom: 0.5rem;
 }
 
 #file-tabs {
-    background-color: var(--output-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 0.375rem;
-    padding: 0.25rem 0.5rem;
-    min-height: 40px;
-    align-items: center;
-    flex-wrap: nowrap;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-    width: 100%;
+	/* Remove background and border for cleaner look */
+	background: none;
+	border: none;
+	padding: 0;
+	align-items: stretch;
+	flex-wrap: nowrap;
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
 }
 
 /* Update markdown input to account for the toolbar overlay */
@@ -568,10 +564,13 @@ html.full-height-mode #markdown-input {
 }
 
 .tab-list {
-    gap: 2px;
+    gap: 0.5rem;
     overflow-x: auto;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
+    display: flex;
+    align-items: stretch;
+    flex: 1;
 }
 
 .tab-list::-webkit-scrollbar {
@@ -581,39 +580,39 @@ html.full-height-mode #markdown-input {
 .file-tab {
     display: flex;
     align-items: center;
-    padding: 0.25rem 0.5rem;
-    background-color: var(--body-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 0.25rem 0.25rem 0 0;
+	padding: 0.5rem 0.75rem;
+    background-color: var(--output-bg);
+    border: 1px solid transparent;
+    border-radius: 0.375rem;
     cursor: pointer;
     white-space: nowrap;
-    min-width: 120px;
-    max-width: 200px;
+    min-width: 100px;
+    max-width: 180px;
     transition: all 0.2s ease;
     position: relative;
     font-size: 0.875rem;
-    pointer-events: auto; /* Ensure tabs are clickable */
+    font-weight: 500;
+    pointer-events: auto;
+    color: var(--body-color);
+    opacity: 0.8;
 }
 
 .file-tab:hover {
-    background-color: var(--output-bg);
+    opacity: 1;
+    border-color: var(--border-color);
+    background-color: var(--code-wrapper-bg);
 }
 
 .file-tab.active {
-    background-color: var(--body-bg);
-    border-bottom-color: var(--body-bg);
-    z-index: 1;
-    position: relative;
+    opacity: 1;
+    border-color: var(--link-color);
+    color: var(--link-color);
+    background-color: var(--code-wrapper-bg);
 }
 
 .file-tab.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background-color: var(--body-bg);
+    /* Remove the old pseudo-element styling */
+    display: none;
 }
 
 .file-tab-name {
@@ -636,24 +635,25 @@ html.full-height-mode #markdown-input {
 }
 
 .file-tab-close {
-    margin-left: 0.25rem;
-    padding: 0;
-    width: 16px;
-    height: 16px;
+    margin-left: 0.5rem;
+    padding: 0.25rem;
+    width: 18px;
+    height: 18px;
     border: none;
     background: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 2px;
-    opacity: 0.6;
-    transition: opacity 0.2s ease, background-color 0.2s ease;
+    border-radius: 50%;
+    opacity: 0.5;
+    transition: all 0.2s ease;
 }
 
 .file-tab-close:hover {
     opacity: 1;
     background-color: rgba(0, 0, 0, 0.1);
+    transform: scale(1.1);
 }
 
 html[data-bs-theme="dark"] .file-tab-close:hover {
@@ -665,32 +665,38 @@ html[data-bs-theme="dark"] .file-tab-close:hover {
 }
 
 #add-tab-btn {
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
+	padding: 0.5rem;
+    border: none;
+    background: transparent;
+    border-radius: 0.375rem;
     flex-shrink: 0;
-    pointer-events: auto; /* Ensure add button is clickable */
+    pointer-events: auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+    color: var(--body-color);
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-left: 0.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+#add-tab-btn:hover {
+    opacity: 1;
+    background-color: var(--output-bg);
+    transform: scale(1.05);
 }
 
 /* Dark mode adjustments */
-html[data-bs-theme="dark"] #file-tabs {
+html[data-bs-theme="dark"] .file-tab-close:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+html[data-bs-theme="dark"] #add-tab-btn:hover {
     background-color: var(--output-bg);
-    border-color: var(--border-color);
-}
-
-html[data-bs-theme="dark"] .file-tab {
-    background-color: var(--output-bg);
-    border-color: var(--border-color);
-    color: var(--body-color);
-}
-
-html[data-bs-theme="dark"] .file-tab:hover {
-    background-color: var(--code-wrapper-bg);
-}
-
-html[data-bs-theme="dark"] .file-tab.active {
-    background-color: var(--body-bg);
-    border-bottom-color: var(--body-bg);
-    color: var(--body-color);
 }
 
 html[data-bs-theme="dark"] .file-tab.active::after {
