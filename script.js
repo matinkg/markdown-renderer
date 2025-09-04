@@ -31,6 +31,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileTabsContainer = document.getElementById('file-tabs-container');
     const fileTabsList = document.querySelector('.tab-list');
     const addTabBtn = document.getElementById('add-tab-btn');
+    // Rename Modal Elements
+    const renameFileModal = document.getElementById('renameFileModal');
+    const fileNameInput = document.getElementById('fileNameInput');
+    const confirmRenameBtn = document.getElementById('confirmRenameBtn');
 
 
     // --- State Variables ---
@@ -43,7 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- File Management State ---
     let files = {};
     let activeFileId = null;
-    let nextFileId = 1;
 
     // --- Header Height Sync (Tabs/Direction) ---
     function syncHeaderHeights() {
@@ -61,9 +64,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- File Management Functions ---
+    function generateUniqueFileId() {
+        // Use current timestamp in milliseconds for unique ID
+        let id = Date.now();
+        // In the rare case of collision (same millisecond), increment by 1
+        while (files[id]) {
+            id++;
+        }
+        return id;
+    }
+
     function createNewFile(name = null, content = '') {
-        const id = nextFileId++;
-        const fileName = name || `File ${id}`;
+        const id = generateUniqueFileId();
+        const fileName = name || 'New File';
         
         files[id] = {
             id: id,
@@ -127,6 +140,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Modal-based rename functionality
+    function showRenameModal(fileId) {
+        if (!files[fileId]) return;
+        
+        const currentName = files[fileId].name;
+        fileNameInput.value = currentName;
+        
+        // Store the fileId for the confirm handler
+        confirmRenameBtn.dataset.fileId = fileId;
+        
+        // Show modal
+        const modal = new bootstrap.Modal(renameFileModal);
+        modal.show();
+        
+        // Focus and select text in input after modal is shown
+        renameFileModal.addEventListener('shown.bs.modal', () => {
+            fileNameInput.focus();
+            fileNameInput.select();
+        }, { once: true });
+    }
+
+    function handleRenameConfirm() {
+        const fileId = parseInt(confirmRenameBtn.dataset.fileId);
+        const newName = fileNameInput.value.trim();
+        
+        if (newName && files[fileId]) {
+            renameFile(fileId, newName);
+        }
+        
+        // Hide modal
+        const modal = bootstrap.Modal.getInstance(renameFileModal);
+        if (modal) {
+            modal.hide();
+        }
+    }
+
     function createTabElement(file) {
         const tab = document.createElement('div');
         tab.className = `file-tab ${file.id === activeFileId ? 'active' : ''}`;
@@ -174,10 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     activeFileId = fileIds.length > 0 ? parseInt(fileIds[0]) : null;
                 }
                 
-                // Update nextFileId to avoid conflicts
-                const maxId = Math.max(...Object.keys(files).map(id => parseInt(id)));
-                nextFileId = maxId + 1;
-                
                 // Load active file content into textarea
                 if (activeFileId && files[activeFileId]) {
                     markdownInput.value = files[activeFileId].content;
@@ -192,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Fallback: create first file with legacy saved content or empty
         const savedInput = localStorage.getItem('markdownInputContent') || '';
-        const firstFileId = createNewFile('File 1', savedInput);
+        const firstFileId = createNewFile('New File', savedInput);
         switchToFile(firstFileId);
     }
 
@@ -827,16 +872,26 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        // If clicking on the already active tab, show rename modal
+        if (fileId === activeFileId) {
+            showRenameModal(fileId);
+            return;
+        }
+        
         // Handle tab clicks (switch file)
         switchToFile(fileId);
     });
 
-    // Tab double-click to rename
+    // Tab double-click to rename (only for inactive tabs)
     fileTabsList.addEventListener('dblclick', (event) => {
         const tab = event.target.closest('.file-tab');
         if (!tab || event.target.closest('.file-tab-close')) return;
 
         const fileId = parseInt(tab.dataset.fileId);
+        
+        // Only allow double-click rename for inactive tabs
+        if (fileId === activeFileId) return;
+        
         const nameSpan = tab.querySelector('.file-tab-name');
         
         if (!nameSpan || nameSpan.style.display === 'none') return; // Already editing
@@ -875,6 +930,17 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Prevent the click event from interfering
         event.stopPropagation();
+    });
+
+    // Modal event handlers
+    confirmRenameBtn.addEventListener('click', handleRenameConfirm);
+    
+    // Handle Enter key in modal input
+    fileNameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleRenameConfirm();
+        }
     });
 
     // Update file content when textarea changes
