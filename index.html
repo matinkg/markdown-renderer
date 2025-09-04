@@ -73,58 +73,80 @@
         <div class="row g-3 preview-container">
             <!-- Input Column -->
             <div class="col-lg-6" id="input-column">
-                <div class="h-100 d-flex flex-column">
-                    <!-- START: Markdown Toolbar and Input Header Controls -->
-                    <div id="markdown-toolbar" class="panel-header-controls pb-2">
-                        <!-- Formatting Buttons -->
-                        <div class="btn-group btn-group-sm me-2" role="group" aria-label="Formatting">
-                            <button type="button" class="btn btn-outline-secondary" title="Bold (Ctrl+B)"
-                                data-syntax="bold"><i class="bi bi-type-bold"></i></button>
-                            <button type="button" class="btn btn-outline-secondary" title="Italic (Ctrl+I)"
-                                data-syntax="italic"><i class="bi bi-type-italic"></i></button>
-                            <button type="button" class="btn btn-outline-secondary" title="Strikethrough"
-                                data-syntax="strikethrough"><i class="bi bi-type-strikethrough"></i></button>
+                <div class="h-100 d-flex flex-column position-relative">
+                    <!-- START: File Tabs Container (moved to top) -->
+                    <div id="file-tabs-container" class="panel-header-controls pb-2">
+                        <div id="file-tabs" class="d-flex align-items-center">
+                            <div class="tab-list d-flex flex-grow-1 overflow-auto">
+                                <!-- File tabs will be dynamically added here -->
+                            </div>
+                            <button id="add-tab-btn" class="btn btn-sm btn-outline-secondary ms-2" title="Add New File">
+                                <i class="bi bi-plus"></i>
+                            </button>
                         </div>
-                        <!-- Structure Buttons -->
-                        <div class="btn-group btn-group-sm me-2" role="group" aria-label="Structure">
-                            <button type="button" class="btn btn-outline-secondary" title="Link (Ctrl+K)"
-                                data-syntax="link"><i class="bi bi-link-45deg"></i></button>
-                            <button type="button" class="btn btn-outline-secondary" title="Inline Code"
-                                data-syntax="inline-code"><i class="bi bi-code"></i></button>
-                            <button type="button" class="btn btn-outline-secondary" title="Code Block"
-                                data-syntax="code-block"><i class="bi bi-code-slash"></i></button>
-                            <button type="button" class="btn btn-outline-secondary" title="Unordered List"
-                                data-syntax="ul-list"><i class="bi bi-list-ul"></i></button>
-                            <button type="button" class="btn btn-outline-secondary" title="Ordered List"
-                                data-syntax="ol-list"><i class="bi bi-list-ol"></i></button>
-                            <button type="button" class="btn btn-outline-secondary" title="Blockquote"
-                                data-syntax="blockquote"><i class="bi bi-blockquote-left"></i></button>
-                            <button type="button" class="btn btn-outline-secondary" title="Image" data-syntax="image"><i
-                                    class="bi bi-image"></i></button>
-                        </div>
-                        <!-- Headings Buttons -->
-                        <div class="btn-group btn-group-sm me-2" role="group" aria-label="Headings">
-                            <button type="button" class="btn btn-outline-secondary" title="Heading 1"
-                                data-syntax="h1"><i class="bi bi-type-h1"></i></button>
-                            <button type="button" class="btn btn-outline-secondary" title="Heading 2"
-                                data-syntax="h2"><i class="bi bi-type-h2"></i></button>
-                            <button type="button" class="btn btn-outline-secondary" title="Heading 3"
-                                data-syntax="h3"><i class="bi bi-type-h3"></i></button>
-                            <button type="button" class="btn btn-outline-secondary" title="Horizontal Rule"
-                                data-syntax="hr"><i class="bi bi-hr"></i></button>
-                        </div>
-                        <!-- START: Character and Word Count Display -->
-                        <div id="input-counts" class="ms-auto small text-muted d-flex gap-2 align-items-center">
-                            <span id="char-count" title="Character Count">Chars: 0</span>
-                            <span>|</span>
-                            <span id="word-count" title="Word Count">Words: 0</span>
-                        </div>
-                        <!-- END: Character and Word Count Display -->
                     </div>
-                    <!-- END: Markdown Toolbar and Input Header Controls -->
-                    <label for="markdown-input" class="form-label visually-hidden">Markdown Input</label>
-                    <textarea id="markdown-input" class="form-control flex-grow-1" spellcheck="false"
-                        placeholder="Enter your Markdown here (supports $inline$ and $$display$$ math)..."></textarea>
+                    <!-- END: File Tabs Container -->
+
+                    <div class="markdown-editor-container flex-grow-1 position-relative d-flex flex-column">
+                        <!-- START: Markdown Toolbar -->
+                        <div id="markdown-toolbar" class="panel-header-controls">
+                            <div class="toolbar-scrollable d-flex align-items-center">
+                                <!-- Formatting Buttons -->
+                                <div class="btn-group btn-group-sm me-2" role="group" aria-label="Formatting">
+                                    <button type="button" class="btn btn-outline-secondary" title="Bold (Ctrl+B)"
+                                        data-syntax="bold"><i class="bi bi-type-bold"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary" title="Italic (Ctrl+I)"
+                                        data-syntax="italic"><i class="bi bi-type-italic"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary" title="Strikethrough"
+                                        data-syntax="strikethrough"><i class="bi bi-type-strikethrough"></i></button>
+                                </div>
+                                <!-- Structure Buttons -->
+                                <div class="btn-group btn-group-sm me-2" role="group" aria-label="Structure">
+                                    <button type="button" class="btn btn-outline-secondary" title="Link (Ctrl+K)"
+                                        data-syntax="link"><i class="bi bi-link-45deg"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary" title="Inline Code"
+                                        data-syntax="inline-code"><i class="bi bi-code"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary" title="Code Block"
+                                        data-syntax="code-block"><i class="bi bi-code-slash"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary" title="Unordered List"
+                                        data-syntax="ul-list"><i class="bi bi-list-ul"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary" title="Ordered List"
+                                        data-syntax="ol-list"><i class="bi bi-list-ol"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary" title="Blockquote"
+                                        data-syntax="blockquote"><i class="bi bi-blockquote-left"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary" title="Image" data-syntax="image"><i
+                                            class="bi bi-image"></i></button>
+                                </div>
+                                <!-- Headings Buttons -->
+                                <div class="btn-group btn-group-sm me-2" role="group" aria-label="Headings">
+                                    <button type="button" class="btn btn-outline-secondary" title="Heading 1"
+                                        data-syntax="h1"><i class="bi bi-type-h1"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary" title="Heading 2"
+                                        data-syntax="h2"><i class="bi bi-type-h2"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary" title="Heading 3"
+                                        data-syntax="h3"><i class="bi bi-type-h3"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary" title="Horizontal Rule"
+                                        data-syntax="hr"><i class="bi bi-hr"></i></button>
+                                </div>
+                            </div>
+                            <!-- Always visible Character and Word Count Display -->
+                            <div id="input-counts" class="ms-2 small text-muted d-flex gap-2 align-items-center">
+                                <span id="char-count" title="Character Count">Chars: 0</span>
+                                <span>|</span>
+                                <span id="word-count" title="Word Count">Words: 0</span>
+                            </div>
+                        </div>
+                        <!-- END: Markdown Toolbar -->
+
+                        <label for="markdown-input" class="form-label visually-hidden">Markdown Input</label>
+                        
+                        <!-- START: Textarea Container -->
+                        <div class="textarea-container flex-grow-1 position-relative">
+                            <textarea id="markdown-input" class="form-control h-100" spellcheck="false"
+                                placeholder="Enter your Markdown here (supports $inline$ and $$display$$ math)..."></textarea>
+                        </div>
+                        <!-- END: Textarea Container -->
+                    </div>
                 </div>
             </div>
 

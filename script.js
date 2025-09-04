@@ -27,6 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Count Display Selectors (New)
     const charCountSpan = document.getElementById('char-count');
     const wordCountSpan = document.getElementById('word-count');
+    // File Tabs Selectors
+    const fileTabsContainer = document.getElementById('file-tabs-container');
+    const fileTabsList = document.querySelector('.tab-list');
+    const addTabBtn = document.getElementById('add-tab-btn');
 
 
     // --- State Variables ---
@@ -35,6 +39,133 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentInlineCodeDirection = 'ltr'; // Default for `code`
     let currentCodeDirection = 'ltr'; // Default for ```code```
     let isFullHeightModeEnabled = false; // Default state for new mode
+
+    // --- File Management State ---
+    let files = {};
+    let activeFileId = null;
+    let nextFileId = 1;
+
+
+    // --- File Management Functions ---
+    function createNewFile(name = null, content = '') {
+        const id = nextFileId++;
+        const fileName = name || `File ${id}`;
+        
+        files[id] = {
+            id: id,
+            name: fileName,
+            content: content
+        };
+        
+        return id;
+    }
+
+    function switchToFile(fileId) {
+        // Save current file content before switching
+        if (activeFileId && files[activeFileId]) {
+            files[activeFileId].content = markdownInput.value;
+        }
+        
+        activeFileId = fileId;
+        
+        // Load the new file content
+        if (files[fileId]) {
+            markdownInput.value = files[fileId].content;
+            updateCounts();
+            if (isAutoRenderEnabled) {
+                renderMarkdown();
+            }
+        }
+        
+        updateTabsUI();
+    }
+
+    function deleteFile(fileId) {
+        if (Object.keys(files).length <= 1) {
+            return; // Don't delete the last file
+        }
+        
+        delete files[fileId];
+        
+        // If deleted file was active, switch to first available file
+        if (activeFileId === fileId) {
+            const remainingIds = Object.keys(files);
+            if (remainingIds.length > 0) {
+                switchToFile(parseInt(remainingIds[0]));
+            }
+        }
+        
+        updateTabsUI();
+    }
+
+    function renameFile(fileId, newName) {
+        if (files[fileId]) {
+            files[fileId].name = newName;
+            updateTabsUI();
+        }
+    }
+
+    function createTabElement(file) {
+        const tab = document.createElement('div');
+        tab.className = `file-tab ${file.id === activeFileId ? 'active' : ''}`;
+        tab.dataset.fileId = file.id;
+        
+        tab.innerHTML = `
+            <span class="file-tab-name">${file.name}</span>
+            <button class="file-tab-close" type="button" title="Close file">
+                <i class="bi bi-x"></i>
+            </button>
+        `;
+        
+        return tab;
+    }
+
+    function updateTabsUI() {
+        fileTabsList.innerHTML = '';
+        
+        Object.values(files).forEach(file => {
+            const tabElement = createTabElement(file);
+            fileTabsList.appendChild(tabElement);
+        });
+    }
+
+    function initializeFiles() {
+        // Try to load saved files from localStorage
+        const savedFiles = localStorage.getItem('markdownFiles');
+        const savedActiveFileId = localStorage.getItem('markdownActiveFileId');
+        
+        if (savedFiles) {
+            try {
+                files = JSON.parse(savedFiles);
+                activeFileId = savedActiveFileId ? parseInt(savedActiveFileId) : null;
+                
+                // Ensure we have a valid active file
+                if (!activeFileId || !files[activeFileId]) {
+                    const fileIds = Object.keys(files);
+                    activeFileId = fileIds.length > 0 ? parseInt(fileIds[0]) : null;
+                }
+                
+                // Update nextFileId to avoid conflicts
+                const maxId = Math.max(...Object.keys(files).map(id => parseInt(id)));
+                nextFileId = maxId + 1;
+                
+                // Load active file content into textarea
+                if (activeFileId && files[activeFileId]) {
+                    markdownInput.value = files[activeFileId].content;
+                }
+                
+                updateTabsUI();
+                return;
+            } catch (e) {
+                console.warn('Failed to load saved files:', e);
+            }
+        }
+        
+        // Fallback: create first file with legacy saved content or empty
+        const savedInput = localStorage.getItem('markdownInputContent') || '';
+        const firstFileId = createNewFile('File 1', savedInput);
+        switchToFile(firstFileId);
+    }
 
 
     // --- Debounce function ---
@@ -578,18 +709,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Event Listeners Setup ---
     const debouncedRender = debounce(renderMarkdown, 300); // Debounce render calls by 300ms
 
-    // Render on input if auto-render is enabled
-    markdownInput.addEventListener('input', () => {
-        updateCounts(); // Update counts on every input
-        if (isAutoRenderEnabled) {
-            debouncedRender(); // Use debounced rendering
-        }
-        // Save content frequently but debounced
-        debouncedSaveInput();
-    });
     // Debounced saving function
     const debouncedSaveInput = debounce(() => {
-        localStorage.setItem('markdownInputContent', markdownInput.value);
+        if (activeFileId && files[activeFileId]) {
+            // Save the files object to localStorage
+            localStorage.setItem('markdownFiles', JSON.stringify(files));
+            localStorage.setItem('markdownActiveFileId', activeFileId.toString());
+        }
     }, 1000); // Save every 1 second after input stops
 
     // Header Controls Listeners
@@ -644,7 +770,95 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- File Tabs Event Handlers ---
+    
+    // Add new tab button
+    addTabBtn.addEventListener('click', () => {
+        const newFileId = createNewFile();
+        switchToFile(newFileId);
+    });
+
+    // Tab interactions (using event delegation)
+    fileTabsList.addEventListener('click', (event) => {
+        const tab = event.target.closest('.file-tab');
+        if (!tab) return;
+
+        const fileId = parseInt(tab.dataset.fileId);
+        
+        // Handle close button clicks
+        if (event.target.closest('.file-tab-close')) {
+            event.stopPropagation();
+            deleteFile(fileId);
+            return;
+        }
+        
+        // Handle tab clicks (switch file)
+        switchToFile(fileId);
+    });
+
+    // Tab double-click to rename
+    fileTabsList.addEventListener('dblclick', (event) => {
+        const tab = event.target.closest('.file-tab');
+        if (!tab || event.target.closest('.file-tab-close')) return;
+
+        const fileId = parseInt(tab.dataset.fileId);
+        const nameSpan = tab.querySelector('.file-tab-name');
+        
+        if (!nameSpan || nameSpan.style.display === 'none') return; // Already editing
+        
+        const currentName = nameSpan.textContent;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentName;
+        input.className = 'file-tab-name editing';
+        input.style.width = Math.max(nameSpan.offsetWidth, 100) + 'px';
+        
+        // Replace span with input
+        nameSpan.style.display = 'none';
+        nameSpan.parentNode.insertBefore(input, nameSpan);
+        
+        input.focus();
+        input.select();
+        
+        const finishEditing = () => {
+            const newName = input.value.trim() || currentName;
+            renameFile(fileId, newName);
+            input.remove();
+            nameSpan.style.display = '';
+        };
+        
+        input.addEventListener('blur', finishEditing);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                finishEditing();
+            } else if (e.key === 'Escape') {
+                input.value = currentName;
+                finishEditing();
+            }
+        });
+        
+        // Prevent the click event from interfering
+        event.stopPropagation();
+    });
+
+    // Update file content when textarea changes
+    markdownInput.addEventListener('input', () => {
+        if (activeFileId && files[activeFileId]) {
+            files[activeFileId].content = markdownInput.value;
+        }
+        updateCounts(); // Update counts on every input
+        if (isAutoRenderEnabled) {
+            debouncedRender(); // Use debounced rendering
+        }
+        // Save content frequently but debounced
+        debouncedSaveInput();
+    });
+
     // --- Initial Setup on Load ---
+
+    // Initialize file management system
+    initializeFiles();
 
     // 1. Theme
     const savedTheme = localStorage.getItem('markdownRendererTheme') || 'dark'; // Default to dark
@@ -685,20 +899,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Apply initial layout based on visibility state *after* setting the switch
     toggleInputArea();
 
-
-    // 8. Input Content
-    const savedInput = localStorage.getItem('markdownInputContent');
-    if (savedInput) {
-        markdownInput.value = savedInput; // Load saved Markdown text
-    }
-
-    // 9. Initial Render and Counts (Render is already triggered by setTextDirection)
+    // Initial Render and Counts (Render is already triggered by setTextDirection)
     // renderMarkdown(); // Perform the first render based on loaded content and settings - Removed as setTextDirection calls it
     updateCounts(); // Calculate initial counts
 
-    // 10. Save input content on window close/refresh as a fallback
+    // Save files on window close/refresh as a fallback
     window.addEventListener('beforeunload', () => {
-        localStorage.setItem('markdownInputContent', markdownInput.value);
+        if (activeFileId && files[activeFileId]) {
+            files[activeFileId].content = markdownInput.value;
+            localStorage.setItem('markdownFiles', JSON.stringify(files));
+            localStorage.setItem('markdownActiveFileId', activeFileId.toString());
+        }
     });
 
 }); // End DOMContentLoaded

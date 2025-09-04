@@ -81,10 +81,10 @@ header {
 .panel-header-controls#direction-controls-container {
 	justify-content: flex-end;
 }
-.panel-header-controls#markdown-toolbar {
+.panel-header-controls#file-tabs-container {
 	justify-content: flex-start;
-	padding-bottom: 0.5rem !important;
 }
+
 
 #markdown-input {
 	font-family: monospace;
@@ -532,3 +532,342 @@ html.full-height-mode #markdown-input {
 	}
 }
 /* --- END: Full Height Mode Styles --- */
+
+/* --- START: File Tabs Styles --- */
+.textarea-container {
+    position: relative;
+}
+
+#file-tabs-container {
+    /* Remove absolute positioning, now positioned normally at top */
+    position: relative;
+    min-height: var(--panel-header-height);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem !important;
+}
+
+#file-tabs {
+    background-color: var(--output-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    padding: 0.25rem 0.5rem;
+    min-height: 40px;
+    align-items: center;
+    flex-wrap: nowrap;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    width: 100%;
+}
+
+/* Update markdown input to account for the toolbar overlay */
+#markdown-input {
+	font-family: monospace;
+	resize: none; /* Changed from none to vertical by default maybe? Re-setting to none */
+}
+
+.tab-list {
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.tab-list::-webkit-scrollbar {
+    display: none; /* WebKit browsers */
+}
+
+.file-tab {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    background-color: var(--body-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.25rem 0.25rem 0 0;
+    cursor: pointer;
+    white-space: nowrap;
+    min-width: 120px;
+    max-width: 200px;
+    transition: all 0.2s ease;
+    position: relative;
+    font-size: 0.875rem;
+    pointer-events: auto; /* Ensure tabs are clickable */
+}
+
+.file-tab:hover {
+    background-color: var(--output-bg);
+}
+
+.file-tab.active {
+    background-color: var(--body-bg);
+    border-bottom-color: var(--body-bg);
+    z-index: 1;
+    position: relative;
+}
+
+.file-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--body-bg);
+}
+
+.file-tab-name {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    user-select: none;
+}
+
+.file-tab-name.editing {
+    user-select: text;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    padding: 0;
+    width: 100%;
+}
+
+.file-tab-close {
+    margin-left: 0.25rem;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    opacity: 0.6;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.file-tab-close:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+html[data-bs-theme="dark"] .file-tab-close:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.file-tab-close i {
+    font-size: 10px;
+}
+
+#add-tab-btn {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    flex-shrink: 0;
+    pointer-events: auto; /* Ensure add button is clickable */
+}
+
+/* Dark mode adjustments */
+html[data-bs-theme="dark"] #file-tabs {
+    background-color: var(--output-bg);
+    border-color: var(--border-color);
+}
+
+html[data-bs-theme="dark"] .file-tab {
+    background-color: var(--output-bg);
+    border-color: var(--border-color);
+    color: var(--body-color);
+}
+
+html[data-bs-theme="dark"] .file-tab:hover {
+    background-color: var(--code-wrapper-bg);
+}
+
+html[data-bs-theme="dark"] .file-tab.active {
+    background-color: var(--body-bg);
+    border-bottom-color: var(--body-bg);
+    color: var(--body-color);
+}
+
+html[data-bs-theme="dark"] .file-tab.active::after {
+    background-color: var(--body-bg);
+}
+/* --- END: File Tabs Styles --- */
+
+/* Dark mode adjustments for markdown toolbar */
+html[data-bs-theme="dark"] #markdown-toolbar {
+    background-color: var(--output-bg);
+    border-color: var(--border-color);
+}
+
+html[data-bs-theme="dark"] #markdown-toolbar #input-counts {
+    background-color: var(--body-bg);
+    border-color: var(--border-color);
+    color: var(--body-color);
+}
+
+/* --- START: Responsive Markdown Toolbar Styles --- */
+@media (max-width: 768px) {
+    .panel-header-controls#markdown-toolbar {
+        padding: 0.375rem !important; /* Slightly reduce padding */
+    }
+    
+    .panel-header-controls#markdown-toolbar .toolbar-scrollable {
+        gap: 0.25rem; /* Reduce gap on mobile */
+    }
+    
+    .panel-header-controls#markdown-toolbar .btn-group {
+        margin-right: 0.25rem; /* Reduce margin between groups */
+    }
+    
+    .panel-header-controls#markdown-toolbar .btn-group:last-of-type {
+        margin-right: 0;
+    }
+    
+    .panel-header-controls#markdown-toolbar .btn {
+        padding: 0.25rem 0.375rem; /* Slightly smaller buttons on mobile */
+        font-size: 0.875rem;
+    }
+    
+    .panel-header-controls#markdown-toolbar #input-counts {
+        font-size: 0.75rem; /* Smaller text on mobile */
+        padding: 0.2rem 0.4rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .panel-header-controls#markdown-toolbar {
+        padding: 0.25rem !important;
+    }
+    
+    .panel-header-controls#markdown-toolbar .toolbar-scrollable {
+        gap: 0.2rem; /* Even smaller gap on very small screens */
+    }
+    
+    .panel-header-controls#markdown-toolbar .btn {
+        padding: 0.2rem 0.3rem; /* Even smaller buttons on very small screens */
+        font-size: 0.8rem;
+    }
+    
+    .panel-header-controls#markdown-toolbar .btn i {
+        font-size: 0.9rem; /* Slightly smaller icons */
+    }
+    
+    .panel-header-controls#markdown-toolbar #input-counts {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.3rem;
+    }
+}
+/* --- END: Responsive Markdown Toolbar Styles --- */
+
+/* --- START: Markdown Toolbar Styles --- */
+#markdown-toolbar {
+	background-color: var(--output-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 0.375rem;
+	padding: 0.25rem 0.5rem;
+	min-height: 40px;
+	align-items: center;
+	flex-wrap: nowrap;
+	transition: background-color 0.3s ease, border-color 0.3s ease;
+	width: 100%;
+}
+
+#markdown-toolbar .toolbar-scrollable {
+	flex-grow: 1;
+	overflow-x: auto;
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE/Edge */
+	flex-wrap: nowrap;
+	gap: 0.5rem;
+}
+
+.markdown-editor-container {
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    overflow: hidden;
+}
+
+#markdown-toolbar {
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 0;
+}
+
+.textarea-container {
+    flex: 1;
+}
+
+#markdown-input {
+    border: none;
+    border-radius: 0;
+    resize: none;
+}
+
+#markdown-input:focus {
+    box-shadow: none;
+}
+
+
+#markdown-toolbar .toolbar-scrollable::-webkit-scrollbar {
+	display: none; /* WebKit browsers */
+}
+
+#markdown-toolbar .btn-group {
+	flex-shrink: 0; /* Prevent button groups from shrinking */
+	white-space: nowrap;
+}
+
+#markdown-toolbar .btn {
+	flex-shrink: 0; /* Prevent individual buttons from shrinking */
+}
+
+#markdown-toolbar #input-counts {
+	background-color: var(--body-bg);
+	border: 1px solid var(--border-color);
+	padding: 0.25rem 0.5rem;
+	border-radius: 0.25rem;
+	flex-shrink: 0; /* Prevent counts from shrinking */
+	white-space: nowrap;
+	transition: background-color 0.3s ease, border-color 0.3s ease;
+	width: max-content;
+}
+/* --- END: Markdown Toolbar Styles --- */
+
+/* --- START: Markdown Editor Container --- */
+.markdown-editor-container {
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#markdown-toolbar {
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 0;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    background-color: var(--body-bg);
+}
+
+#markdown-input {
+    border: none;
+    border-radius: 0;
+    resize: none;
+}
+
+#markdown-input:focus {
+    box-shadow: none;
+}
+
+.markdown-editor-container:focus-within {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+/* --- END: Markdown Editor Container --- */
+
