@@ -35,6 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const renameFileModal = document.getElementById('renameFileModal');
     const fileNameInput = document.getElementById('fileNameInput');
     const confirmRenameBtn = document.getElementById('confirmRenameBtn');
+    // Copy Button Selector
+    const copyOutputBtn = document.getElementById('copyOutputBtn');
 
 
     // --- State Variables ---
@@ -783,6 +785,155 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // --- END: Full Height Mode ---
 
+    // --- Copy Output Function ---
+    async function copyOutputWithStyling() {
+        try {
+            // Get the output content with all its styling
+            const outputElement = markdownOutput;
+            
+            if (!outputElement || !outputElement.innerHTML.trim()) {
+                alert('No content to copy!');
+                return;
+            }
+
+            // Create a temporary container to process the content
+            const tempContainer = document.createElement('div');
+            tempContainer.innerHTML = outputElement.innerHTML;
+            
+            // Get computed styles for the output container
+            const outputStyles = window.getComputedStyle(outputElement);
+            
+            // Create a complete HTML document with inline styles
+            const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* Include relevant CSS variables and styles */
+        body {
+            font-family: ${outputStyles.fontFamily};
+            color: ${outputStyles.color};
+            background-color: ${outputStyles.backgroundColor};
+            line-height: ${outputStyles.lineHeight};
+            margin: 0;
+            padding: 16px;
+        }
+        
+        /* Preserve table styling */
+        table {
+            border-collapse: collapse;
+            margin: 1em 0;
+            width: 100%;
+        }
+        
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        
+        /* Preserve code styling */
+        code {
+            background-color: rgba(175, 184, 193, 0.2);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        pre {
+            background-color: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 16px;
+            overflow: auto;
+        }
+        
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        
+        /* Preserve heading styles */
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            font-weight: bold;
+        }
+        
+        /* Preserve list styling */
+        ul, ol {
+            margin: 1em 0;
+            padding-left: 2em;
+        }
+        
+        /* Preserve blockquote styling */
+        blockquote {
+            margin: 1em 0;
+            padding-left: 1em;
+            border-left: 4px solid #ddd;
+            color: #666;
+        }
+        
+        /* Preserve link styling */
+        a {
+            color: #0d6efd;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+${tempContainer.innerHTML}
+</body>
+</html>`;
+
+            // Create ClipboardItem with HTML content
+            const clipboardItem = new ClipboardItem({
+                'text/html': new Blob([htmlContent], { type: 'text/html' }),
+                'text/plain': new Blob([outputElement.innerText], { type: 'text/plain' })
+            });
+
+            // Copy to clipboard
+            await navigator.clipboard.write([clipboardItem]);
+            
+            // Visual feedback
+            const originalText = copyOutputBtn.innerHTML;
+            copyOutputBtn.innerHTML = '<i class="bi bi-check"></i> Copied!';
+            copyOutputBtn.classList.remove('btn-outline-secondary');
+            copyOutputBtn.classList.add('btn-success');
+            
+            setTimeout(() => {
+                copyOutputBtn.innerHTML = originalText;
+                copyOutputBtn.classList.remove('btn-success');
+                copyOutputBtn.classList.add('btn-outline-secondary');
+            }, 2000);
+            
+        } catch (error) {
+            console.error('Failed to copy:', error);
+            
+            // Fallback: copy as plain text
+            try {
+                await navigator.clipboard.writeText(markdownOutput.innerText);
+                alert('Content copied as plain text (styled copy not supported in this browser)');
+            } catch (fallbackError) {
+                console.error('Fallback copy failed:', fallbackError);
+                alert('Failed to copy content. Please try selecting and copying manually.');
+            }
+        }
+    }
+
 
     // --- Event Listeners Setup ---
     const debouncedRender = debounce(renderMarkdown, 300); // Debounce render calls by 300ms
@@ -810,6 +961,9 @@ document.addEventListener('DOMContentLoaded', () => {
     inlineCodeDirRtlBtn.addEventListener('click', () => setInlineCodeDirection('rtl'));
     codeDirLtrBtn.addEventListener('click', () => setCodeDirection('ltr')); // For ``` blocks
     codeDirRtlBtn.addEventListener('click', () => setCodeDirection('rtl')); // For ``` blocks
+
+    // Copy Output Button Event
+    copyOutputBtn.addEventListener('click', copyOutputWithStyling);
 
 
     // Markdown Toolbar Button Clicks (using event delegation)

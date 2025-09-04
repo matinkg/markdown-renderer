@@ -154,33 +154,43 @@
             <div class="col-lg-6" id="output-column">
                 <div class="h-100 d-flex flex-column"> <!-- Add flex column structure -->
                     <!-- Direction Controls Container (acts as header) -->
-                    <div class="d-flex flex-wrap justify-content-end gap-3 mb-2 panel-header-controls"
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-2 panel-header-controls"
                         id="direction-controls-container">
-                        <!-- Text Direction -->
-                        <div class="d-flex align-items-center gap-2" title="Set Text Direction">
-                            <span class="text-nowrap small text-muted"><i class="bi bi-fonts"></i></span>
-                            <div class="btn-group btn-group-sm" role="group" aria-label="Text Direction">
-                                <button type="button" class="btn btn-outline-secondary" id="textDirLtrBtn">LTR</button>
-                                <button type="button" class="btn btn-outline-secondary" id="textDirRtlBtn">RTL</button>
-                            </div>
+                        <!-- Copy Button (Left side) -->
+                        <div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="copyOutputBtn" title="Copy Output with Styling">
+                                <i class="bi bi-clipboard"></i> Copy
+                            </button>
                         </div>
-                        <!-- START: Inline Code Direction -->
-                        <div class="d-flex align-items-center gap-2" title="Set Inline Code Direction (`code`)">
-                            <span class="text-nowrap small text-muted"><i class="bi bi-code"></i></span>
-                            <div class="btn-group btn-group-sm" role="group" aria-label="Inline Code Direction">
-                                <button type="button" class="btn btn-outline-secondary"
-                                    id="inlineCodeDirLtrBtn">LTR</button>
-                                <button type="button" class="btn btn-outline-secondary"
-                                    id="inlineCodeDirRtlBtn">RTL</button>
+                        
+                        <!-- Direction Controls (Right side) -->
+                        <div class="d-flex flex-wrap gap-3">
+                            <!-- Text Direction -->
+                            <div class="d-flex align-items-center gap-2" title="Set Text Direction">
+                                <span class="text-nowrap small text-muted"><i class="bi bi-fonts"></i></span>
+                                <div class="btn-group btn-group-sm" role="group" aria-label="Text Direction">
+                                    <button type="button" class="btn btn-outline-secondary" id="textDirLtrBtn">LTR</button>
+                                    <button type="button" class="btn btn-outline-secondary" id="textDirRtlBtn">RTL</button>
+                                </div>
                             </div>
-                        </div>
-                        <!-- END: Inline Code Direction -->
-                        <!-- Code Block Direction -->
-                        <div class="d-flex align-items-center gap-2" title="Set Code Block Direction (```code```)">
-                            <span class="text-nowrap small text-muted"><i class="bi bi-code-slash"></i></span>
-                            <div class="btn-group btn-group-sm" role="group" aria-label="Code Block Direction">
-                                <button type="button" class="btn btn-outline-secondary" id="codeDirLtrBtn">LTR</button>
-                                <button type="button" class="btn btn-outline-secondary" id="codeDirRtlBtn">RTL</button>
+                            <!-- START: Inline Code Direction -->
+                            <div class="d-flex align-items-center gap-2" title="Set Inline Code Direction (`code`)">
+                                <span class="text-nowrap small text-muted"><i class="bi bi-code"></i></span>
+                                <div class="btn-group btn-group-sm" role="group" aria-label="Inline Code Direction">
+                                    <button type="button" class="btn btn-outline-secondary"
+                                        id="inlineCodeDirLtrBtn">LTR</button>
+                                    <button type="button" class="btn btn-outline-secondary"
+                                        id="inlineCodeDirRtlBtn">RTL</button>
+                                </div>
+                            </div>
+                            <!-- END: Inline Code Direction -->
+                            <!-- Code Block Direction -->
+                            <div class="d-flex align-items-center gap-2" title="Set Code Block Direction (```code```)">
+                                <span class="text-nowrap small text-muted"><i class="bi bi-code-slash"></i></span>
+                                <div class="btn-group btn-group-sm" role="group" aria-label="Code Block Direction">
+                                    <button type="button" class="btn btn-outline-secondary" id="codeDirLtrBtn">LTR</button>
+                                    <button type="button" class="btn btn-outline-secondary" id="codeDirRtlBtn">RTL</button>
+                                </div>
                             </div>
                         </div>
                     </div>
