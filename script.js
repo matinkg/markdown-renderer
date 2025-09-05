@@ -294,6 +294,17 @@ document.addEventListener('DOMContentLoaded', () => {
             gfm: true,    // Use GitHub Flavored Markdown
         });
 
+        // Disable indented code blocks, which are handled by the 'code' tokenizer.
+        // The ``` blocks are handled by the 'fences' tokenizer and will not be affected.
+        marked.use({
+            tokenizer: {
+                code(src, tokens) {
+                    // Return undefined to disable this tokenizer.
+                    return undefined;
+                }
+            }
+        });
+
         try {
             // 1. Parse Markdown to HTML using the text with placeholders
             const html = marked.parse(textWithPlaceholders);
