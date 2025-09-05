@@ -275,15 +275,22 @@ document.addEventListener('DOMContentLoaded', () => {
         let markdownText = markdownInput.value;
 
         // --- START: MathJax/KaTeX block processing ---
-        // Temporarily replace block-level math expressions ($$ ... $$) with placeholders
-        // to prevent `marked` from interfering with them (e.g., adding <p> tags inside).
+        // Temporarily replace block-level ($$ ... $$) and inline ($...$) math expressions
+        // with placeholders to prevent `marked` from interfering with them.
+        // Process block math first, then inline math.
         const mathBlocks = [];
-        const textWithPlaceholders = markdownText.replace(/\$\$([\s\S]*?)\$\$/g, (match, content) => {
+        let textWithPlaceholders = markdownText.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
             const id = mathBlocks.length;
             mathBlocks.push(match);
-            // Use a span for the placeholder to keep it inline.
-            // This prevents marked from breaking markdown constructs like bold/italic
-            // when they contain a math block.
+            return `<span class="math-placeholder" data-id="${id}"></span>`;
+        });
+
+        // For inline math, use a regex that is less greedy.
+        // This one avoids matching across paragraphs but can still be greedy on one line.
+        // A proper solution is more complex, but this should handle many common cases.
+        textWithPlaceholders = textWithPlaceholders.replace(/\$([^$\n]+?)\$/g, (match) => {
+            const id = mathBlocks.length;
+            mathBlocks.push(match);
             return `<span class="math-placeholder" data-id="${id}"></span>`;
         });
         // --- END: MathJax/KaTeX block processing ---
