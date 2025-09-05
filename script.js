@@ -274,23 +274,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderMarkdown() {
         let markdownText = markdownInput.value;
 
-        // --- START: Custom logic to disable indented code blocks ---
-        // Split the text by fenced code blocks to avoid replacing indentation inside them.
-        const parts = markdownText.split(/(```[\s\S]*?```)/);
-        const processedParts = parts.map(part => {
-            // If the part is not a fenced code block (i.e., it's regular markdown text)
-            if (!part.startsWith('```')) {
-                // Replace any line starting with 4 spaces or a tab with the line without that indentation.
-                // This effectively disables the indented code block syntax.
-                return part.replace(/^( {4}|\t)/gm, '');
-            }
-            // Return the fenced code block unchanged.
-            return part;
-        });
-        markdownText = processedParts.join('');
-        // --- END: Custom logic ---
-
-
         // --- START: MathJax/KaTeX block processing ---
         // Temporarily replace block-level math expressions ($$ ... $$) with placeholders
         // to prevent `marked` from interfering with them (e.g., adding <p> tags inside).
