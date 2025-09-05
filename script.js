@@ -280,10 +280,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const mathBlocks = [];
         const textWithPlaceholders = markdownText.replace(/\$\$([\s\S]*?)\$\$/g, (match, content) => {
             const id = mathBlocks.length;
-            // Note: We wrap the content in a div to ensure it's treated as a block element.
-            // The extra newlines help `marked` treat this as a distinct block.
             mathBlocks.push(match);
-            return `\n<div class="math-placeholder" data-id="${id}"></div>\n`;
+            // Use a span for the placeholder to keep it inline.
+            // This prevents marked from breaking markdown constructs like bold/italic
+            // when they contain a math block.
+            return `<span class="math-placeholder" data-id="${id}"></span>`;
         });
         // --- END: MathJax/KaTeX block processing ---
 
@@ -312,13 +313,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // --- START: Restore Math Blocks ---
             // Find the placeholders and replace them with their original math content.
-            markdownOutput.querySelectorAll('div.math-placeholder').forEach(placeholder => {
+            markdownOutput.querySelectorAll('span.math-placeholder').forEach(placeholder => {
                 const id = parseInt(placeholder.dataset.id, 10);
                 if (id >= 0 && id < mathBlocks.length) {
                     // Create a text node with the raw math content
                     const mathTextNode = document.createTextNode(mathBlocks[id]);
-                    // Replace the placeholder div with the text node.
-                    // The parent will typically be the markdownOutput itself or a block-level element.
+                    // Replace the placeholder span with the text node.
                     placeholder.parentNode.replaceChild(mathTextNode, placeholder);
                 }
             });
