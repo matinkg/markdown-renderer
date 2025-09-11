@@ -1,4 +1,5 @@
-// markdown-renderer/script.js
+import { render } from './markdown-renderer.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- Selectors ---
     const markdownInput = document.getElementById('markdown-input');
@@ -272,101 +273,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Render Markdown ---
     function renderMarkdown() {
-        let markdownText = markdownInput.value;
+        const markdownText = markdownInput.value;
+        const html = render(markdownText);
+        markdownOutput.innerHTML = html;
 
-        // --- START: MathJax/KaTeX block processing ---
-        // Temporarily replace block-level ($$ ... $$) and inline ($...$) math expressions
-        // with placeholders to prevent `marked` from interfering with them.
-        // Process block math first, then inline math.
-        const mathBlocks = [];
-        let textWithPlaceholders = markdownText.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
-            const id = mathBlocks.length;
-            mathBlocks.push(match);
-            return `<span class="math-placeholder" data-id="${id}"></span>`;
-        });
-
-        // For inline math, use a regex that is less greedy.
-        // This one avoids matching across paragraphs but can still be greedy on one line.
-        // A proper solution is more complex, but this should handle many common cases.
-        textWithPlaceholders = textWithPlaceholders.replace(/\$([^$\n]+?)\$/g, (match) => {
-            const id = mathBlocks.length;
-            mathBlocks.push(match);
-            return `<span class="math-placeholder" data-id="${id}"></span>`;
-        });
-        // --- END: MathJax/KaTeX block processing ---
-
-
-        // Configure marked
-        marked.setOptions({
-            breaks: true, // Convert single line breaks to <br>
-            gfm: true,    // Use GitHub Flavored Markdown
-        });
-
-        // Disable indented code blocks, which are handled by the 'code' tokenizer.
-        // The ``` blocks are handled by the 'fences' tokenizer and will not be affected.
-        marked.use({
-            tokenizer: {
-                code(src, tokens) {
-                    // Return undefined to disable this tokenizer.
-                    return undefined;
-                }
-            }
-        });
-
-        try {
-            // 1. Parse Markdown to HTML using the text with placeholders
-            const html = marked.parse(textWithPlaceholders);
-            markdownOutput.innerHTML = html;
-
-            // --- START: Restore Math Blocks ---
-            // Find the placeholders and replace them with their original math content.
-            markdownOutput.querySelectorAll('span.math-placeholder').forEach(placeholder => {
-                const id = parseInt(placeholder.dataset.id, 10);
-                if (id >= 0 && id < mathBlocks.length) {
-                    // Create a text node with the raw math content
-                    const mathTextNode = document.createTextNode(mathBlocks[id]);
-                    // Replace the placeholder span with the text node.
-                    placeholder.parentNode.replaceChild(mathTextNode, placeholder);
-                }
-            });
-            // --- END: Restore Math Blocks ---
-
-            // 2. Render LaTeX math using KaTeX auto-render on the restored content
-            renderMathInElement(markdownOutput, {
-                delimiters: [
-                    { left: '$$', right: '$$', display: true },
-                    { left: '$', right: '$', display: false }
-                ],
-                throwOnError: false
-            });
-
-            // 3. Apply direction to inline code elements FIRST
-            applyInlineCodeDirectionToElements(currentInlineCodeDirection);
-
-            // 4. Apply Syntax Highlighting to BLOCK code
-            markdownOutput.querySelectorAll('pre code').forEach((block) => {
-                // Check if already highlighted to avoid re-processing
-                if (!block.classList.contains('hljs')) {
-                    try {
-                        hljs.highlightElement(block);
-                    } catch (error) {
-                        console.error("Highlight.js error on block:", error, block);
-                        block.classList.add('hljs-error'); // Optional: Mark errored blocks
-                    }
-                }
-            });
-
-            // 5. Enhance Code Blocks (``` ```) - Adds wrapper, copy button etc.
-            enhanceCodeBlocks(); // This adds wrappers and might re-apply hljs if needed
-
-            // 6. Ensure block code wrappers have the correct direction attribute AFTER enhancing
-            applyCodeDirectionToBlocks(currentCodeDirection);
-
-        } catch (error) {
-            // Catch errors during Markdown parsing or subsequent steps
-            console.error("Rendering error:", error);
-            markdownOutput.innerHTML = `<div class="alert alert-danger">Error rendering content. Please check your Markdown and console for details.</div>`;
-        }
+        // Post-rendering enhancements that need access to the DOM
+        applyInlineCodeDirectionToElements(currentInlineCodeDirection);
+        enhanceCodeBlocks();
+        applyCodeDirectionToBlocks(currentCodeDirection);
     }
 
     // --- Enhance Code Blocks (``` ``` only) ---

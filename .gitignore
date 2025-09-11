@@ -1,1 +1,6 @@
-merged_output.txt
+# Dependencies
+/node_modules
+
+# Build artifacts
+/dist
+.DS_Store
