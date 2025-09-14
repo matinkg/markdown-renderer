@@ -1,3 +1,4 @@
+import './style.css';
 import { render } from './markdown-renderer.js';
 
 document.addEventListener('DOMContentLoaded', () => {
