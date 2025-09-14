@@ -1,5 +1,7 @@
 import './style.css';
 import { render } from './markdown-renderer.js';
+import hljsThemeLight from 'highlight.js/styles/github.css?inline';
+import hljsThemeDark from 'highlight.js/styles/github-dark.css?inline';
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Selectors ---
@@ -12,8 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeSwitchLabel = document.querySelector('label[for="themeSwitch"]');
     const autoRenderSwitch = document.getElementById('autoRenderSwitch');
     const manualRenderButton = document.getElementById('manualRenderButton');
-    const hljsThemeLightLink = document.getElementById('hljs-theme-light');
-    const hljsThemeDarkLink = document.getElementById('hljs-theme-dark');
     const rootElement = document.documentElement; // Get the <html> element
     const fullHeightModeSwitch = document.getElementById('fullHeightModeSwitch'); // New selector
     // Direction Selectors
@@ -417,14 +417,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Theme Switching ---
     function applyTheme(theme) { // theme = 'light' or 'dark'
         rootElement.setAttribute('data-bs-theme', theme);
+        
+        let hljsThemeStyle = document.getElementById('hljs-theme-style');
+        if (!hljsThemeStyle) {
+            hljsThemeStyle = document.createElement('style');
+            hljsThemeStyle.id = 'hljs-theme-style';
+            document.head.appendChild(hljsThemeStyle);
+        }
+
         if (theme === 'dark') {
             themeSwitchLabel.innerHTML = '<i class="bi bi-sun-fill"></i>'; // Sun icon for dark mode
-            hljsThemeDarkLink.removeAttribute('disabled'); // Enable dark HLJS theme
-            hljsThemeLightLink.setAttribute('disabled', 'true'); // Disable light HLJS theme
+            hljsThemeStyle.textContent = hljsThemeDark;
         } else {
             themeSwitchLabel.innerHTML = '<i class="bi bi-moon-stars-fill"></i>'; // Moon icon for light mode
-            hljsThemeLightLink.removeAttribute('disabled'); // Enable light HLJS theme
-            hljsThemeDarkLink.setAttribute('disabled', 'true'); // Disable dark HLJS theme
+            hljsThemeStyle.textContent = hljsThemeLight;
         }
         // Save theme preference
         localStorage.setItem('markdownRendererTheme', theme);
