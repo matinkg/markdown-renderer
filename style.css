@@ -30,6 +30,12 @@
 @import "@fontsource/vazirmatn/400.css"; /* Regular weight */
 @import "@fontsource/vazirmatn/700.css"; /* Bold weight */
 
+/* Poppins font for modern UI elements */
+@import "@fontsource/poppins/400.css";
+@import "@fontsource/poppins/500.css";
+@import "@fontsource/poppins/600.css";
+@import "@fontsource/poppins/700.css";
+
 /* Highlight.js themes for syntax highlighting in code blocks */
 @import "highlight.js/styles/github.css"; /* Light theme */
 @import "highlight.js/styles/github-dark.css"; /* Dark theme */
@@ -101,6 +107,9 @@ header {
 }
 
 .app-title {
+	font-family: "Poppins", "Vazirmatn", sans-serif;
+	font-weight: 600;
+	font-size: 1.75rem;
 	background: linear-gradient(
 		90deg,
 		#0596db 0%,
@@ -117,6 +126,37 @@ header {
   background: #0596db;  /* highlight color */
   color: white;         /* selected text color */
   -webkit-text-fill-color: white; /* for Safari */
+}
+
+/* ===== LOGO STYLING ===== */
+
+/**
+ * Logo styling for the application header
+ * Ensures proper scaling and smooth transitions
+ */
+.app-logo {
+	transition: transform 0.2s ease;
+	border-radius: 4px;
+	flex-shrink: 0; /* Prevent logo from shrinking */
+}
+
+.app-logo:hover {
+	transform: scale(1.05);
+}
+
+/* Responsive logo sizing */
+@media (max-width: 768px) {
+	.app-logo {
+		width: 28px;
+		height: 28px;
+	}
+}
+
+@media (max-width: 576px) {
+	.app-logo {
+		width: 24px;
+		height: 24px;
+	}
 }
 
 .preview-container {
