@@ -420,6 +420,11 @@ header {
 		justify-content: flex-end;
 		padding-top: 0.25rem;
 	}
+
+	/* Hide copy output button on mobile devices */
+	#copyOutputBtn {
+		display: none !important;
+	}
 }
 
 
