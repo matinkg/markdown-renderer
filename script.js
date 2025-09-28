@@ -480,6 +480,56 @@ document.addEventListener('DOMContentLoaded', () => {
     function enhanceCodeBlocks() {
         // Track processed elements to avoid double-processing
         const processedPres = new Set();
+        const COLLAPSE_PIXELS_PER_SECOND = 480;
+        const MIN_COLLAPSE_DURATION = 0.25;
+        const MAX_COLLAPSE_DURATION = 0.9;
+
+            const setupCollapseAnimation = (wrapper, preElement) => {
+            const computeDuration = (height) => {
+                const seconds = height / COLLAPSE_PIXELS_PER_SECOND;
+                return Math.min(MAX_COLLAPSE_DURATION, Math.max(MIN_COLLAPSE_DURATION, seconds));
+            };
+
+                let lastHeight = 0;
+                let lastDuration = 0;
+
+            const updateMetrics = (force = false) => {
+                if (!wrapper.isConnected) return;
+                if (!force && wrapper.classList.contains('collapsed')) return;
+                    const contentHeight = Math.ceil(preElement.scrollHeight);
+                    if (!contentHeight) return;
+
+                    const needsHeightUpdate = force || Math.abs(contentHeight - lastHeight) > 1;
+                    const duration = computeDuration(contentHeight);
+                    const needsDurationUpdate = force || Math.abs(duration - lastDuration) > 0.02;
+
+                    if (!needsHeightUpdate && !needsDurationUpdate) {
+                        return;
+                    }
+
+                    lastHeight = contentHeight;
+                    lastDuration = duration;
+                    preElement.style.setProperty('--code-block-max-height', `${contentHeight}px`);
+                    preElement.style.setProperty('--collapse-duration', `${duration}s`);
+            };
+
+            updateMetrics(true);
+
+            let resizeObserver = null;
+            if (typeof window !== 'undefined' && 'ResizeObserver' in window) {
+                resizeObserver = new ResizeObserver(() => {
+                    updateMetrics();
+                });
+                resizeObserver.observe(preElement);
+            }
+
+            const prepareForCollapse = () => updateMetrics(true);
+            const handleExpand = () => {
+                requestAnimationFrame(() => updateMetrics(true));
+            };
+
+            return { prepareForCollapse, handleExpand };
+        };
         
         markdownOutput.querySelectorAll('pre').forEach((preElement) => {
             // Skip already processed or wrapped elements
@@ -568,6 +618,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Insert header before the code block
             wrapper.insertBefore(header, preElement);
 
+            const collapseControls = setupCollapseAnimation(wrapper, preElement);
+
             /**
              * STEP 4: Copy functionality event handler
              * Uses Clipboard API for secure copying with visual feedback
@@ -605,7 +657,13 @@ document.addEventListener('DOMContentLoaded', () => {
             header.addEventListener('click', (event) => {
                 // Only collapse if not clicking the copy button
                 if (!copyButton.contains(event.target)) {
-                    wrapper.classList.toggle('collapsed');
+                    if (wrapper.classList.contains('collapsed')) {
+                        wrapper.classList.remove('collapsed');
+                        collapseControls.handleExpand();
+                    } else {
+                        collapseControls.prepareForCollapse();
+                        wrapper.classList.add('collapsed');
+                    }
                 }
             });
         });

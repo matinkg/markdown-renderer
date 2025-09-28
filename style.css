@@ -260,9 +260,10 @@ header {
 	padding: 1rem;
 	border-radius: 0 0 0.3rem 0.3rem;
 	overflow-x: auto;
-	max-height: 600px;
-	transition: max-height 0.3s ease-out, padding 0.3s ease-out,
-		border 0.3s ease-out;
+	max-height: var(--code-block-max-height, 600px);
+	transition: max-height var(--collapse-duration, 0.3s) ease-out,
+		padding var(--collapse-duration, 0.3s) ease-out,
+		border var(--collapse-duration, 0.3s) ease-out;
 	border-top: none;
 }
 
@@ -496,18 +497,15 @@ html.full-height-mode #direction-controls-container {
 	margin-bottom: 0.5rem;
 }
 
-/* Containers for text areas - these will have scrollbars */
-html.full-height-mode .textarea-container,
-html.full-height-mode #output-column > .h-100 > div:last-child {
+html.full-height-mode #markdown-output {
 	flex: 1; /* Take remaining space */
 	min-height: 0;
-	display: flex;
-	flex-direction: column;
+	overflow-y: auto; /* Enable scrolling within these areas */
+	resize: none;
 }
 
 /* The actual scrollable text areas */
-html.full-height-mode #markdown-input,
-html.full-height-mode #markdown-output {
+html.full-height-mode #markdown-input {
 	flex: 1;
 	min-height: 0;
 	overflow-y: auto; /* Enable scrolling within these areas */
