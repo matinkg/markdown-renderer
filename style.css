@@ -261,9 +261,6 @@ header {
 	border-radius: 0 0 0.3rem 0.3rem;
 	overflow-x: auto;
 	max-height: var(--code-block-max-height, 600px);
-	transition: max-height var(--collapse-duration, 0.3s) ease-out,
-		padding var(--collapse-duration, 0.3s) ease-out,
-		border var(--collapse-duration, 0.3s) ease-out;
 	border-top: none;
 }
 
@@ -285,11 +282,7 @@ header {
 	white-space: pre;
 }
 .code-block-wrapper.collapsed pre {
-	max-height: 0;
-	padding-top: 0;
-	padding-bottom: 0;
-	overflow: hidden;
-	border-width: 0;
+	display: none;
 }
 
 .copy-code-button {

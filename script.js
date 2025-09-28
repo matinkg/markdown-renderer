@@ -485,50 +485,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const MAX_COLLAPSE_DURATION = 0.9;
 
             const setupCollapseAnimation = (wrapper, preElement) => {
-            const computeDuration = (height) => {
-                const seconds = height / COLLAPSE_PIXELS_PER_SECOND;
-                return Math.min(MAX_COLLAPSE_DURATION, Math.max(MIN_COLLAPSE_DURATION, seconds));
-            };
-
-                let lastHeight = 0;
-                let lastDuration = 0;
-
-            const updateMetrics = (force = false) => {
-                if (!wrapper.isConnected) return;
-                if (!force && wrapper.classList.contains('collapsed')) return;
-                    const contentHeight = Math.ceil(preElement.scrollHeight);
-                    if (!contentHeight) return;
-
-                    const needsHeightUpdate = force || Math.abs(contentHeight - lastHeight) > 1;
-                    const duration = computeDuration(contentHeight);
-                    const needsDurationUpdate = force || Math.abs(duration - lastDuration) > 0.02;
-
-                    if (!needsHeightUpdate && !needsDurationUpdate) {
-                        return;
-                    }
-
-                    lastHeight = contentHeight;
-                    lastDuration = duration;
-                    preElement.style.setProperty('--code-block-max-height', `${contentHeight}px`);
-                    preElement.style.setProperty('--collapse-duration', `${duration}s`);
-            };
-
-            updateMetrics(true);
-
-            let resizeObserver = null;
-            if (typeof window !== 'undefined' && 'ResizeObserver' in window) {
-                resizeObserver = new ResizeObserver(() => {
-                    updateMetrics();
-                });
-                resizeObserver.observe(preElement);
-            }
-
-            const prepareForCollapse = () => updateMetrics(true);
             const handleExpand = () => {
-                requestAnimationFrame(() => updateMetrics(true));
+                wrapper.classList.remove('collapsed');
             };
-
-            return { prepareForCollapse, handleExpand };
+            return { prepareForCollapse: () => {}, handleExpand };
         };
         
         markdownOutput.querySelectorAll('pre').forEach((preElement) => {
