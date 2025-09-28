@@ -1,44 +1,74 @@
-/* Import Bootstrap */
+/**
+ * Markdown Renderer - Main Stylesheet
+ * 
+ * This CSS file provides comprehensive styling for the markdown renderer application.
+ * 
+ * Structure:
+ * 1. External library imports (Bootstrap, Icons, Fonts, Highlighting, Math)
+ * 2. CSS Custom Properties (Theme variables)
+ * 3. Base styling and typography
+ * 4. Layout and responsive design
+ * 5. Input and output area styling
+ * 6. Code block enhancements
+ * 7. File tab system styling
+ * 8. Responsive breakpoints and mobile adaptations
+ * 9. Full-height mode overrides
+ * 
+ * @author Matin KG
+ * @version 1.0.0
+ */
+
+/* ===== EXTERNAL LIBRARY IMPORTS ===== */
+
+/* Bootstrap CSS framework for responsive layout and components */
 @import 'bootstrap/dist/css/bootstrap.min.css';
 
-/* Import Bootstrap Icons */
+/* Bootstrap Icons for UI elements throughout the application */
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
-/* Import Google Fonts */
-@import '@fontsource/vazirmatn/400.css';
-@import '@fontsource/vazirmatn/700.css';
+/* Vazirmatn font family for improved readability and Persian/Arabic support */
+@import '@fontsource/vazirmatn/400.css';  /* Regular weight */
+@import '@fontsource/vazirmatn/700.css';  /* Bold weight */
 
-/* Import highlight.js Themes */
-@import 'highlight.js/styles/github.css';
-@import 'highlight.js/styles/github-dark.css';
+/* Highlight.js themes for syntax highlighting in code blocks */
+@import 'highlight.js/styles/github.css';       /* Light theme */
+@import 'highlight.js/styles/github-dark.css';  /* Dark theme */
 
-/* Import KaTeX CSS */
+/* KaTeX CSS for LaTeX math rendering */
 @import 'katex/dist/katex.min.css';
 
-/* markdown-renderer/style.css */
-/* --- CSS Variables for Theming --- */
+
+/* ===== CSS CUSTOM PROPERTIES (THEME VARIABLES) ===== */
+
+/**
+ * Light theme color palette and measurements
+ * These variables enable consistent theming throughout the application
+ */
 :root {
-	--body-bg: #ffffff;
-	--body-color: #212529;
-	--border-color: #dee2e6;
-	--output-bg: #f8f9fa;
-	--code-wrapper-bg: #f6f8fa; /* Light theme code background */
-	--code-header-bg: #e9ecef;
-	--code-header-color: #495057;
-	--code-border-color: rgba(0, 0, 0, 0.1);
-	--inline-code-bg: rgba(
-		175,
-		184,
-		193,
-		0.2
-	); /* Default light inline code bg */
-	--inline-code-color: inherit; /* Default inline code color */
-	--link-color: #0d6efd;
-	/* Define a height for the panel headers */
-	--panel-header-height: 31px; /* Adjust based on inspection if needed */
+	/* Background colors */
+	--body-bg: #ffffff;              /* Main application background */
+	--output-bg: #f8f9fa;            /* Output panel background */
+	--code-wrapper-bg: #f6f8fa;      /* Code block container background */
+	--code-header-bg: #e9ecef;       /* Code block header background */
+	
+	/* Text colors */
+	--body-color: #212529;           /* Primary text color */
+	--code-header-color: #495057;    /* Code header text color */
+	--inline-code-color: inherit;    /* Inline code text color */
+	--link-color: #0d6efd;           /* Link color */
+	
+	/* Border and accent colors */
+	--border-color: #dee2e6;         /* General border color */
+	--code-border-color: rgba(0, 0, 0, 0.1);  /* Code block border */
+	
+	/* Background overlays */
+	--inline-code-bg: rgba(175, 184, 193, 0.2);  /* Inline code background */
+	
+	/* Layout measurements */
+	--panel-header-height: 31px;     /* Standard header height for alignment */
 }
 
-/* --- Dark Mode Overrides --- */
+
 html[data-bs-theme="dark"] {
 	--body-bg: #212529;
 	--body-color: #dee2e6;
@@ -53,12 +83,12 @@ html[data-bs-theme="dark"] {
 		118,
 		129,
 		0.4
-	); /* Default dark inline code bg */
-	--inline-code-color: #c9d1d9; /* Default dark inline code color */
+	); 
+	--inline-code-color: #c9d1d9; 
 	--link-color: #6ea8fe;
 }
 
-/* --- General Styles using Variables --- */
+
 body {
 	font-family: "Vazirmatn", sans-serif;
 	background-color: var(--body-bg);
@@ -78,9 +108,9 @@ header {
 	border-bottom-color: var(--border-color) !important;
 }
 
-/* Input/Output areas */
+
 .preview-container {
-	min-height: calc(100vh - 100px); /* Default min height */
+	min-height: calc(100vh - 100px); 
 	align-items: stretch;
 }
 #input-column > .h-100,
@@ -102,7 +132,7 @@ header {
 
 #markdown-input {
 	font-family: monospace;
-	resize: none; /* Changed from none to vertical by default maybe? Re-setting to none */
+	resize: none; 
 }
 
 #markdown-output {
@@ -113,7 +143,7 @@ header {
 	transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* --- Text Direction Styling --- */
+
 #markdown-output[data-text-direction="ltr"] {
 	direction: ltr;
 	text-align: left;
@@ -142,33 +172,37 @@ header {
 	filter: brightness(85%);
 }
 
-/* --- START: Inline Code Styling & Direction --- */
-/* Base styling for inline code (outside pre) */
 #markdown-output code:not(pre code) {
 	padding: 0.2em 0.4em;
 	margin: 0;
 	font-size: 85%;
-	white-space: break-spaces; /* Allow breaking */
-	background-color: var(--inline-code-bg); /* optional */
-	/* color: var(--inline-code-color) */ /* optional */
+	white-space: break-spaces; 
+	background-color: var(--inline-code-bg); 
+	 
 	border-radius: 6px;
-	display: inline; /* Ensure it remains inline */
-	unicode-bidi: embed; /* Needed for direction */
-	/* Default direction will be inherited, but we override below */
+	display: inline; 
+	unicode-bidi: embed; 
+	
 }
-/* LTR direction for inline code */
+
 #markdown-output code:not(pre code)[data-inline-code-direction="ltr"] {
 	direction: ltr;
 	text-align: left;
 }
-/* RTL direction for inline code */
+
 #markdown-output code:not(pre code)[data-inline-code-direction="rtl"] {
 	direction: rtl;
 	text-align: right;
 }
-/* --- END: Inline Code Styling & Direction --- */
 
-/* --- Code Block Enhancements (``` ```) --- */
+
+
+/* ===== ENHANCED CODE BLOCK STYLING ===== */
+
+/**
+ * Main code block wrapper that provides the container for enhanced code blocks
+ * Includes theming support, rounded corners, and smooth transitions
+ */
 .code-block-wrapper {
 	position: relative;
 	margin-bottom: 1rem;
@@ -176,10 +210,11 @@ header {
 	border: 1px solid var(--code-border-color);
 	border-radius: 0.3rem;
 	overflow: hidden;
+	/* Smooth color transitions for theme switching */
 	transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* --- Code Block (``` ```) Direction Styling --- */
+
 .code-block-wrapper[data-code-direction="ltr"] {
 	direction: ltr;
 }
@@ -188,19 +223,19 @@ header {
 }
 .code-block-wrapper[data-code-direction="ltr"] pre,
 .code-block-wrapper[data-code-direction="ltr"] code {
-	/* Target both */
+	
 	text-align: left;
 }
 .code-block-wrapper[data-code-direction="rtl"] pre,
 .code-block-wrapper[data-code-direction="rtl"] code {
-	/* Target both */
+	
 	text-align: right;
 }
 .code-block-wrapper[data-code-direction="rtl"] .code-block-header .language {
-	text-align: left; /* Keep lang name LTR */
+	text-align: left; 
 }
 
-/* Code Block Header */
+
 .code-block-header {
 	display: flex;
 	align-items: center;
@@ -238,34 +273,34 @@ header {
 	content: "+";
 }
 
-/* Code Block Pre/Code */
+
 .code-block-wrapper pre {
 	margin: 0;
 	padding: 1rem;
 	border-radius: 0 0 0.3rem 0.3rem;
 	overflow-x: auto;
-	max-height: 600px; /* Default max height */
+	max-height: 600px; 
 	transition: max-height 0.3s ease-out, padding 0.3s ease-out,
 		border 0.3s ease-out;
 	border-top: none;
 }
-/* Styling for code inside pre when NOT highlighted */
+
 .code-block-wrapper pre code:not(.hljs) {
 	color: var(--body-color);
 	background-color: var(--code-wrapper-bg);
 	font-family: monospace;
-	padding: 0 !important; /* Reset padding for non-hljs */
-	display: block; /* Ensure it behaves like a block */
-	white-space: pre; /* Keep whitespace for non-hljs too */
+	padding: 0 !important; 
+	display: block; 
+	white-space: pre; 
 }
-/* Styling for code inside pre when highlighted */
+
 .code-block-wrapper pre code.hljs {
 	padding: 0 !important;
 	background: transparent !important;
 	display: block;
 	line-height: 1.5;
-	color: inherit; /* Inherit color from hljs theme */
-	white-space: pre; /* Ensure hljs uses pre formatting */
+	color: inherit; 
+	white-space: pre; 
 }
 .code-block-wrapper.collapsed pre {
 	max-height: 0;
@@ -275,7 +310,7 @@ header {
 	border-width: 0;
 }
 
-/* Copy Button */
+
 .copy-code-button {
 	transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 	font-size: 0.75em !important;
@@ -293,12 +328,12 @@ header {
 	vertical-align: text-bottom;
 }
 
-/* --- Input Counts Display --- */
+
 #input-counts {
 	white-space: nowrap;
 }
 
-/* --- Layout Adjustments --- */
+
 #input-column.hidden {
 	display: none;
 }
@@ -307,7 +342,7 @@ header {
 	max-width: 100%;
 }
 
-/* --- Table Styling --- */
+
 #markdown-output table {
 	width: 100%;
 	max-width: 100%;
@@ -329,23 +364,23 @@ header {
 	font-weight: 700;
 }
 
-/* --- KaTeX Math Direction Fix --- */
-/* Ensure KaTeX elements maintain LTR directionality, regardless of parent */
+
+
 #markdown-output .katex,
 #markdown-output .katex-display {
-	direction: ltr !important; /* Force LTR for math */
-	unicode-bidi: embed !important; /* Isolate directionality */
-	text-align: initial !important; /* Reset alignment inherited from RTL parent */
-}
-/* Center display math specifically */
-#markdown-output .katex-display {
-	text-align: center !important; /* Center display math visually */
-	display: block; /* Ensure block display for centering */
+	direction: ltr !important; 
+	unicode-bidi: embed !important; 
+	text-align: initial !important; 
 }
 
-/* --- Responsive --- */
+#markdown-output .katex-display {
+	text-align: center !important; 
+	display: block; 
+}
+
+
 @media (max-width: 991.98px) {
-	/* Default responsive behavior (non-full-height mode) */
+	
 	.preview-container,
 	#input-column > .h-100,
 	#output-column > .h-100 {
@@ -355,15 +390,15 @@ header {
 	#markdown-input,
 	#markdown-output {
 		min-height: 300px;
-		flex-grow: 0; /* Don't grow by default on small screens */
+		flex-grow: 0; 
 	}
 
 	#output-column.full-width > .h-100 {
 		min-height: calc(100vh - 100px);
-		height: calc(100vh - 100px); /* Approximate height when input hidden */
+		height: calc(100vh - 100px); 
 	}
 	#output-column.full-width > .h-100 #markdown-output {
-		flex-grow: 1; /* Allow output to grow when input is hidden */
+		flex-grow: 1; 
 	}
 
 	header {
@@ -387,72 +422,72 @@ header {
 	}
 }
 
-/* Style for active direction buttons */
+
 .btn-group > .btn.active {
-	z-index: 1; /* Bring active button slightly forward */
-	/* Bootstrap's default active styling is usually sufficient */
+	z-index: 1; 
+	
 }
 
-/* --- START: Full Height Mode Styles --- */
+
 html.full-height-mode {
-	height: 100vh; /* Use viewport height */
-	overflow-y: hidden; /* Prevent html scroll */
+	height: 100vh; 
+	overflow-y: hidden; 
 }
 
 html.full-height-mode body {
-	height: 100vh; /* Full viewport height */
-	overflow-y: hidden; /* Prevent body scroll */
-	display: flex; /* Use flexbox for body */
-	flex-direction: column; /* Stack container vertically */
+	height: 100vh; 
+	overflow-y: hidden; 
+	display: flex; 
+	flex-direction: column; 
 }
 
 html.full-height-mode .container-fluid {
-	flex-grow: 1; /* Make container take remaining height */
+	flex-grow: 1; 
 	display: flex;
 	flex-direction: column;
-	padding-top: 0 !important; /* Override default mt-3 */
-	padding-bottom: 0.5rem; /* Some padding at the bottom */
-	min-height: 0; /* Prevent flex blowout */
-	overflow: hidden; /* Prevent container scroll */
+	padding-top: 0 !important; 
+	padding-bottom: 0.5rem; 
+	min-height: 0; 
+	overflow: hidden; 
 }
 
 html.full-height-mode header {
-	flex-shrink: 0; /* Prevent header from shrinking */
-	margin-bottom: 0.5rem !important; /* Reduce margin in full height mode */
-	padding-bottom: 0.5rem !important; /* Slightly reduce padding */
+	flex-shrink: 0; 
+	margin-bottom: 0.5rem !important; 
+	padding-bottom: 0.5rem !important; 
 }
 
 html.full-height-mode .row.preview-container {
-	flex-grow: 1; /* Make the row take remaining vertical space */
-	min-height: 0; /* Override default min-height & prevent flex blowout */
-	height: 100%; /* Take full height of flex parent */
-	overflow: hidden; /* Prevent row scroll */
-	margin-left: 0; /* Remove default row gutters */
+	flex-grow: 1; 
+	min-height: 0; 
+	height: 100%; 
+	overflow: hidden; 
+	margin-left: 0; 
 	margin-right: 0;
-	gap: 0; /* Override g-3 */
+	gap: 0; 
 }
 
 html.full-height-mode #input-column,
 html.full-height-mode #output-column {
-	/* Columns already stretch via Bootstrap row, but ensure they handle inner content */
-	height: 100%; /* Take full height of the row */
-	overflow: hidden; /* Prevent column scroll */
-	padding-left: 0.5rem !important; /* Adjust padding */
-	padding-right: 0.5rem !important; /* Adjust padding */
-	margin-bottom: 0; /* Reset any bottom margin */
+	
+	height: 100%; 
+	overflow: hidden; 
+	padding-left: 0.5rem !important; 
+	padding-right: 0.5rem !important; 
+	margin-bottom: 0; 
 }
 html.full-height-mode #input-column:not(.hidden) + #output-column {
-	border-left: 1px solid var(--border-color); /* Add divider */
+	border-left: 1px solid var(--border-color); 
 }
 html.full-height-mode #output-column.full-width {
-	border-left: none; /* No divider when full width */
+	border-left: none; 
 }
 
 html.full-height-mode #input-column > .h-100,
 html.full-height-mode #output-column > .h-100 {
-	/* These are the direct flex children inside columns */
+	
 	height: 100%;
-	min-height: 0; /* Override potential min-height issues */
+	min-height: 0; 
 	display: flex;
 	flex-direction: column;
 }
@@ -460,101 +495,106 @@ html.full-height-mode #output-column > .h-100 {
 html.full-height-mode #markdown-toolbar,
 html.full-height-mode #direction-controls-container,
 html.full-height-mode #file-tabs-container {
-	flex-shrink: 0; /* Prevent panel headers from shrinking */
-	min-height: 0; /* Reset min-height */
-	height: auto; /* Allow wrapping */
-	padding-bottom: 0.5rem !important; /* Consistent padding */
-	margin-bottom: 0.5rem !important; /* Space before content */
-	border-bottom: 1px solid var(--border-color); /* Add separator */
+	flex-shrink: 0; 
+	min-height: 0; 
+	height: auto; 
+	padding-bottom: 0.5rem !important; 
+	margin-bottom: 0.5rem !important; 
+	border-bottom: 1px solid var(--border-color); 
 }
 html.full-height-mode #direction-controls-container {
-	margin-bottom: 0.5rem !important; /* Consistent spacing */
+	margin-bottom: 0.5rem !important; 
 }
 
 html.full-height-mode #markdown-input,
 html.full-height-mode #markdown-output {
-	flex-grow: 1; /* Take remaining space in the column */
-	height: 100%; /* Fill the flex space */
-	min-height: 0; /* Override min-height */
-	overflow-y: auto; /* Enable vertical scroll IN THE ELEMENT */
-	resize: none; /* Ensure textarea cannot be resized manually */
-	border: none !important; /* Remove border, parent handles structure */
-	padding: 0.8rem !important; /* Adjust padding */
-	border-radius: 0 !important; /* Remove rounding */
-	background-color: transparent; /* Inherit background from column if needed, or keep distinct */
+	flex-grow: 1; 
+	height: 100%; 
+	min-height: 0; 
+	overflow-y: auto; 
+	resize: none; 
+	border: none !important; 
+	padding: 0.8rem !important; 
+	border-radius: 0 !important; 
+	background-color: transparent; 
 }
 html.full-height-mode #markdown-output {
-	background-color: var(--output-bg); /* Keep output bg distinct */
+	background-color: var(--output-bg); 
 }
 html.full-height-mode #markdown-input {
-	background-color: var(--body-bg); /* Input bg same as body */
+	background-color: var(--body-bg); 
 }
 
-/* Reset responsive overrides when in full-height mode */
+
 @media (max-width: 991.98px) {
-	/* These styles apply ONLY when full-height-mode is active AND screen is small */
+	
 	html.full-height-mode .preview-container,
 	html.full-height-mode #input-column > .h-100,
 	html.full-height-mode #output-column > .h-100 {
-		min-height: 0; /* Ensure no min-height conflicts */
-		height: 100%; /* Ensure height is still 100% of parent */
+		min-height: 0; 
+		height: 100%; 
 	}
 
 	html.full-height-mode #markdown-input,
 	html.full-height-mode #markdown-output {
-		min-height: 0; /* Ensure no min-height conflicts */
-		flex-grow: 1; /* Ensure they still grow */
+		min-height: 0; 
+		flex-grow: 1; 
 		height: 100%;
 	}
 
 	html.full-height-mode #output-column.full-width > .h-100 {
-		min-height: 0; /* Ensure no min-height conflicts */
-		height: 100%; /* Ensure height is still 100% */
+		min-height: 0; 
+		height: 100%; 
 	}
 	html.full-height-mode .container-fluid {
-		padding-top: 0 !important; /* Reset padding */
+		padding-top: 0 !important; 
 		padding-bottom: 0.5rem;
 	}
-	/* Stack columns vertically on small screens in full height mode */
+	
 	html.full-height-mode .row.preview-container {
 		flex-direction: column;
-		height: auto; /* Let content determine height in column mode */
+		height: auto; 
 		flex-grow: 1;
 	}
 	html.full-height-mode #input-column,
 	html.full-height-mode #output-column {
-		height: 50vh; /* Split height roughly, adjust as needed */
-		flex-grow: 1; /* Allow flex grow */
-		width: 100%; /* Take full width */
+		height: 50vh; 
+		flex-grow: 1; 
+		width: 100%; 
 		max-width: 100%;
 		flex-basis: auto;
 		padding-left: 0.5rem !important;
 		padding-right: 0.5rem !important;
-		border-left: none; /* Remove divider in vertical mode */
+		border-left: none; 
 	}
 	html.full-height-mode #input-column:not(.hidden) {
-		border-bottom: 1px solid var(--border-color); /* Add divider between stacked columns */
+		border-bottom: 1px solid var(--border-color); 
 	}
 
 	html.full-height-mode #input-column.hidden {
-		height: 0; /* Collapse hidden column */
+		height: 0; 
 		padding: 0 !important;
 		border-bottom: none;
 	}
 	html.full-height-mode #output-column.full-width {
-		height: 100%; /* Take full available height when input hidden */
+		height: 100%; 
 		border-left: none;
 	}
 }
-/* --- END: Full Height Mode Styles --- */
 
-/* --- START: File Tabs Styles --- */
+
+
 .textarea-container {
     position: relative;
 }
 
+/* ===== FILE TAB SYSTEM STYLING ===== */
+
+/**
+ * Main container for the file tab system
+ * Provides flexible layout for tabs and the add button
+ */
 #file-tabs-container {
-	/* Minimal container without background */
 	position: relative;
 	display: flex;
 	align-items: stretch;
@@ -563,7 +603,7 @@ html.full-height-mode #markdown-input {
 }
 
 #file-tabs {
-	/* Remove background and border for cleaner look */
+	
 	background: none;
 	border: none;
 	padding: 0;
@@ -574,24 +614,24 @@ html.full-height-mode #markdown-input {
 	justify-content: space-between;
 }
 
-/* Update markdown input to account for the toolbar overlay */
+
 #markdown-input {
 	font-family: monospace;
-	resize: none; /* Changed from none to vertical by default maybe? Re-setting to none */
+	resize: none; 
 }
 
 .tab-list {
     gap: 0.5rem;
     overflow-x: auto;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
+    scrollbar-width: none; 
+    -ms-overflow-style: none; 
     display: flex;
     align-items: stretch;
     flex: 1;
 }
 
 .tab-list::-webkit-scrollbar {
-    display: none; /* WebKit browsers */
+    display: none; 
 }
 
 .file-tab {
@@ -628,7 +668,7 @@ html.full-height-mode #markdown-input {
 }
 
 .file-tab.active::after {
-    /* Remove the old pseudo-element styling */
+    
     display: none;
 }
 
@@ -707,7 +747,7 @@ html[data-bs-theme="dark"] .file-tab-close:hover {
     transform: scale(1.05);
 }
 
-/* Dark mode adjustments */
+
 html[data-bs-theme="dark"] .file-tab-close:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
@@ -719,9 +759,9 @@ html[data-bs-theme="dark"] #add-tab-btn:hover {
 html[data-bs-theme="dark"] .file-tab.active::after {
     background-color: var(--body-bg);
 }
-/* --- END: File Tabs Styles --- */
 
-/* Dark mode adjustments for markdown toolbar */
+
+
 html[data-bs-theme="dark"] #markdown-toolbar {
     background-color: var(--output-bg);
     border-color: var(--border-color);
@@ -733,18 +773,18 @@ html[data-bs-theme="dark"] #markdown-toolbar #input-counts {
     color: var(--body-color);
 }
 
-/* --- START: Responsive Markdown Toolbar Styles --- */
+
 @media (max-width: 768px) {
     .panel-header-controls#markdown-toolbar {
-        padding: 0.375rem !important; /* Slightly reduce padding */
+        padding: 0.375rem !important; 
     }
     
     .panel-header-controls#markdown-toolbar .toolbar-scrollable {
-        gap: 0.25rem; /* Reduce gap on mobile */
+        gap: 0.25rem; 
     }
     
     .panel-header-controls#markdown-toolbar .btn-group {
-        margin-right: 0.25rem; /* Reduce margin between groups */
+        margin-right: 0.25rem; 
     }
     
     .panel-header-controls#markdown-toolbar .btn-group:last-of-type {
@@ -752,12 +792,12 @@ html[data-bs-theme="dark"] #markdown-toolbar #input-counts {
     }
     
     .panel-header-controls#markdown-toolbar .btn {
-        padding: 0.25rem 0.375rem; /* Slightly smaller buttons on mobile */
+        padding: 0.25rem 0.375rem; 
         font-size: 0.875rem;
     }
     
     .panel-header-controls#markdown-toolbar #input-counts {
-        font-size: 0.75rem; /* Smaller text on mobile */
+        font-size: 0.75rem; 
         padding: 0.2rem 0.4rem;
     }
 }
@@ -768,16 +808,16 @@ html[data-bs-theme="dark"] #markdown-toolbar #input-counts {
     }
     
     .panel-header-controls#markdown-toolbar .toolbar-scrollable {
-        gap: 0.2rem; /* Even smaller gap on very small screens */
+        gap: 0.2rem; 
     }
     
     .panel-header-controls#markdown-toolbar .btn {
-        padding: 0.2rem 0.3rem; /* Even smaller buttons on very small screens */
+        padding: 0.2rem 0.3rem; 
         font-size: 0.8rem;
     }
     
     .panel-header-controls#markdown-toolbar .btn i {
-        font-size: 0.9rem; /* Slightly smaller icons */
+        font-size: 0.9rem; 
     }
     
     .panel-header-controls#markdown-toolbar #input-counts {
@@ -785,9 +825,9 @@ html[data-bs-theme="dark"] #markdown-toolbar #input-counts {
         padding: 0.15rem 0.3rem;
     }
 }
-/* --- END: Responsive Markdown Toolbar Styles --- */
 
-/* --- START: Markdown Toolbar Styles --- */
+
+
 #markdown-toolbar {
 	background-color: var(--output-bg);
 	border: 1px solid var(--border-color);
@@ -803,8 +843,8 @@ html[data-bs-theme="dark"] #markdown-toolbar #input-counts {
 #markdown-toolbar .toolbar-scrollable {
 	flex-grow: 1;
 	overflow-x: auto;
-	scrollbar-width: none; /* Firefox */
-	-ms-overflow-style: none; /* IE/Edge */
+	scrollbar-width: none; 
+	-ms-overflow-style: none; 
 	flex-wrap: nowrap;
 	gap: 0.5rem;
 }
@@ -836,16 +876,16 @@ html[data-bs-theme="dark"] #markdown-toolbar #input-counts {
 
 
 #markdown-toolbar .toolbar-scrollable::-webkit-scrollbar {
-	display: none; /* WebKit browsers */
+	display: none; 
 }
 
 #markdown-toolbar .btn-group {
-	flex-shrink: 0; /* Prevent button groups from shrinking */
+	flex-shrink: 0; 
 	white-space: nowrap;
 }
 
 #markdown-toolbar .btn {
-	flex-shrink: 0; /* Prevent individual buttons from shrinking */
+	flex-shrink: 0; 
 }
 
 #markdown-toolbar #input-counts {
@@ -853,14 +893,14 @@ html[data-bs-theme="dark"] #markdown-toolbar #input-counts {
 	border: 1px solid var(--border-color);
 	padding: 0.25rem 0.5rem;
 	border-radius: 0.25rem;
-	flex-shrink: 0; /* Prevent counts from shrinking */
+	flex-shrink: 0; 
 	white-space: nowrap;
 	transition: background-color 0.3s ease, border-color 0.3s ease;
 	width: max-content;
 }
-/* --- END: Markdown Toolbar Styles --- */
 
-/* --- START: Markdown Editor Container --- */
+
+
 .markdown-editor-container {
     border: 1px solid var(--border-color);
     border-radius: 0.375rem;
@@ -892,4 +932,5 @@ html[data-bs-theme="dark"] #markdown-toolbar #input-counts {
     border-color: #86b7fe;
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
-/* --- END: Markdown Editor Container --- */
+
+

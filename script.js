@@ -1,87 +1,163 @@
+/**
+ * Main Application Script - Markdown Renderer
+ * 
+ * This is the main JavaScript file that handles all user interactions and application logic.
+ * 
+ * Key Features:
+ * - Multi-file tab system for managing multiple documents
+ * - Real-time markdown rendering with debouncing
+ * - Theme switching (light/dark mode)
+ * - Text direction controls (LTR/RTL)
+ * - Markdown toolbar with formatting shortcuts
+ * - Local storage persistence for user preferences
+ * - Copy functionality with HTML styling preservation
+ * - Responsive design adaptations
+ * - Auto-render toggle with manual render option
+ * - Full-height mode for immersive editing
+ * 
+ * Architecture:
+ * - Event-driven with delegation for dynamic content
+ * - Modular functions for specific features
+ * - Debounced operations for performance
+ * - Local storage integration for persistence
+ * - Bootstrap integration for UI components
+ * 
+ * @author Matin KG
+ * @version 1.0.0
+ * @license MIT
+ */
+
+// Import application styles
 import './style.css';
+// Import the markdown rendering function
 import { render } from './markdown-renderer.js';
+// Import highlight.js themes as inline CSS for dynamic loading
 import hljsThemeLight from 'highlight.js/styles/github.css?inline';
 import hljsThemeDark from 'highlight.js/styles/github-dark.css?inline';
 
+/**
+ * Main application initialization
+ * Waits for DOM to be fully loaded before setting up the application
+ */
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Selectors ---
-    const markdownInput = document.getElementById('markdown-input');
-    const markdownOutput = document.getElementById('markdown-output');
-    const toggleInputSwitch = document.getElementById('toggleInputSwitch');
-    const inputColumn = document.getElementById('input-column');
-    const outputColumn = document.getElementById('output-column');
-    const themeSwitch = document.getElementById('themeSwitch');
-    const themeSwitchLabel = document.querySelector('label[for="themeSwitch"]');
-    const autoRenderSwitch = document.getElementById('autoRenderSwitch');
-    const manualRenderButton = document.getElementById('manualRenderButton');
-    const rootElement = document.documentElement; // Get the <html> element
-    const fullHeightModeSwitch = document.getElementById('fullHeightModeSwitch'); // New selector
-    // Direction Selectors
-    const textDirLtrBtn = document.getElementById('textDirLtrBtn');
-    const textDirRtlBtn = document.getElementById('textDirRtlBtn');
-    // -- START: Inline Code Direction Selectors --
-    const inlineCodeDirLtrBtn = document.getElementById('inlineCodeDirLtrBtn');
-    const inlineCodeDirRtlBtn = document.getElementById('inlineCodeDirRtlBtn');
-    // -- END: Inline Code Direction Selectors --
-    const codeDirLtrBtn = document.getElementById('codeDirLtrBtn'); // For ``` blocks
-    const codeDirRtlBtn = document.getElementById('codeDirRtlBtn'); // For ``` blocks
-    const markdownToolbar = document.getElementById('markdown-toolbar');
-    // Count Display Selectors (New)
-    const charCountSpan = document.getElementById('char-count');
-    const wordCountSpan = document.getElementById('word-count');
-    // File Tabs Selectors
-    const fileTabsContainer = document.getElementById('file-tabs-container');
-    const fileTabsList = document.querySelector('.tab-list');
-    const addTabBtn = document.getElementById('add-tab-btn');
-    // Rename Modal Elements
-    const renameFileModal = document.getElementById('renameFileModal');
-    const fileNameInput = document.getElementById('fileNameInput');
-    const confirmRenameBtn = document.getElementById('confirmRenameBtn');
-    // Copy Button Selector
-    const copyOutputBtn = document.getElementById('copyOutputBtn');
+    /**
+     * DOM Element References
+     * Cache all frequently accessed DOM elements for performance
+     */
+    
+    // Core editor elements
+    const markdownInput = document.getElementById('markdown-input');        // Main textarea for markdown input
+    const markdownOutput = document.getElementById('markdown-output');      // Output div for rendered markdown
+    
+    // Layout and column controls
+    const toggleInputSwitch = document.getElementById('toggleInputSwitch'); // Toggle to show/hide input panel
+    const inputColumn = document.getElementById('input-column');            // Left column container
+    const outputColumn = document.getElementById('output-column');          // Right column container
+    
+    // Theme and appearance controls
+    const themeSwitch = document.getElementById('themeSwitch');             // Dark/light mode toggle
+    const themeSwitchLabel = document.querySelector('label[for="themeSwitch"]'); // Theme switch label for icon updates
+    const rootElement = document.documentElement;                           // HTML root for theme attributes
+    const fullHeightModeSwitch = document.getElementById('fullHeightModeSwitch'); // Full viewport height toggle
+    
+    // Rendering controls
+    const autoRenderSwitch = document.getElementById('autoRenderSwitch');   // Auto-render toggle
+    const manualRenderButton = document.getElementById('manualRenderButton'); // Manual render button
+    
+    // Text direction controls
+    const textDirLtrBtn = document.getElementById('textDirLtrBtn');         // LTR text direction button
+    const textDirRtlBtn = document.getElementById('textDirRtlBtn');         // RTL text direction button
+    const inlineCodeDirLtrBtn = document.getElementById('inlineCodeDirLtrBtn'); // Inline code LTR button
+    const inlineCodeDirRtlBtn = document.getElementById('inlineCodeDirRtlBtn'); // Inline code RTL button
+    const codeDirLtrBtn = document.getElementById('codeDirLtrBtn');         // Code block LTR button
+    const codeDirRtlBtn = document.getElementById('codeDirRtlBtn');         // Code block RTL button
+    
+    // Toolbar and utility elements
+    const markdownToolbar = document.getElementById('markdown-toolbar');    // Formatting toolbar
+    const charCountSpan = document.getElementById('char-count');            // Character count display
+    const wordCountSpan = document.getElementById('word-count');            // Word count display
+    const copyOutputBtn = document.getElementById('copyOutputBtn');         // Copy output button
+    
+    // File management elements
+    const fileTabsContainer = document.getElementById('file-tabs-container'); // File tabs container
+    const fileTabsList = document.querySelector('.tab-list');               // Scrollable tabs list
+    const addTabBtn = document.getElementById('add-tab-btn');               // Add new file button
+    const renameFileModal = document.getElementById('renameFileModal');     // Rename modal dialog
+    const fileNameInput = document.getElementById('fileNameInput');         // Rename input field
+    const confirmRenameBtn = document.getElementById('confirmRenameBtn');   // Rename confirm button
 
+    /**
+     * Application State Variables
+     * These variables maintain the current state of the application
+     */
+    
+    // Rendering and display preferences
+    let isAutoRenderEnabled = true;          // Whether to render markdown automatically on input
+    let currentTextDirection = 'ltr';        // Current text direction (ltr/rtl)
+    let currentInlineCodeDirection = 'ltr';  // Current inline code direction
+    let currentCodeDirection = 'ltr';        // Current code block direction
+    let isFullHeightModeEnabled = false;     // Whether full-height mode is active
 
-    // --- State Variables ---
-    let isAutoRenderEnabled = true; // Default state
-    let currentTextDirection = 'ltr'; // Default
-    let currentInlineCodeDirection = 'ltr'; // Default for `code`
-    let currentCodeDirection = 'ltr'; // Default for ```code```
-    let isFullHeightModeEnabled = false; // Default state for new mode
+    // File management state
+    let files = {};                          // Object storing all file data {id: {id, name, content}}
+    let activeFileId = null;                 // ID of currently active/selected file
 
-    // --- File Management State ---
-    let files = {};
-    let activeFileId = null;
-
-    // --- Header Height Sync (Tabs/Direction) ---
+    /**
+     * UI Synchronization Functions
+     */
+    
+    /**
+     * Synchronizes header heights between input and output columns
+     * Ensures both column headers have the same height for visual alignment
+     * Called on window resize and layout changes
+     */
     function syncHeaderHeights() {
         const tabsHeader = document.getElementById('file-tabs-container');
         const dirHeader = document.getElementById('direction-controls-container');
         if (!tabsHeader || !dirHeader) return;
-        // Reset to natural height for accurate measurement
+        
+        // Reset heights to natural values
         tabsHeader.style.height = '';
         dirHeader.style.height = '';
-        // Measure and set to the max
+        
+        // Calculate maximum height and apply to both
         const maxH = Math.max(tabsHeader.offsetHeight, dirHeader.offsetHeight);
         tabsHeader.style.height = `${maxH}px`;
         dirHeader.style.height = `${maxH}px`;
     }
 
+    /**
+     * File Management Functions
+     * Handle creation, deletion, and management of multiple markdown files
+     */
 
-    // --- File Management Functions ---
+    /**
+     * Generates a unique ID for new files based on timestamp
+     * Ensures no ID conflicts by incrementing if timestamp already exists
+     * 
+     * @returns {number} Unique file identifier
+     */
     function generateUniqueFileId() {
-        // Use current timestamp in milliseconds for unique ID
         let id = Date.now();
-        // In the rare case of collision (same millisecond), increment by 1
+        // Handle rare case where multiple files created in same millisecond
         while (files[id]) {
             id++;
         }
         return id;
     }
 
+    /**
+     * Creates a new file object and adds it to the files collection
+     * 
+     * @param {string|null} name - Optional file name (defaults to 'New File')
+     * @param {string} content - Initial content for the file (defaults to empty)
+     * @returns {number} The ID of the newly created file
+     */
     function createNewFile(name = null, content = '') {
         const id = generateUniqueFileId();
         const fileName = name || 'New File';
         
+        // Create file object with all necessary properties
         files[id] = {
             id: id,
             name: fileName,
@@ -91,26 +167,36 @@ document.addEventListener('DOMContentLoaded', () => {
         return id;
     }
 
+    /**
+     * Switches the active file to the specified file ID
+     * Saves current file content before switching and loads new file content
+     * 
+     * @param {number} fileId - The ID of the file to switch to
+     */
     function switchToFile(fileId) {
         // Save current file content before switching
         if (activeFileId && files[activeFileId]) {
             files[activeFileId].content = markdownInput.value;
         }
         
+        // Update active file ID
         activeFileId = fileId;
         
-        // Load the new file content
+        // Load new file content into editor
         if (files[fileId]) {
             markdownInput.value = files[fileId].content;
-            updateCounts();
+            updateCounts();  // Update character/word counts
+            
+            // Re-render if auto-render is enabled
             if (isAutoRenderEnabled) {
                 renderMarkdown();
             }
         }
         
+        // Update tab UI to reflect new active state
         updateTabsUI();
         
-        // Scroll to show the active tab
+        // Scroll active tab into view with slight delay for UI update
         setTimeout(() => {
             const activeTab = document.querySelector('.file-tab.active');
             if (activeTab) {
@@ -119,14 +205,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 50);
     }
 
+    /**
+     * Deletes a file from the collection
+     * Prevents deletion if it's the last remaining file
+     * Automatically switches to another file if the deleted file was active
+     * 
+     * @param {number} fileId - The ID of the file to delete
+     */
     function deleteFile(fileId) {
+        // Prevent deletion of the last file (always keep at least one)
         if (Object.keys(files).length <= 1) {
-            return; // Don't delete the last file
+            return;
         }
         
+        // Remove file from collection
         delete files[fileId];
         
-        // If deleted file was active, switch to first available file
+        // If deleted file was active, switch to another available file
         if (activeFileId === fileId) {
             const remainingIds = Object.keys(files);
             if (remainingIds.length > 0) {
@@ -134,57 +229,86 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
+        // Update tab UI to reflect changes
         updateTabsUI();
     }
 
+    /**
+     * Renames a file with the given new name
+     * 
+     * @param {number} fileId - The ID of the file to rename
+     * @param {string} newName - The new name for the file
+     */
     function renameFile(fileId, newName) {
         if (files[fileId]) {
             files[fileId].name = newName;
-            updateTabsUI();
+            updateTabsUI();  // Refresh tab display with new name
         }
     }
 
-    // Modal-based rename functionality
+    /**
+     * Shows the rename modal dialog for a specific file
+     * Pre-fills the input with current file name and sets up focus
+     * 
+     * @param {number} fileId - The ID of the file to rename
+     */
     function showRenameModal(fileId) {
         if (!files[fileId]) return;
         
+        // Pre-fill input with current file name
         const currentName = files[fileId].name;
         fileNameInput.value = currentName;
         
-        // Store the fileId for the confirm handler
+        // Store file ID in button dataset for later retrieval
         confirmRenameBtn.dataset.fileId = fileId;
         
-        // Show modal
+        // Show Bootstrap modal
         const modal = new bootstrap.Modal(renameFileModal);
         modal.show();
         
-        // Focus and select text in input after modal is shown
+        // Focus and select input text when modal is fully shown
         renameFileModal.addEventListener('shown.bs.modal', () => {
             fileNameInput.focus();
-            fileNameInput.select();
-        }, { once: true });
+            fileNameInput.select();  // Select all text for easy replacement
+        }, { once: true });  // Only attach this listener once per modal show
     }
 
+    /**
+     * Handles confirmation of file rename operation
+     * Retrieves new name from input and performs the rename if valid
+     */
     function handleRenameConfirm() {
         const fileId = parseInt(confirmRenameBtn.dataset.fileId);
         const newName = fileNameInput.value.trim();
         
+        // Only rename if new name is not empty and file exists
         if (newName && files[fileId]) {
             renameFile(fileId, newName);
         }
         
-        // Hide modal
+        // Hide the modal
         const modal = bootstrap.Modal.getInstance(renameFileModal);
         if (modal) {
             modal.hide();
         }
     }
 
+    /**
+     * Tab UI Management Functions
+     */
+
+    /**
+     * Creates a DOM element for a file tab
+     * 
+     * @param {Object} file - The file object containing id, name, and content
+     * @returns {HTMLDivElement} The created tab element
+     */
     function createTabElement(file) {
         const tab = document.createElement('div');
         tab.className = `file-tab ${file.id === activeFileId ? 'active' : ''}`;
         tab.dataset.fileId = file.id;
         
+        // Create tab HTML structure with file name and close button
         tab.innerHTML = `
             <span class="file-tab-name">${file.name}</span>
             <button class="file-tab-close" type="button" title="Close file">
@@ -195,75 +319,113 @@ document.addEventListener('DOMContentLoaded', () => {
         return tab;
     }
 
+    /**
+     * Updates the entire tab UI by regenerating all tab elements
+     * Called whenever files are added, removed, renamed, or switched
+     */
     function updateTabsUI() {
+        // Clear existing tabs
         fileTabsList.innerHTML = '';
         
+        // Create new tab elements for all files
         Object.values(files).forEach(file => {
             const tabElement = createTabElement(file);
             fileTabsList.appendChild(tabElement);
         });
-    // After updating tabs, re-sync header heights
-    syncHeaderHeights();
+        
+        // Ensure header heights remain synchronized
+        syncHeaderHeights();
     }
 
+    /**
+     * Scrolls the tab list to show the rightmost (newest) tab
+     * Called when new tabs are added to ensure they're visible
+     */
     function scrollTabsToEnd() {
-        // Scroll the tab list to the end to show the newest tab
         fileTabsList.scrollLeft = fileTabsList.scrollWidth;
     }
 
+    /**
+     * Initializes the file system on application startup
+     * Attempts to restore saved files from localStorage, falls back to creating new file
+     * 
+     * Load Priority:
+     * 1. Saved files from localStorage (new multi-file system)
+     * 2. Legacy single file content from localStorage
+     * 3. Empty new file as fallback
+     */
     function initializeFiles() {
-        // Try to load saved files from localStorage
         const savedFiles = localStorage.getItem('markdownFiles');
         const savedActiveFileId = localStorage.getItem('markdownActiveFileId');
         
+        // Try to load saved multi-file system
         if (savedFiles) {
             try {
                 files = JSON.parse(savedFiles);
                 activeFileId = savedActiveFileId ? parseInt(savedActiveFileId) : null;
                 
-                // Ensure we have a valid active file
+                // Validate that active file ID still exists
                 if (!activeFileId || !files[activeFileId]) {
                     const fileIds = Object.keys(files);
                     activeFileId = fileIds.length > 0 ? parseInt(fileIds[0]) : null;
                 }
                 
-                // Load active file content into textarea
+                // Load active file content into editor
                 if (activeFileId && files[activeFileId]) {
                     markdownInput.value = files[activeFileId].content;
                 }
                 
                 updateTabsUI();
-                return;
+                return;  // Successfully loaded, exit function
             } catch (e) {
                 console.warn('Failed to load saved files:', e);
+                // Continue to fallback logic below
             }
         }
         
-        // Fallback: create first file with legacy saved content or empty
+        // Fallback: Create new file with legacy content or empty
         const savedInput = localStorage.getItem('markdownInputContent') || '';
         const firstFileId = createNewFile('New File', savedInput);
         switchToFile(firstFileId);
     }
 
+    /**
+     * Utility Functions
+     */
 
-    // --- Debounce function ---
+    /**
+     * Creates a debounced version of a function that delays execution
+     * Prevents excessive calls during rapid user input (like typing)
+     * 
+     * @param {Function} func - The function to debounce
+     * @param {number} delay - Delay in milliseconds
+     * @returns {Function} Debounced version of the function
+     */
     function debounce(func, delay) {
         let timeoutId;
         return function (...args) {
+            // Clear previous timeout if function called again
             clearTimeout(timeoutId);
+            // Set new timeout
             timeoutId = setTimeout(() => {
                 func.apply(this, args);
             }, delay);
         };
     }
 
-    // --- Update Character/Word Counts ---
+    /**
+     * Updates the character and word count displays
+     * Called whenever the input content changes
+     */
     function updateCounts() {
         const text = markdownInput.value;
         const charCount = text.length;
+        
+        // Count words by splitting on whitespace and filtering empty strings
         const words = text.trim().split(/\s+/).filter(word => word.length > 0);
         const wordCount = text.trim() === '' ? 0 : words.length;
 
+        // Update display elements if they exist
         if (charCountSpan) {
             charCountSpan.textContent = `Chars: ${charCount}`;
         }
@@ -272,120 +434,176 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Render Markdown ---
+    /**
+     * Core Rendering Functions
+     */
+
+    /**
+     * Main markdown rendering function
+     * Converts markdown text to HTML and applies enhancements
+     * 
+     * Process:
+     * 1. Get markdown text from input
+     * 2. Render to HTML using markdown-renderer module
+     * 3. Apply directional styling to inline code
+     * 4. Enhance code blocks with headers and controls
+     * 5. Apply directional styling to code blocks
+     */
     function renderMarkdown() {
         const markdownText = markdownInput.value;
-        const html = render(markdownText);
+        const html = render(markdownText);  // Use imported render function
         markdownOutput.innerHTML = html;
 
-        // Post-rendering enhancements that need access to the DOM
+        // Apply post-processing enhancements
         applyInlineCodeDirectionToElements(currentInlineCodeDirection);
         enhanceCodeBlocks();
         applyCodeDirectionToBlocks(currentCodeDirection);
     }
 
-    // --- Enhance Code Blocks (``` ``` only) ---
+    /**
+     * Enhances code blocks with interactive features
+     * 
+     * This function transforms plain <pre><code> elements into enhanced code blocks with:
+     * - Language identification and display
+     * - Copy-to-clipboard functionality
+     * - Collapsible content
+     * - Custom styling wrapper
+     * - Direction control integration
+     * 
+     * Process for each code block:
+     * 1. Skip already processed blocks
+     * 2. Wrap in container with direction support
+     * 3. Detect and normalize language information
+     * 4. Create interactive header with language label, copy button, and collapse toggle
+     * 5. Add event listeners for copy and collapse functionality
+     */
     function enhanceCodeBlocks() {
-        const processedPres = new Set(); // Keep track of processed <pre> tags
+        // Track processed elements to avoid double-processing
+        const processedPres = new Set();
+        
         markdownOutput.querySelectorAll('pre').forEach((preElement) => {
-            // Skip if already processed or if it's inside a wrapper (e.g., nested blocks - unusual)
+            // Skip already processed or wrapped elements
             if (processedPres.has(preElement) || preElement.parentElement.classList.contains('code-block-wrapper')) {
-                return; // Skip already wrapped/processed blocks
+                return;
             }
 
             const codeElement = preElement.querySelector('code');
-            if (!codeElement) return; // Skip <pre> without <code> inside
+            if (!codeElement) return;  // Skip pre elements without code
 
-            // --- Create Wrapper ---
+            /**
+             * STEP 1: Create wrapper container for the code block
+             * This provides styling boundaries and direction control
+             */
             const wrapper = document.createElement('div');
             wrapper.classList.add('code-block-wrapper');
-            // Apply current BLOCK code direction when creating the wrapper
-            wrapper.dataset.codeDirection = currentCodeDirection; // Set initial direction
+            wrapper.dataset.codeDirection = currentCodeDirection;
 
-            // Insert wrapper before pre, then move pre inside wrapper
+            // Insert wrapper and move pre element inside it
             preElement.parentNode.insertBefore(wrapper, preElement);
             wrapper.appendChild(preElement);
-            processedPres.add(preElement); // Mark this <pre> as processed
+            processedPres.add(preElement);  // Mark as processed
 
-            // --- Determine Language ---
-            let language = 'plaintext'; // Default language
-            // Find language class like "language-javascript"
+            /**
+             * STEP 2: Language detection and normalization
+             * Try multiple methods to determine the programming language:
+             * 1. Look for 'language-*' CSS classes (markdown standard)
+             * 2. Look for highlight.js supported language classes
+             * 3. Default to 'plaintext' if none found
+             */
+            let language = 'plaintext';
             const langClass = Array.from(codeElement.classList).find(cls => cls.startsWith('language-'));
+            
             if (langClass) {
+                // Standard markdown language class found
                 language = langClass.replace('language-', '');
             } else {
-                // If no language- class, check if a class name is a valid hljs language
+                // Check if any class matches a highlight.js supported language
                 const potentialLangClass = Array.from(codeElement.classList).find(cls => hljs.getLanguage(cls));
                 if (potentialLangClass) {
                     language = potentialLangClass;
-                    // Ensure the standard class format exists for consistency
+                    // Ensure standard language class is present
                     if (!codeElement.classList.contains(`language-${language}`)) {
                         codeElement.classList.add(`language-${language}`);
                     }
                 } else if (!codeElement.className.includes('language-')) {
-                    // If truly no language info, add plaintext class
+                    // No language detected, add plaintext class
                     codeElement.classList.add('language-plaintext');
                 }
             }
-            // Ensure hljs class is present for themes to apply correctly even if highlighting failed/skipped
+            
+            // Ensure highlight.js class is present for styling
             if (!codeElement.classList.contains('hljs')) {
                 codeElement.classList.add('hljs');
             }
 
-
-            // --- Create Header ---
+            /**
+             * STEP 3: Create interactive header elements
+             * Header contains: language label, copy button, collapse toggle
+             */
             const header = document.createElement('div');
             header.classList.add('code-block-header');
 
+            // Language display label
             const langSpan = document.createElement('span');
             langSpan.classList.add('language');
-            langSpan.textContent = language; // Display detected or default language
+            langSpan.textContent = language;
 
+            // Copy to clipboard button
             const copyButton = document.createElement('button');
             copyButton.classList.add('btn', 'btn-secondary', 'btn-sm', 'copy-code-button');
             copyButton.innerHTML = '<i class="bi bi-clipboard"></i>';
             copyButton.title = 'Copy code to clipboard';
             copyButton.setAttribute('aria-label', 'Copy code to clipboard');
 
+            // Collapse/expand toggle icon
             const iconSpan = document.createElement('span');
-            iconSpan.classList.add('collapse-icon'); // Icon for collapsing (handled by CSS)
+            iconSpan.classList.add('collapse-icon');
             iconSpan.title = 'Toggle Collapse';
 
-            // Add elements to header
+            // Assemble header elements
             header.appendChild(langSpan);
             header.appendChild(copyButton);
-            header.appendChild(iconSpan); // Add collapse icon to header
+            header.appendChild(iconSpan);
 
-            // Insert header before the <pre> element inside the wrapper
+            // Insert header before the code block
             wrapper.insertBefore(header, preElement);
 
-            // --- Event Listeners ---
-            // Copy Button Click
+            /**
+             * STEP 4: Copy functionality event handler
+             * Uses Clipboard API for secure copying with visual feedback
+             */
             copyButton.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent header click event when clicking button
-                const codeToCopy = codeElement.innerText; // Get text content of the code block
+                e.stopPropagation();  // Prevent triggering collapse toggle
+                const codeToCopy = codeElement.innerText;
+                
                 navigator.clipboard.writeText(codeToCopy).then(() => {
-                    // Success: Change button icon/style temporarily
+                    // Success feedback: Change icon and color
                     copyButton.innerHTML = '<i class="bi bi-check-lg"></i>';
                     copyButton.classList.add('copied', 'btn-success');
                     copyButton.classList.remove('btn-secondary');
-                    // Revert after 2 seconds
+                    
+                    // Reset button after 2 seconds
                     setTimeout(() => {
                         copyButton.innerHTML = '<i class="bi bi-clipboard"></i>';
                         copyButton.classList.remove('copied', 'btn-success');
                         copyButton.classList.add('btn-secondary');
                     }, 2000);
                 }).catch(err => {
-                    // Error: Log error and show error icon temporarily
+                    // Error feedback: Show error icon
                     console.error('Failed to copy code: ', err);
-                    copyButton.innerHTML = '<i class="bi bi-x-octagon-fill text-danger"></i>'; // Error icon
-                    setTimeout(() => { copyButton.innerHTML = '<i class="bi bi-clipboard"></i>'; }, 2000);
+                    copyButton.innerHTML = '<i class="bi bi-x-octagon-fill text-danger"></i>';
+                    setTimeout(() => { 
+                        copyButton.innerHTML = '<i class="bi bi-clipboard"></i>'; 
+                    }, 2000);
                 });
             });
 
-            // Header Click for Collapse/Expand
+            /**
+             * STEP 5: Collapse/expand functionality
+             * Click anywhere on header (except copy button) to toggle collapse
+             */
             header.addEventListener('click', (event) => {
-                // Only trigger collapse if the click is not on the copy button itself
+                // Only collapse if not clicking the copy button
                 if (!copyButton.contains(event.target)) {
                     wrapper.classList.toggle('collapsed');
                 }
@@ -394,30 +612,52 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // --- Toggle Input Area Visibility ---
+    /**
+     * Layout and UI Control Functions
+     */
+
+    /**
+     * Toggles the visibility of the input area (left column)
+     * When hidden, the output area expands to full width
+     * Saves the preference to localStorage for persistence
+     */
     function toggleInputArea() {
         const isInputVisible = toggleInputSwitch.checked;
+        
         if (isInputVisible) {
+            // Show input: restore two-column layout
             inputColumn.classList.remove('hidden');
             outputColumn.classList.remove('full-width', 'col-lg-12');
             outputColumn.classList.add('col-lg-6');
             inputColumn.classList.add('col-lg-6');
         } else {
+            // Hide input: expand output to full width
             inputColumn.classList.add('hidden');
             inputColumn.classList.remove('col-lg-6');
             outputColumn.classList.remove('col-lg-6');
             outputColumn.classList.add('full-width', 'col-lg-12');
         }
-        // Persist state
+        
+        // Persist preference and sync header heights
         localStorage.setItem('markdownRendererInputVisible', isInputVisible);
-    // Re-sync header heights when layout changes
-    syncHeaderHeights();
+        syncHeaderHeights();
     }
 
-    // --- Theme Switching ---
-    function applyTheme(theme) { // theme = 'light' or 'dark'
+    /**
+     * Theme Management Functions
+     */
+
+    /**
+     * Applies a theme (light or dark) to the entire application
+     * Updates Bootstrap theme attribute, highlight.js styles, and UI icons
+     * 
+     * @param {string} theme - Either 'light' or 'dark'
+     */
+    function applyTheme(theme) {
+        // Set Bootstrap theme attribute for CSS variable updates
         rootElement.setAttribute('data-bs-theme', theme);
         
+        // Get or create style element for highlight.js theme
         let hljsThemeStyle = document.getElementById('hljs-theme-style');
         if (!hljsThemeStyle) {
             hljsThemeStyle = document.createElement('style');
@@ -425,90 +665,129 @@ document.addEventListener('DOMContentLoaded', () => {
             document.head.appendChild(hljsThemeStyle);
         }
 
+        // Apply theme-specific styles and icons
         if (theme === 'dark') {
-            themeSwitchLabel.innerHTML = '<i class="bi bi-sun-fill"></i>'; // Sun icon for dark mode
-            hljsThemeStyle.textContent = hljsThemeDark;
+            themeSwitchLabel.innerHTML = '<i class="bi bi-sun-fill"></i>';  // Sun icon for dark theme
+            hljsThemeStyle.textContent = hljsThemeDark;  // Dark syntax highlighting
         } else {
-            themeSwitchLabel.innerHTML = '<i class="bi bi-moon-stars-fill"></i>'; // Moon icon for light mode
-            hljsThemeStyle.textContent = hljsThemeLight;
+            themeSwitchLabel.innerHTML = '<i class="bi bi-moon-stars-fill"></i>';  // Moon icon for light theme
+            hljsThemeStyle.textContent = hljsThemeLight;  // Light syntax highlighting
         }
-        // Save theme preference
+        
+        // Persist theme preference
         localStorage.setItem('markdownRendererTheme', theme);
     }
 
+    /**
+     * Toggles between light and dark themes
+     * Determines current theme and switches to the opposite
+     */
     function toggleTheme() {
-        const currentTheme = rootElement.getAttribute('data-bs-theme') || 'light'; // Default to light if unset
+        const currentTheme = rootElement.getAttribute('data-bs-theme') || 'light';
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         applyTheme(newTheme);
     }
 
-    // --- Auto Render Control ---
+    /**
+     * Rendering Control Functions
+     */
+
+    /**
+     * Updates the auto-render state based on switch position
+     * Enables/disables manual render button and triggers render if auto-enabled
+     * Saves preference to localStorage
+     */
     function updateAutoRenderState() {
         isAutoRenderEnabled = autoRenderSwitch.checked;
-        manualRenderButton.disabled = isAutoRenderEnabled; // Disable manual button if auto is on
+        manualRenderButton.disabled = isAutoRenderEnabled;  // Disable manual button when auto is on
         localStorage.setItem('markdownRendererAutoRender', isAutoRenderEnabled);
-        // If auto-render was just enabled, trigger a render
+        
+        // Immediately render if auto-render was just enabled
         if (isAutoRenderEnabled) {
             renderMarkdown();
         }
     }
 
-    // --- Text Direction Control ---
+    /**
+     * Text Direction Control Functions
+     * Support for LTR (Left-to-Right) and RTL (Right-to-Left) text rendering
+     * Essential for multilingual support, especially Arabic and Persian text
+     */
+
+    /**
+     * Sets the overall text direction for the output panel
+     * Updates UI state, persists preference, and triggers re-render
+     * 
+     * @param {string} direction - Either 'ltr' or 'rtl'
+     */
     function setTextDirection(direction) {
         currentTextDirection = direction;
-        markdownOutput.dataset.textDirection = direction; // Set data attribute for CSS styling
-        localStorage.setItem('markdownRendererTextDir', direction); // Save preference
+        markdownOutput.dataset.textDirection = direction;  // CSS uses this for styling
+        localStorage.setItem('markdownRendererTextDir', direction);  // Persist preference
+        
         // Update button active states
         textDirLtrBtn.classList.toggle('active', direction === 'ltr');
         textDirRtlBtn.classList.toggle('active', direction === 'rtl');
-        // Re-render needed if math layout depends on parent direction initially
-        // (KaTeX CSS fix should handle this, but re-render ensures consistency)
-        renderMarkdown();
+        
+        renderMarkdown();  // Re-render to apply direction changes
     }
 
-    // --- START: Inline Code Direction Control ---
+    /**
+     * Applies direction attribute to all inline code elements
+     * Inline code may need different direction than surrounding text
+     * 
+     * @param {string} direction - Either 'ltr' or 'rtl'
+     */
     function applyInlineCodeDirectionToElements(direction) {
-        // Selects <code> elements NOT inside <pre> elements (i.e., inline code)
         markdownOutput.querySelectorAll('code:not(pre code)').forEach(inlineCode => {
-            inlineCode.dataset.inlineCodeDirection = direction; // Apply data attribute for CSS
+            inlineCode.dataset.inlineCodeDirection = direction;
         });
     }
 
+    /**
+     * Sets the direction for inline code elements (`code`)
+     * Separate from general text direction for flexibility
+     * 
+     * @param {string} direction - Either 'ltr' or 'rtl'
+     */
     function setInlineCodeDirection(direction) {
         currentInlineCodeDirection = direction;
-        applyInlineCodeDirectionToElements(direction); // Apply to all existing inline code elements
-        localStorage.setItem('markdownRendererInlineCodeDir', direction); // Save preference
+        applyInlineCodeDirectionToElements(direction);
+        localStorage.setItem('markdownRendererInlineCodeDir', direction);
 
-        // Update button active state
+        // Update button active states
         inlineCodeDirLtrBtn.classList.toggle('active', direction === 'ltr');
         inlineCodeDirRtlBtn.classList.toggle('active', direction === 'rtl');
-        // CSS handles the visual direction change based on the data attribute
-        // No re-render needed as this is applied after initial render
     }
-    // --- END: Inline Code Direction Control ---
 
-
-    // --- Code Block (``` ```) Direction Control ---
+    /**
+     * Applies direction attribute to all code block wrappers
+     * Code blocks may contain mixed content requiring specific direction
+     * 
+     * @param {string} direction - Either 'ltr' or 'rtl'
+     */
     function applyCodeDirectionToBlocks(direction) {
-        // Apply only to the wrappers created by enhanceCodeBlocks
         markdownOutput.querySelectorAll('.code-block-wrapper').forEach(wrapper => {
-            wrapper.dataset.codeDirection = direction; // Apply data attribute for CSS styling
+            wrapper.dataset.codeDirection = direction;
         });
     }
 
+    /**
+     * Sets the direction for code blocks (```code```)
+     * Independent control for code block text direction
+     * 
+     * @param {string} direction - Either 'ltr' or 'rtl'
+     */
     function setCodeDirection(direction) {
         currentCodeDirection = direction;
-        applyCodeDirectionToBlocks(direction); // Apply to all existing code block wrappers immediately
-        localStorage.setItem('markdownRendererCodeDir', direction); // Save preference
+        applyCodeDirectionToBlocks(direction);
+        localStorage.setItem('markdownRendererCodeDir', direction);
 
-        // Update button active state
+        // Update button active states
         codeDirLtrBtn.classList.toggle('active', direction === 'ltr');
         codeDirRtlBtn.classList.toggle('active', direction === 'rtl');
-        // CSS uses the data-code-direction attribute on the wrapper
-        // No re-render needed as this is applied after initial render
     }
 
-    // --- Markdown Toolbar Functionality ---
     function applyMarkdownSyntax(syntaxType) {
         const start = markdownInput.selectionStart;
         const end = markdownInput.selectionEnd;
@@ -518,107 +797,80 @@ document.addEventListener('DOMContentLoaded', () => {
         let newText = '';
         let cursorPos = start;
 
-        // Helper to wrap selected text or insert placeholder
         const wrapSelection = (beforeSyntax, afterSyntax, placeholder = '') => {
             if (selectedText) {
-                // Wrap existing selection
                 newText = `${textBefore}${beforeSyntax}${selectedText}${afterSyntax}${textAfter}`;
-                // Place cursor after the wrapped text
                 cursorPos = start + beforeSyntax.length + selectedText.length + afterSyntax.length;
             } else {
-                // Insert syntax with placeholder
                 newText = `${textBefore}${beforeSyntax}${placeholder}${afterSyntax}${textAfter}`;
-                // Place cursor at the beginning of the placeholder
                 cursorPos = start + beforeSyntax.length;
                 markdownInput.value = newText;
-                // Select the placeholder text
                 markdownInput.setSelectionRange(cursorPos, cursorPos + placeholder.length);
-                return; // Exit early as selection is handled
+                return;
             }
             markdownInput.value = newText;
-            markdownInput.setSelectionRange(cursorPos, cursorPos); // Place cursor after insertion
+            markdownInput.setSelectionRange(cursorPos, cursorPos);
         };
 
-        // Helper to add prefix to the start of the current line or selected lines
         const insertAtLineStart = (prefix, placeholder = '') => {
-            let currentLineStart = textBefore.lastIndexOf('\n') + 1; // Find start of current line
-            let indentedPrefix = prefix; // Use prefix directly
+            let currentLineStart = textBefore.lastIndexOf('\n') + 1;
+            let indentedPrefix = prefix;
 
             if (selectedText && selectedText.includes('\n')) {
-                // --- Multi-line selection ---
                 const lines = selectedText.split('\n');
-                // Find the actual start index of the first selected line
                 const firstSelectedLineStart = textBefore.lastIndexOf('\n') + 1;
                 const textBeforeSelectionStart = markdownInput.value.substring(0, firstSelectedLineStart);
                 const textAfterSelectionEnd = textAfter;
 
-                // Add prefix to each selected line
                 const prefixedLines = lines.map(line => `${indentedPrefix}${line}`).join('\n');
                 newText = `${textBeforeSelectionStart}${prefixedLines}${textAfterSelectionEnd}`;
 
-                // Calculate new cursor end position
                 cursorPos = end + (lines.length * indentedPrefix.length);
                 markdownInput.value = newText;
-                // Select all the modified lines
                 markdownInput.setSelectionRange(firstSelectedLineStart + indentedPrefix.length, cursorPos);
 
             } else {
-                // --- Single line or no selection ---
                 const textBeforeLine = markdownInput.value.substring(0, currentLineStart);
-                // Get current line content (needed if inserting placeholder without selection)
                 const currentLineContent = markdownInput.value.substring(currentLineStart).split('\n')[0];
 
                 if (selectedText) {
-                    // Insert prefix before the single-line selection
                     newText = `${textBeforeLine}${indentedPrefix}${selectedText}${textAfter}`;
-                    cursorPos = start + indentedPrefix.length; // Cursor start position
-                    const selectionEndPos = end + indentedPrefix.length; // Cursor end position
+                    cursorPos = start + indentedPrefix.length;
+                    const selectionEndPos = end + indentedPrefix.length;
                     markdownInput.value = newText;
-                    markdownInput.setSelectionRange(cursorPos, selectionEndPos); // Reselect the modified text
+                    markdownInput.setSelectionRange(cursorPos, selectionEndPos);
                 } else {
-                    // Insert prefix and placeholder at the start of the line
                     newText = `${textBeforeLine}${indentedPrefix}${placeholder}${markdownInput.value.substring(currentLineStart)}`;
-                    cursorPos = currentLineStart + indentedPrefix.length; // Cursor start position
+                    cursorPos = currentLineStart + indentedPrefix.length;
                     markdownInput.value = newText;
-                    // Select the placeholder
                     markdownInput.setSelectionRange(cursorPos, cursorPos + placeholder.length);
                 }
             }
         };
 
-        // Special handler for ordered lists to increment numbers
         const insertOrderedListPrefix = (placeholder = 'List item') => {
             let currentLineStart = textBefore.lastIndexOf('\n') + 1;
-            let prefixNum = 1; // Start numbering at 1
+            let prefixNum = 1;
 
-            // Check previous line for existing number to continue sequence (optional improvement - omitted for simplicity)
 
             if (selectedText && selectedText.includes('\n')) {
-                // --- Multi-line selection ---
                 const lines = selectedText.split('\n');
                 const firstSelectedLineStart = textBefore.lastIndexOf('\n') + 1;
                 const textBeforeSelectionStart = markdownInput.value.substring(0, firstSelectedLineStart);
                 const textAfterSelectionEnd = textAfter;
 
-                // Add incrementing number prefix to each line
                 const prefixedLines = lines.map((line, index) => `${index + prefixNum}. ${line}`).join('\n');
                 newText = `${textBeforeSelectionStart}${prefixedLines}${textAfterSelectionEnd}`;
 
-                // Calculate approximate end position (tricky due to varying number lengths)
-                // This is a rough estimate, might need refinement
-                cursorPos = end + (lines.length * 3) + (lines.length > 9 ? lines.length : 0); // Rough estimate
+                cursorPos = end + (lines.length * 3) + (lines.length > 9 ? lines.length : 0);
                 markdownInput.value = newText;
-                // Select the modified lines
                 markdownInput.setSelectionRange(firstSelectedLineStart + `${prefixNum}. `.length, cursorPos);
             } else {
-                // --- Single line or no selection ---
-                // Use the basic insertAtLineStart with the starting number
                 insertAtLineStart(`${prefixNum}. `, selectedText || placeholder);
             }
         };
 
 
-        // --- Syntax Application Logic ---
         switch (syntaxType) {
             case 'bold': wrapSelection('**', '**', 'bold text'); break;
             case 'italic': wrapSelection('*', '*', 'italic text'); break;
@@ -626,15 +878,14 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'inline-code': wrapSelection('`', '`', 'code'); break;
             case 'link':
                 const url = prompt("Enter link URL:", "https://");
-                if (url !== null && url.trim() !== "") { // Check if user provided a URL
+                if (url !== null && url.trim() !== "") {
                     wrapSelection('[', `](${url})`, selectedText || 'link text');
-                } else { return; } // Cancelled or empty URL
+                } else { return; }
                 break;
             case 'code-block':
                 const language = prompt("Enter code language (optional):", "");
-                const langStr = language ? language.trim() : ''; // Use language if provided
+                const langStr = language ? language.trim() : '';
                 const codePlaceholder = 'Your code here';
-                // Ensure newlines around the block for proper parsing
                 const beforeBlock = (textBefore.length === 0 || textBefore.endsWith('\n\n') || textBefore.endsWith('\n')) ? `\`\`\`${langStr}\n` : `\n\`\`\`${langStr}\n`;
                 const afterBlock = `\n\`\`\`` + (textAfter.startsWith('\n') ? '' : '\n');
 
@@ -643,27 +894,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     cursorPos = start + beforeBlock.length + selectedText.length + afterBlock.length;
                 } else {
                     newText = `${textBefore}${beforeBlock}${codePlaceholder}${afterBlock}${textAfter}`;
-                    cursorPos = start + beforeBlock.length; // Position cursor at start of placeholder
+                    cursorPos = start + beforeBlock.length;
                     markdownInput.value = newText;
-                    markdownInput.setSelectionRange(cursorPos, cursorPos + codePlaceholder.length); // Select placeholder
-                    return; // Exit early
+                    markdownInput.setSelectionRange(cursorPos, cursorPos + codePlaceholder.length);
+                    return;
                 }
                 markdownInput.value = newText;
-                markdownInput.setSelectionRange(cursorPos, cursorPos); // Place cursor after block
+                markdownInput.setSelectionRange(cursorPos, cursorPos);
                 break;
             case 'image':
                 const altText = prompt("Enter image description (alt text):", "");
-                if (altText === null) return; // User cancelled alt text prompt
+                if (altText === null) return;
                 const imgUrl = prompt("Enter image URL:", "https://");
-                if (imgUrl === null || imgUrl.trim() === "") return; // User cancelled or empty URL
+                if (imgUrl === null || imgUrl.trim() === "") return;
 
-                // Add newlines before/after if needed for block behavior
                 let prefix = (textBefore.length > 0 && !textBefore.endsWith('\n')) ? '\n' : '';
                 let suffix = (textAfter.length > 0 && !textAfter.startsWith('\n')) ? '\n' : '';
                 const imageMarkdown = `![${altText || ''}](${imgUrl})`;
 
                 newText = `${textBefore}${prefix}${imageMarkdown}${suffix}${textAfter}`;
-                cursorPos = start + prefix.length + imageMarkdown.length; // Cursor after image markdown
+                cursorPos = start + prefix.length + imageMarkdown.length;
                 markdownInput.value = newText;
                 markdownInput.setSelectionRange(cursorPos, cursorPos);
                 break;
@@ -671,63 +921,65 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'h2': insertAtLineStart('## ', 'Heading 2'); break;
             case 'h3': insertAtLineStart('### ', 'Heading 3'); break;
             case 'ul-list': insertAtLineStart('- ', 'List item'); break;
-            case 'ol-list': insertOrderedListPrefix('List item'); break; // Use the specialized function
+            case 'ol-list': insertOrderedListPrefix('List item'); break;
             case 'blockquote': insertAtLineStart('> ', 'Blockquote'); break;
             case 'hr':
-                // Ensure HR is on its own line, surrounded by blank lines
                 let hrPrefix = '\n';
                 if (textBefore.length > 0 && !textBefore.endsWith('\n\n')) {
                     hrPrefix = textBefore.endsWith('\n') ? '\n' : '\n\n';
                 } else if (textBefore.length === 0) {
-                    hrPrefix = ''; // No prefix needed if at the very beginning
+                    hrPrefix = '';
                 }
-                let hrSuffix = '\n'; // Only need one newline after ---
+                let hrSuffix = '\n';
 
 
-                newText = `${textBefore}${hrPrefix}---\n${textAfter}`; // Keep it simple, add one newline after
-                cursorPos = start + hrPrefix.length + 4; // Position cursor after '---' and newline
+                newText = `${textBefore}${hrPrefix}---\n${textAfter}`;
+                cursorPos = start + hrPrefix.length + 4;
                 markdownInput.value = newText;
                 markdownInput.setSelectionRange(cursorPos, cursorPos);
                 break;
         }
 
-        // After applying syntax:
-        markdownInput.focus(); // Keep focus on the input area
-        updateCounts(); // Update char/word counts
-        // If auto-render is on, trigger a re-render programmatically
+        markdownInput.focus();
+        updateCounts();
         if (isAutoRenderEnabled) {
-            // Use setTimeout to ensure the input value is updated in the DOM before dispatching event
             setTimeout(() => {
                 markdownInput.dispatchEvent(new Event('input', { bubbles: true }));
             }, 0);
         }
     }
 
-    // --- START: Full Height Mode ---
+    /**
+     * Full-Height Mode Functions
+     * Provides an immersive editing experience using the entire viewport
+     */
+
+    /**
+     * Applies or removes full-height mode styling
+     * Full-height mode makes the application use the entire browser viewport
+     * 
+     * @param {boolean} enabled - Whether to enable full-height mode
+     */
     function applyFullHeightMode(enabled) {
-        isFullHeightModeEnabled = enabled; // Update state variable
+        isFullHeightModeEnabled = enabled;
         if (enabled) {
-            rootElement.classList.add('full-height-mode');
+            rootElement.classList.add('full-height-mode');  // CSS handles the viewport styling
         } else {
             rootElement.classList.remove('full-height-mode');
         }
-        // No need to trigger resize usually, CSS handles layout
     }
 
+    /**
+     * Toggles full-height mode based on switch state
+     * Persists preference and ensures header synchronization
+     */
     function toggleFullHeightMode() {
-        // Use the switch's checked state directly
         applyFullHeightMode(fullHeightModeSwitch.checked);
-        // Save preference
         localStorage.setItem('markdownRendererFullHeightMode', fullHeightModeSwitch.checked);
-    // Re-sync heights in case borders/margins changed
-    syncHeaderHeights();
+        syncHeaderHeights();  // Re-sync headers after layout change
     }
-    // --- END: Full Height Mode ---
-
-    // --- Copy Output Function ---
     async function copyOutputWithStyling() {
         try {
-            // Get the output content with all its styling
             const outputElement = markdownOutput;
             
             if (!outputElement || !outputElement.innerHTML.trim()) {
@@ -735,14 +987,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Create a temporary container to process the content
             const tempContainer = document.createElement('div');
             tempContainer.innerHTML = outputElement.innerHTML;
             
-            // Get computed styles for the output container
             const outputStyles = window.getComputedStyle(outputElement);
             
-            // Create a complete HTML document with inline styles
             const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -838,16 +1087,13 @@ ${tempContainer.innerHTML}
 </body>
 </html>`;
 
-            // Create ClipboardItem with HTML content
             const clipboardItem = new ClipboardItem({
                 'text/html': new Blob([htmlContent], { type: 'text/html' }),
                 'text/plain': new Blob([outputElement.innerText], { type: 'text/plain' })
             });
 
-            // Copy to clipboard
             await navigator.clipboard.write([clipboardItem]);
             
-            // Visual feedback
             const originalText = copyOutputBtn.innerHTML;
             copyOutputBtn.innerHTML = '<i class="bi bi-check"></i> Copied!';
             copyOutputBtn.classList.remove('btn-outline-secondary');
@@ -862,7 +1108,6 @@ ${tempContainer.innerHTML}
         } catch (error) {
             console.error('Failed to copy:', error);
             
-            // Fallback: copy as plain text
             try {
                 await navigator.clipboard.writeText(markdownOutput.innerText);
                 alert('Content copied as plain text (styled copy not supported in this browser)');
@@ -874,120 +1119,100 @@ ${tempContainer.innerHTML}
     }
 
 
-    // --- Event Listeners Setup ---
-    const debouncedRender = debounce(renderMarkdown, 300); // Debounce render calls by 300ms
+    const debouncedRender = debounce(renderMarkdown, 300);
 
-    // Debounced saving function
     const debouncedSaveInput = debounce(() => {
         if (activeFileId && files[activeFileId]) {
-            // Save the files object to localStorage
             localStorage.setItem('markdownFiles', JSON.stringify(files));
             localStorage.setItem('markdownActiveFileId', activeFileId.toString());
         }
-    }, 1000); // Save every 1 second after input stops
+    }, 1000);
 
-    // Header Controls Listeners
     toggleInputSwitch.addEventListener('change', toggleInputArea);
     themeSwitch.addEventListener('change', toggleTheme);
     autoRenderSwitch.addEventListener('change', updateAutoRenderState);
-    manualRenderButton.addEventListener('click', renderMarkdown); // Manual render button
-    fullHeightModeSwitch.addEventListener('change', toggleFullHeightMode); // Full height toggle
+    manualRenderButton.addEventListener('click', renderMarkdown);
+    fullHeightModeSwitch.addEventListener('change', toggleFullHeightMode);
 
-    // Direction Button Events
     textDirLtrBtn.addEventListener('click', () => setTextDirection('ltr'));
     textDirRtlBtn.addEventListener('click', () => setTextDirection('rtl'));
     inlineCodeDirLtrBtn.addEventListener('click', () => setInlineCodeDirection('ltr'));
     inlineCodeDirRtlBtn.addEventListener('click', () => setInlineCodeDirection('rtl'));
-    codeDirLtrBtn.addEventListener('click', () => setCodeDirection('ltr')); // For ``` blocks
-    codeDirRtlBtn.addEventListener('click', () => setCodeDirection('rtl')); // For ``` blocks
+    codeDirLtrBtn.addEventListener('click', () => setCodeDirection('ltr'));
+    codeDirRtlBtn.addEventListener('click', () => setCodeDirection('rtl'));
 
-    // Copy Output Button Event
     copyOutputBtn.addEventListener('click', copyOutputWithStyling);
 
 
-    // Markdown Toolbar Button Clicks (using event delegation)
     markdownToolbar.addEventListener('click', (event) => {
-        // Find the closest button with a 'data-syntax' attribute
         const button = event.target.closest('button[data-syntax]');
         if (button) {
-            event.preventDefault(); // Prevent default button behavior
-            applyMarkdownSyntax(button.dataset.syntax); // Call syntax function
+            event.preventDefault();
+            applyMarkdownSyntax(button.dataset.syntax);
         }
     });
 
-    // Keyboard Shortcuts (Ctrl+B, Ctrl+I, Ctrl+K)
     markdownInput.addEventListener('keydown', (event) => {
-        // Check for Ctrl key (Windows/Linux) or Meta key (Mac)
         if (event.ctrlKey || event.metaKey) {
-            let handled = false; // Flag to prevent default browser actions
+            let handled = false;
             switch (event.key.toLowerCase()) {
-                case 'b': // Bold
+                case 'b':
                     applyMarkdownSyntax('bold');
                     handled = true;
                     break;
-                case 'i': // Italic
+                case 'i':
                     applyMarkdownSyntax('italic');
                     handled = true;
                     break;
-                case 'k': // Link
+                case 'k':
                     applyMarkdownSyntax('link');
                     handled = true;
                     break;
             }
-            // If we handled the key combination, prevent default browser behavior (e.g., bookmarking)
             if (handled) {
                 event.preventDefault();
             }
         }
     });
 
-    // --- File Tabs Event Handlers ---
     
-    // Add new tab button
     addTabBtn.addEventListener('click', () => {
         const newFileId = createNewFile();
         switchToFile(newFileId);
-        // Scroll to show the new tab after a brief delay to ensure DOM is updated
         setTimeout(scrollTabsToEnd, 50);
     });
 
-    // Tab interactions (using event delegation)
     fileTabsList.addEventListener('click', (event) => {
         const tab = event.target.closest('.file-tab');
         if (!tab) return;
 
         const fileId = parseInt(tab.dataset.fileId);
         
-        // Handle close button clicks
         if (event.target.closest('.file-tab-close')) {
             event.stopPropagation();
             deleteFile(fileId);
             return;
         }
         
-        // If clicking on the already active tab, show rename modal
         if (fileId === activeFileId) {
             showRenameModal(fileId);
             return;
         }
         
-        // Handle tab clicks (switch file)
         switchToFile(fileId);
     });
 
-    // Tab double-click to rename (only for inactive tabs)
     fileTabsList.addEventListener('dblclick', (event) => {
         const tab = event.target.closest('.file-tab');
         if (!tab || event.target.closest('.file-tab-close')) return;
 
         const fileId = parseInt(tab.dataset.fileId);
         
-        // Only allow double-click rename for inactive tabs
         if (fileId === activeFileId) return;
         
         const nameSpan = tab.querySelector('.file-tab-name');
         
-        if (!nameSpan || nameSpan.style.display === 'none') return; // Already editing
+        if (!nameSpan || nameSpan.style.display === 'none') return;
         
         const currentName = nameSpan.textContent;
         const input = document.createElement('input');
@@ -996,7 +1221,6 @@ ${tempContainer.innerHTML}
         input.className = 'file-tab-name editing';
         input.style.width = Math.max(nameSpan.offsetWidth, 100) + 'px';
         
-        // Replace span with input
         nameSpan.style.display = 'none';
         nameSpan.parentNode.insertBefore(input, nameSpan);
         
@@ -1021,14 +1245,11 @@ ${tempContainer.innerHTML}
             }
         });
         
-        // Prevent the click event from interfering
         event.stopPropagation();
     });
 
-    // Modal event handlers
     confirmRenameBtn.addEventListener('click', handleRenameConfirm);
     
-    // Handle Enter key in modal input
     fileNameInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -1036,74 +1257,54 @@ ${tempContainer.innerHTML}
         }
     });
 
-    // Update file content when textarea changes
     markdownInput.addEventListener('input', () => {
         if (activeFileId && files[activeFileId]) {
             files[activeFileId].content = markdownInput.value;
         }
-        updateCounts(); // Update counts on every input
+        updateCounts();
         if (isAutoRenderEnabled) {
-            debouncedRender(); // Use debounced rendering
+            debouncedRender();
         }
-        // Save content frequently but debounced
         debouncedSaveInput();
     });
 
-    // --- Initial Setup on Load ---
 
-    // Initialize file management system
     initializeFiles();
 
-    // 1. Theme
-    const savedTheme = localStorage.getItem('markdownRendererTheme') || 'dark'; // Default to dark
-    applyTheme(savedTheme); // Apply saved or default theme
-    themeSwitch.checked = (savedTheme === 'dark'); // Set switch state
+    const savedTheme = localStorage.getItem('markdownRendererTheme') || 'dark';
+    applyTheme(savedTheme);
+    themeSwitch.checked = (savedTheme === 'dark');
 
-    // 2. Auto Render
     const savedAutoRender = localStorage.getItem('markdownRendererAutoRender');
-    // Default to true if nothing is saved
     isAutoRenderEnabled = savedAutoRender !== null ? (savedAutoRender === 'true') : true;
-    autoRenderSwitch.checked = isAutoRenderEnabled; // Set switch state
-    updateAutoRenderState(); // Apply initial state (disables/enables manual button)
+    autoRenderSwitch.checked = isAutoRenderEnabled;
+    updateAutoRenderState();
 
-    // 3. Text Direction
-    const savedTextDir = localStorage.getItem('markdownRendererTextDir') || 'ltr'; // Default LTR
-    setTextDirection(savedTextDir); // Apply saved or default direction (this will trigger initial render)
+    const savedTextDir = localStorage.getItem('markdownRendererTextDir') || 'ltr';
+    setTextDirection(savedTextDir);
 
-    // 4. Inline Code Direction
-    const savedInlineCodeDir = localStorage.getItem('markdownRendererInlineCodeDir') || 'ltr'; // Default LTR
-    setInlineCodeDirection(savedInlineCodeDir); // Apply saved or default (applies after render)
+    const savedInlineCodeDir = localStorage.getItem('markdownRendererInlineCodeDir') || 'ltr';
+    setInlineCodeDirection(savedInlineCodeDir);
 
-    // 5. Code Block Direction (``` blocks)
-    const savedCodeDir = localStorage.getItem('markdownRendererCodeDir') || 'ltr'; // Default LTR
-    setCodeDirection(savedCodeDir); // Apply saved or default (applies after render)
+    const savedCodeDir = localStorage.getItem('markdownRendererCodeDir') || 'ltr';
+    setCodeDirection(savedCodeDir);
 
-    // 6. Full Height Mode
     const savedFullHeightMode = localStorage.getItem('markdownRendererFullHeightMode');
-    // Default to false if nothing saved or not 'true'
     isFullHeightModeEnabled = savedFullHeightMode === 'true';
-    fullHeightModeSwitch.checked = isFullHeightModeEnabled; // Set switch state
-    applyFullHeightMode(isFullHeightModeEnabled); // Apply initial layout mode
+    fullHeightModeSwitch.checked = isFullHeightModeEnabled;
+    applyFullHeightMode(isFullHeightModeEnabled);
 
-    // 7. Input Visibility
     const savedInputVisible = localStorage.getItem('markdownRendererInputVisible');
-    // Default to true (visible) if nothing saved
     const isInputInitiallyVisible = savedInputVisible !== null ? (savedInputVisible === 'true') : true;
     toggleInputSwitch.checked = isInputInitiallyVisible;
-    // Apply initial layout based on visibility state *after* setting the switch
     toggleInputArea();
 
-    // Initial Render and Counts (Render is already triggered by setTextDirection)
-    // renderMarkdown(); // Perform the first render based on loaded content and settings - Removed as setTextDirection calls it
-    updateCounts(); // Calculate initial counts
-    // Initial header height sync after DOM laid out
+    updateCounts();
     syncHeaderHeights();
 
-    // Keep headers in sync on window resize (debounced)
     const debouncedSyncHeaders = debounce(syncHeaderHeights, 100);
     window.addEventListener('resize', debouncedSyncHeaders);
 
-    // Save files on window close/refresh as a fallback
     window.addEventListener('beforeunload', () => {
         if (activeFileId && files[activeFileId]) {
             files[activeFileId].content = markdownInput.value;
@@ -1112,4 +1313,4 @@ ${tempContainer.innerHTML}
         }
     });
 
-}); // End DOMContentLoaded
+});

@@ -1,10 +1,30 @@
 <!DOCTYPE html>
+<!--
+  Markdown Renderer - A client-side Markdown editor and live preview application
+  
+  Features:
+  - Real-time Markdown rendering with syntax highlighting
+  - Multi-file tab system for managing multiple documents
+  - Theme switching (light/dark mode)
+  - Text direction controls (LTR/RTL)
+  - Enhanced code blocks with copy functionality
+  - LaTeX math support via KaTeX
+  - Responsive design with mobile support
+  - Local storage persistence
+  
+  Author: Matin KG
+  Repository: https://github.com/matinkg/markdown-renderer
+  License: MIT
+-->
 <!-- Set initial theme based on preference or system (handled by JS) -->
 <html lang="en">
 
 <head>
+    <!-- Character encoding and viewport settings -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO and social media meta tags -->
     <meta name="description"
         content="A simple, client-side Markdown editor and live renderer with syntax highlighting, theme switching, enhanced code blocks, and LaTeX math support. Write and preview Markdown easily.">
     <meta name="google-site-verification" content="IpfD0P8v_7fwmmxe8nO-zcNdoJeLPwC-qgYjT0Vq_EQ" />
@@ -13,60 +33,74 @@
 </head>
 
 <body>
-    <div class="container-fluid my-3"> <!-- Keep my-3 for non-full-height mode -->
-        <!-- Header remains the same -->
+    <!-- Main application container -->
+    <div class="container-fluid my-3">
+        <!-- Application header with controls and branding -->
         <header class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom gap-3">
+            <!-- Application title -->
             <h1 class="me-auto">Markdown Renderer</h1>
+            <!-- Auto-render toggle: Controls automatic rendering of markdown as user types -->
             <div class="form-check form-switch" title="Toggle Auto Rendering">
                 <input class="form-check-input" type="checkbox" role="switch" id="autoRenderSwitch" checked>
                 <label class="form-check-label" for="autoRenderSwitch">Auto</label>
             </div>
+            
+            <!-- Manual render button: Allows manual triggering when auto-render is disabled -->
             <button id="manualRenderButton" class="btn btn-secondary btn-sm" disabled title="Render Markdown Manually">
                 <i class="bi bi-play-fill"></i> Render
             </button>
+            
+            <!-- Input panel toggle: Shows/hides the markdown input area -->
             <div class="form-check form-switch" title="Toggle Input Panel">
                 <input class="form-check-input" type="checkbox" role="switch" id="toggleInputSwitch" checked>
                 <label class="form-check-label" for="toggleInputSwitch">Input</label>
             </div>
-            <!-- START: Full Height Mode Switch -->
+            
+            <!-- Full height mode: Makes the app use the entire viewport height -->
             <div class="form-check form-switch" title="Toggle Full Height Mode">
                 <input class="form-check-input" type="checkbox" role="switch" id="fullHeightModeSwitch">
                 <label class="form-check-label" for="fullHeightModeSwitch"><i
                         class="bi bi-arrows-fullscreen"></i></label>
             </div>
-            <!-- END: Full Height Mode Switch -->
+            
+            <!-- Theme switcher: Toggles between light and dark modes -->
             <div class="form-check form-switch" title="Toggle Dark Mode">
                 <input class="form-check-input" type="checkbox" role="switch" id="themeSwitch">
                 <label class="form-check-label" for="themeSwitch"><i class="bi bi-moon-stars-fill"></i></label>
             </div>
+            
+            <!-- GitHub repository link -->
             <a href="https://github.com/matinkg/markdown-renderer" target="_blank" rel="noopener noreferrer"
                 class="btn btn-outline-secondary btn-sm" title="View on GitHub">
                 <i class="bi bi-github"></i> GitHub
             </a>
         </header>
 
+        <!-- Main application layout: Two-column responsive design -->
         <div class="row g-3 preview-container">
-            <!-- Input Column -->
+            <!-- Left column: Input area with file tabs and markdown editor -->
             <div class="col-lg-6" id="input-column">
                 <div class="h-100 d-flex flex-column position-relative">
-                    <!-- START: File Tabs Container (moved to top) -->
+                    <!-- File tabs system for managing multiple documents -->
                     <div id="file-tabs-container">
                         <div id="file-tabs">
+                            <!-- Dynamic tab list populated by JavaScript -->
                             <div class="tab-list">
-                                <!-- File tabs will be dynamically added here -->
                             </div>
+                            <!-- Add new file/tab button -->
                             <button id="add-tab-btn" title="Add New File">
                                 <i class="bi bi-plus"></i>
                             </button>
                         </div>
                     </div>
-                    <!-- END: File Tabs Container -->
 
+                    <!-- Markdown editor container with toolbar and textarea -->
                     <div class="markdown-editor-container flex-grow-1 position-relative d-flex flex-column">
-                        <!-- START: Markdown Toolbar -->
+                        <!-- Markdown formatting toolbar with common syntax buttons -->
                         <div id="markdown-toolbar" class="panel-header-controls">
+                            <!-- Scrollable toolbar for smaller screens -->
                             <div class="toolbar-scrollable d-flex align-items-center">
-                                <!-- Formatting Buttons -->
+                                <!-- Text formatting controls: Bold, Italic, Strikethrough -->
                                 <div class="btn-group btn-group-sm me-2" role="group" aria-label="Formatting">
                                     <button type="button" class="btn btn-outline-secondary" title="Bold (Ctrl+B)"
                                         data-syntax="bold"><i class="bi bi-type-bold"></i></button>
@@ -75,7 +109,7 @@
                                     <button type="button" class="btn btn-outline-secondary" title="Strikethrough"
                                         data-syntax="strikethrough"><i class="bi bi-type-strikethrough"></i></button>
                                 </div>
-                                <!-- Structure Buttons -->
+                                <!-- Structure and content controls: Links, Code, Lists, Images -->
                                 <div class="btn-group btn-group-sm me-2" role="group" aria-label="Structure">
                                     <button type="button" class="btn btn-outline-secondary" title="Link (Ctrl+K)"
                                         data-syntax="link"><i class="bi bi-link-45deg"></i></button>
@@ -92,7 +126,7 @@
                                     <button type="button" class="btn btn-outline-secondary" title="Image" data-syntax="image"><i
                                             class="bi bi-image"></i></button>
                                 </div>
-                                <!-- Headings Buttons -->
+                                <!-- Heading controls and horizontal rule -->
                                 <div class="btn-group btn-group-sm me-2" role="group" aria-label="Headings">
                                     <button type="button" class="btn btn-outline-secondary" title="Heading 1"
                                         data-syntax="h1"><i class="bi bi-type-h1"></i></button>
@@ -104,43 +138,43 @@
                                         data-syntax="hr"><i class="bi bi-hr"></i></button>
                                 </div>
                             </div>
-                            <!-- Always visible Character and Word Count Display -->
+                            <!-- Real-time character and word counter -->
                             <div id="input-counts" class="ms-2 small text-muted d-flex gap-2 align-items-center">
                                 <span id="char-count" title="Character Count">Chars: 0</span>
                                 <span>|</span>
                                 <span id="word-count" title="Word Count">Words: 0</span>
                             </div>
                         </div>
-                        <!-- END: Markdown Toolbar -->
 
+                        <!-- Accessibility label for markdown input -->
                         <label for="markdown-input" class="form-label visually-hidden">Markdown Input</label>
                         
-                        <!-- START: Textarea Container -->
+                        <!-- Main markdown input textarea container -->
                         <div class="textarea-container flex-grow-1 position-relative">
+                            <!-- Main markdown input area with LaTeX math support -->
                             <textarea id="markdown-input" class="form-control h-100" spellcheck="false"
                                 placeholder="Enter your Markdown here (supports $inline$ and $$display$$ math)..."></textarea>
                         </div>
-                        <!-- END: Textarea Container -->
                     </div>
                 </div>
             </div>
 
-            <!-- Output Column -->
+            <!-- Right column: Output area with rendered markdown -->
             <div class="col-lg-6" id="output-column">
-                <div class="h-100 d-flex flex-column"> <!-- Add flex column structure -->
-                    <!-- Direction Controls Container (acts as header) -->
+                <div class="h-100 d-flex flex-column">
+                    <!-- Output panel header with copy button and direction controls -->
                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-2 panel-header-controls"
                         id="direction-controls-container">
-                        <!-- Copy Button (Left side) -->
+                        <!-- Copy output button with styling preservation -->
                         <div class="d-flex align-items-center">
                             <button type="button" class="btn btn-outline-secondary btn-sm" id="copyOutputBtn" title="Copy Output with Styling">
                                 <i class="bi bi-clipboard"></i> Copy
                             </button>
                         </div>
                         
-                        <!-- Direction Controls (Right side) -->
+                        <!-- Text direction controls for different content types -->
                         <div class="d-flex flex-wrap gap-3">
-                            <!-- Text Direction -->
+                            <!-- General text direction control -->
                             <div class="d-flex align-items-center gap-2" title="Set Text Direction">
                                 <span class="text-nowrap small text-muted"><i class="bi bi-fonts"></i></span>
                                 <div class="btn-group btn-group-sm" role="group" aria-label="Text Direction">
@@ -148,7 +182,7 @@
                                     <button type="button" class="btn btn-outline-secondary" id="textDirRtlBtn">RTL</button>
                                 </div>
                             </div>
-                            <!-- START: Inline Code Direction -->
+                            <!-- Inline code direction control -->
                             <div class="d-flex align-items-center gap-2" title="Set Inline Code Direction (`code`)">
                                 <span class="text-nowrap small text-muted"><i class="bi bi-code"></i></span>
                                 <div class="btn-group btn-group-sm" role="group" aria-label="Inline Code Direction">
@@ -158,8 +192,7 @@
                                         id="inlineCodeDirRtlBtn">RTL</button>
                                 </div>
                             </div>
-                            <!-- END: Inline Code Direction -->
-                            <!-- Code Block Direction -->
+                            <!-- Code block direction control -->
                             <div class="d-flex align-items-center gap-2" title="Set Code Block Direction (```code```)">
                                 <span class="text-nowrap small text-muted"><i class="bi bi-code-slash"></i></span>
                                 <div class="btn-group btn-group-sm" role="group" aria-label="Code Block Direction">
@@ -169,27 +202,23 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Preview Area (no longer needs separate wrapper) -->
+                    <!-- Main output area where rendered markdown is displayed -->
                     <div id="markdown-output" class="border p-3 rounded flex-grow-1 overflow-auto"
                         data-text-direction="ltr" data-code-direction="ltr">
-                        <!-- Rendered HTML will appear here -->
-                        <!-- The inline code direction is applied via CSS/JS, not a data attribute here -->
+                        <!-- Rendered markdown content will be dynamically inserted here -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Dependencies -->
+    <!-- Bootstrap JavaScript for UI components and interactions -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
         crossorigin="anonymous"></script>
 
-    <!-- KaTeX JS (Core) - Load before our script -->
     
-    <!-- KaTeX JS (auto-render) - Placed after KaTeX core and before our script -->
-
-    <!-- Rename File Modal -->
+    <!-- File rename modal dialog -->
     <div class="modal fade" id="renameFileModal" tabindex="-1" aria-labelledby="renameFileModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
@@ -211,7 +240,7 @@
         </div>
     </div>
 
-    <!-- Our Custom Script -->
+    <!-- Main application script (ES6 module) -->
     <script type="module" src="script.js"></script>
 </body>
 
