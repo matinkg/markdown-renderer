@@ -257,24 +257,26 @@ header {
 
 .code-block-wrapper pre {
 	margin: 0;
-	padding: 1rem;
+	padding: 0;
 	border-radius: 0 0 0.3rem 0.3rem;
 	overflow-x: auto;
 	max-height: var(--code-block-max-height, 600px);
 	border-top: none;
+	transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	height: auto;
 }
 
 .code-block-wrapper pre code:not(.hljs) {
 	color: var(--body-color);
 	background-color: var(--code-wrapper-bg);
 	font-family: monospace;
-	padding: 0 !important;
+	padding: 1rem !important;
 	display: block;
 	white-space: pre;
 }
 
 .code-block-wrapper pre code.hljs {
-	padding: 0 !important;
+	padding: 1rem !important;
 	background: transparent !important;
 	display: block;
 	line-height: 1.5;
@@ -282,7 +284,8 @@ header {
 	white-space: pre;
 }
 .code-block-wrapper.collapsed pre {
-	display: none;
+	height: 0 !important;
+	overflow: hidden;
 }
 
 .copy-code-button {

@@ -485,10 +485,89 @@ document.addEventListener('DOMContentLoaded', () => {
         const MAX_COLLAPSE_DURATION = 0.9;
 
             const setupCollapseAnimation = (wrapper, preElement) => {
-            const handleExpand = () => {
-                wrapper.classList.remove('collapsed');
+            let storedHeight = null;
+            let isAnimating = false;
+            
+            const measureHeight = () => {
+                // Temporarily show element to measure its natural height
+                const wasCollapsed = wrapper.classList.contains('collapsed');
+                if (wasCollapsed) {
+                    wrapper.classList.remove('collapsed');
+                    preElement.style.height = 'auto';
+                }
+                
+                const height = preElement.scrollHeight;
+                
+                if (wasCollapsed) {
+                    preElement.style.height = '0px';
+                    wrapper.classList.add('collapsed');
+                }
+                
+                return height;
             };
-            return { prepareForCollapse: () => {}, handleExpand };
+            
+            const animateToHeight = (targetHeight, callback) => {
+                if (isAnimating) return;
+                
+                isAnimating = true;
+                preElement.style.height = preElement.offsetHeight + 'px';
+                
+                // Force a reflow to ensure the height is set
+                preElement.offsetHeight;
+                
+                // Set target height
+                preElement.style.height = targetHeight + 'px';
+                
+                // Wait for animation to complete
+                const onTransitionEnd = () => {
+                    preElement.removeEventListener('transitionend', onTransitionEnd);
+                    isAnimating = false;
+                    if (callback) callback();
+                };
+                
+                preElement.addEventListener('transitionend', onTransitionEnd);
+                
+                // Fallback timeout in case transitionend doesn't fire
+                setTimeout(() => {
+                    if (isAnimating) {
+                        preElement.removeEventListener('transitionend', onTransitionEnd);
+                        isAnimating = false;
+                        if (callback) callback();
+                    }
+                }, 400); // Slightly longer than CSS transition duration
+            };
+            
+            const handleCollapse = () => {
+                if (isAnimating) return;
+                
+                // Store current height before collapsing
+                storedHeight = measureHeight();
+                
+                // Start collapse animation
+                animateToHeight(0, () => {
+                    wrapper.classList.add('collapsed');
+                });
+            };
+            
+            const handleExpand = () => {
+                if (isAnimating) return;
+                
+                wrapper.classList.remove('collapsed');
+                
+                // Use stored height or measure current height
+                const targetHeight = storedHeight || measureHeight();
+                
+                // Start expand animation
+                animateToHeight(targetHeight, () => {
+                    // Reset to auto height after animation completes
+                    preElement.style.height = 'auto';
+                });
+            };
+            
+            return { 
+                prepareForCollapse: handleCollapse,
+                handleExpand: handleExpand 
+            };
         };
         
         markdownOutput.querySelectorAll('pre').forEach((preElement) => {
@@ -618,11 +697,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Only collapse if not clicking the copy button
                 if (!copyButton.contains(event.target)) {
                     if (wrapper.classList.contains('collapsed')) {
-                        wrapper.classList.remove('collapsed');
                         collapseControls.handleExpand();
                     } else {
                         collapseControls.prepareForCollapse();
-                        wrapper.classList.add('collapsed');
                     }
                 }
             });
