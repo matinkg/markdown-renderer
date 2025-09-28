@@ -34,6 +34,8 @@ import { render } from './markdown-renderer.js';
 // Import highlight.js themes as inline CSS for dynamic loading
 import hljsThemeLight from 'highlight.js/styles/github.css?inline';
 import hljsThemeDark from 'highlight.js/styles/github-dark.css?inline';
+// Import markdown test file as a raw string
+import markdownTestContent from './markdown-test.md?raw';
 
 /**
  * Main application initialization
@@ -1271,10 +1273,16 @@ ${tempContainer.innerHTML}
     });
 
     
-    addTabBtn.addEventListener('click', () => {
-        const newFileId = createNewFile();
-        switchToFile(newFileId);
-        setTimeout(scrollTabsToEnd, 50);
+    addTabBtn.addEventListener('click', (event) => {
+        if (event.altKey) {
+            const newFileId = createNewFile('Markdown Test', markdownTestContent);
+            switchToFile(newFileId);
+            setTimeout(scrollTabsToEnd, 50);
+        } else {
+            const newFileId = createNewFile();
+            switchToFile(newFileId);
+            setTimeout(scrollTabsToEnd, 50);
+        }
     });
 
     fileTabsList.addEventListener('click', (event) => {
