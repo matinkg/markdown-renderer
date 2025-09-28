@@ -632,22 +632,79 @@ html[data-bs-theme="dark"] .btn-ghost {
 	}
 }
 
-@media (max-width: 576px) {
-	.header-controls {
-		gap: 0.4rem;
+@media (max-width: 768px) {
+	.app-header {
+		gap: 0.75rem;
 	}
 
-	.control-button {
+	.header-controls {
 		width: 100%;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+		gap: 0.5rem;
+		align-items: stretch;
+	}
+
+	.header-controls > .control-chip,
+	.header-controls > .control-button,
+	.header-controls > a {
+		width: auto;
+	}
+
+	.header-controls .chip-content,
+	.header-controls .control-button {
 		justify-content: center;
 	}
 
-	.control-chip {
-		flex: 1 1 calc(50% - 0.4rem);
+	#manualRenderButton,
+	.header-controls .btn-ghost.control-button {
+		grid-column: 1 / -1;
 	}
 
-	.control-chip.icon-only {
-		flex: 0 0 auto;
+	.header-controls > .control-chip.icon-only {
+		justify-self: center;
+	}
+}
+
+@media (max-width: 576px) {
+	.header-controls {
+		grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+		gap: 0.4rem;
+	}
+
+	.header-controls .chip-content {
+		padding: 0.35rem 0.75rem;
+	}
+
+	.header-controls .control-button {
+		padding: 0.4rem 0.75rem;
+	}
+
+	.header-controls > .control-chip.icon-only {
+		justify-self: center;
+	}
+
+	#toggleInputSwitch + .chip-content {
+		padding-inline: 0.55rem;
+	}
+
+	#toggleInputSwitch + .chip-content .chip-text,
+	.header-controls a[title="View on GitHub"] span {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		clip-path: inset(50%);
+		border: 0;
+		white-space: nowrap;
+	}
+
+	.header-controls a[title="View on GitHub"] {
+		justify-content: center;
+		padding-inline: 0.65rem;
 	}
 }
 .btn-group > .btn.active {
