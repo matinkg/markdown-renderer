@@ -83,6 +83,12 @@
 	--ghost-border: rgba(5, 150, 219, 0.22);
 	--ghost-hover-bg: rgba(5, 150, 219, 0.12);
 	--ghost-text: #0d6efd;
+	--control-pill-gap: 0.4rem;
+	--control-pill-radius: 999px;
+	--control-pill-font-size: 0.85rem;
+	--control-pill-font-weight: 500;
+	--control-pill-padding-y: 0.4rem;
+	--control-pill-padding-x: 1rem;
 }
 
 html[data-bs-theme="dark"] {
@@ -177,15 +183,17 @@ header {
 .control-chip .chip-content {
 	display: inline-flex;
 	align-items: center;
-	gap: 0.4rem;
+	justify-content: center;
+	gap: var(--control-pill-gap);
 	background: var(--chip-bg);
 	border: 1px solid var(--chip-border);
 	color: var(--chip-icon-color);
-	padding: 0.4rem 1rem;
-	border-radius: 999px;
+	padding: var(--control-pill-padding-y) var(--control-pill-padding-x);
+	border-radius: var(--control-pill-radius);
 	font-family: "Poppins", "Vazirmatn", sans-serif;
-	font-size: 0.85rem;
-	font-weight: 500;
+	font-size: var(--control-pill-font-size);
+	font-weight: var(--control-pill-font-weight);
+	line-height: 1.2;
 	transition: all 0.25s ease;
 	cursor: pointer;
 	user-select: none;
@@ -223,12 +231,16 @@ header {
 .control-button {
 	display: inline-flex;
 	align-items: center;
-	gap: 0.45rem;
-	border-radius: 999px;
-	font-size: 0.85rem;
-	font-weight: 600;
-	padding: 0.45rem 1.1rem;
+	justify-content: center;
+	gap: var(--control-pill-gap);
+	border-radius: var(--control-pill-radius);
+	font-family: "Poppins", "Vazirmatn", sans-serif;
+	font-size: var(--control-pill-font-size);
+	font-weight: var(--control-pill-font-weight);
+	padding: var(--control-pill-padding-y) var(--control-pill-padding-x);
+	line-height: 1.2;
 	transition: all 0.25s ease;
+	user-select: none;
 }
 
 .btn-modern {
