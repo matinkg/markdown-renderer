@@ -37,47 +37,63 @@
     <!-- Main application container -->
     <div class="container-fluid my-3">
         <!-- Application header with controls and branding -->
-        <header class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom gap-3">
+        <header class="app-header d-flex flex-wrap align-items-center gap-3 mb-3">
             <!-- Application title with logo -->
-            <div class="d-flex align-items-center me-auto">
-                <img src="logo.png" alt="Markdown Renderer Logo" class="app-logo me-2" width="32" height="32">
+            <div class="app-header-brand d-flex align-items-center gap-2 me-auto">
+                <img src="logo.png" alt="Markdown Renderer Logo" class="app-logo" width="32" height="32">
                 <h1 class="app-title mb-0">Markdown Renderer</h1>
             </div>
-            <!-- Auto-render toggle: Controls automatic rendering of markdown as user types -->
-            <div class="form-check form-switch" title="Toggle Auto Rendering">
-                <input class="form-check-input" type="checkbox" role="switch" id="autoRenderSwitch" checked>
-                <label class="form-check-label" for="autoRenderSwitch">Auto</label>
+
+            <div class="header-controls d-flex align-items-center flex-wrap gap-2">
+                <!-- Auto-render toggle: Controls automatic rendering of markdown as user types -->
+                <div class="control-chip" title="Toggle Auto Rendering">
+                    <input type="checkbox" id="autoRenderSwitch" role="switch" checked>
+                    <label class="chip-content" for="autoRenderSwitch">
+                        <i class="bi bi-lightning-charge"></i>
+                        <span class="chip-text">Auto</span>
+                    </label>
+                </div>
+
+                <!-- Manual render button: Allows manual triggering when auto-render is disabled -->
+                <button id="manualRenderButton" class="btn btn-modern control-button" disabled title="Render Markdown Manually">
+                    <i class="bi bi-play-fill"></i>
+                    <span>Render</span>
+                </button>
+
+                <!-- Input panel toggle: Shows/hides the markdown input area -->
+                <div class="control-chip" title="Toggle Input Panel">
+                    <input type="checkbox" id="toggleInputSwitch" role="switch" checked>
+                    <label class="chip-content" for="toggleInputSwitch">
+                        <i class="bi bi-layout-text-window"></i>
+                        <span class="chip-text">Input</span>
+                    </label>
+                </div>
+
+                <!-- Full height mode: Makes the app use the entire viewport height -->
+                <div class="control-chip icon-only" title="Toggle Full Height Mode">
+                    <input type="checkbox" id="fullHeightModeSwitch" role="switch">
+                    <label class="chip-content" for="fullHeightModeSwitch">
+                        <i class="bi bi-arrows-fullscreen"></i>
+                        <span class="chip-text visually-hidden">Full Height</span>
+                    </label>
+                </div>
+
+                <!-- Theme switcher: Toggles between light and dark modes -->
+                <div class="control-chip icon-only" title="Toggle Dark Mode">
+                    <input type="checkbox" id="themeSwitch" role="switch">
+                    <label class="chip-content" for="themeSwitch">
+                        <i class="bi bi-moon-stars-fill"></i>
+                        <span class="chip-text visually-hidden">Theme</span>
+                    </label>
+                </div>
+
+                <!-- GitHub repository link -->
+                <a href="https://github.com/matinkg/markdown-renderer" target="_blank" rel="noopener noreferrer"
+                    class="btn btn-ghost control-button" title="View on GitHub">
+                    <i class="bi bi-github"></i>
+                    <span>GitHub</span>
+                </a>
             </div>
-            
-            <!-- Manual render button: Allows manual triggering when auto-render is disabled -->
-            <button id="manualRenderButton" class="btn btn-secondary btn-sm" disabled title="Render Markdown Manually">
-                <i class="bi bi-play-fill"></i> Render
-            </button>
-            
-            <!-- Input panel toggle: Shows/hides the markdown input area -->
-            <div class="form-check form-switch" title="Toggle Input Panel">
-                <input class="form-check-input" type="checkbox" role="switch" id="toggleInputSwitch" checked>
-                <label class="form-check-label" for="toggleInputSwitch">Input</label>
-            </div>
-            
-            <!-- Full height mode: Makes the app use the entire viewport height -->
-            <div class="form-check form-switch" title="Toggle Full Height Mode">
-                <input class="form-check-input" type="checkbox" role="switch" id="fullHeightModeSwitch">
-                <label class="form-check-label" for="fullHeightModeSwitch"><i
-                        class="bi bi-arrows-fullscreen"></i></label>
-            </div>
-            
-            <!-- Theme switcher: Toggles between light and dark modes -->
-            <div class="form-check form-switch" title="Toggle Dark Mode">
-                <input class="form-check-input" type="checkbox" role="switch" id="themeSwitch">
-                <label class="form-check-label" for="themeSwitch"><i class="bi bi-moon-stars-fill"></i></label>
-            </div>
-            
-            <!-- GitHub repository link -->
-            <a href="https://github.com/matinkg/markdown-renderer" target="_blank" rel="noopener noreferrer"
-                class="btn btn-outline-secondary btn-sm" title="View on GitHub">
-                <i class="bi bi-github"></i> GitHub
-            </a>
         </header>
 
         <!-- Main application layout: Two-column responsive design -->
