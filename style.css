@@ -100,6 +100,25 @@ header {
 	border-bottom-color: var(--border-color) !important;
 }
 
+.app-title {
+	background: linear-gradient(
+		90deg,
+		#0596db 0%,
+		#01744e 100%
+	);
+	background-clip: border-box;
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+	color: transparent;
+}
+
+.app-title::selection {
+  background: #0596db;  /* highlight color */
+  color: white;         /* selected text color */
+  -webkit-text-fill-color: white; /* for Safari */
+}
+
 .preview-container {
 	min-height: calc(100vh - 100px);
 	align-items: stretch;
