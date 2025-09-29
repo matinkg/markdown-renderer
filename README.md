@@ -8,7 +8,7 @@ This project provides a clean interface to type Markdown on one side and see the
 
 ## Screenshot
 
-![Screenshot of the Markdown Renderer application in action, showing the split-view interface with Markdown input on the left and the live rendered HTML output on the right.](./screenshot.png)
+![Screenshot of the Markdown Renderer application in action, showing the split-view interface with Markdown input on the left and the live rendered HTML output on the right.](./public/screenshot.png)
 
 ## Features
 
