@@ -746,7 +746,7 @@ html.full-height-mode body {
 }
 
 /* Container takes full height and becomes flex container */
-html.full-height-mode .container-fluid {
+html.full-height-mode .app-container {
 	flex: 1; /* Take remaining height after header */
 	display: flex;
 	flex-direction: column;
@@ -754,6 +754,11 @@ html.full-height-mode .container-fluid {
 	min-height: 0; /* Allow shrinking */
 	overflow: hidden;
 	margin: 0 !important;
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
 }
 
 /* Header remains fixed height at top */
