@@ -44,55 +44,60 @@
                 <h1 class="app-title mb-0">Markdown Renderer</h1>
             </div>
 
-            <div class="header-controls d-flex align-items-center flex-wrap gap-2">
-                <!-- Auto-render toggle: Controls automatic rendering of markdown as user types -->
-                <div class="control-chip" title="Toggle Auto Rendering">
-                    <input type="checkbox" id="autoRenderSwitch" role="switch" checked>
-                    <label class="chip-content" for="autoRenderSwitch">
-                        <i class="bi bi-lightning-charge"></i>
-                        <span class="chip-text">Auto</span>
-                    </label>
+            <div class="header-controls d-flex align-items-center flex-wrap gap-2 justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Auto-render toggle: Controls automatic rendering of markdown as user types -->
+                    <div class="control-chip" title="Toggle Auto Rendering">
+                        <input type="checkbox" id="autoRenderSwitch" role="switch" checked>
+                        <label class="chip-content" for="autoRenderSwitch">
+                            <i class="bi bi-lightning-charge"></i>
+                            <span class="chip-text">Auto</span>
+                        </label>
+                    </div>
+
+                    <!-- Manual render button: Allows manual triggering when auto-render is disabled -->
+                    <button id="manualRenderButton" class="btn btn-modern control-button" disabled
+                        title="Render Markdown Manually">
+                        <i class="bi bi-play-fill"></i>
+                        <span class="render-text">Render</span>
+                    </button>
                 </div>
 
-                <!-- Manual render button: Allows manual triggering when auto-render is disabled -->
-                <button id="manualRenderButton" class="btn btn-modern control-button" disabled title="Render Markdown Manually">
-                    <i class="bi bi-play-fill"></i>
-                    <span>Render</span>
-                </button>
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Input panel toggle: Shows/hides the markdown input area -->
+                    <div class="control-chip" title="Toggle Input Panel">
+                        <input type="checkbox" id="toggleInputSwitch" role="switch" checked>
+                        <label class="chip-content" for="toggleInputSwitch">
+                            <i class="bi bi-layout-text-window"></i>
+                            <span class="chip-text">Input</span>
+                        </label>
+                    </div>
 
-                <!-- Input panel toggle: Shows/hides the markdown input area -->
-                <div class="control-chip" title="Toggle Input Panel">
-                    <input type="checkbox" id="toggleInputSwitch" role="switch" checked>
-                    <label class="chip-content" for="toggleInputSwitch">
-                        <i class="bi bi-layout-text-window"></i>
-                        <span class="chip-text">Input</span>
-                    </label>
+                    <!-- Full height mode: Makes the app use the entire viewport height -->
+                    <div class="control-chip icon-only" title="Toggle Full Height Mode">
+                        <input type="checkbox" id="fullHeightModeSwitch" role="switch">
+                        <label class="chip-content" for="fullHeightModeSwitch">
+                            <i class="bi bi-arrows-fullscreen"></i>
+                            <span class="chip-text visually-hidden">Full Height</span>
+                        </label>
+                    </div>
+
+                    <!-- Theme switcher: Toggles between light and dark modes -->
+                    <div class="control-chip icon-only" title="Toggle Dark Mode">
+                        <input type="checkbox" id="themeSwitch" role="switch">
+                        <label class="chip-content" for="themeSwitch">
+                            <i class="bi bi-moon-stars-fill"></i>
+                            <span class="chip-text visually-hidden">Theme</span>
+                        </label>
+                    </div>
+
+                    <!-- GitHub repository link -->
+                    <a href="https://github.com/matinkg/markdown-renderer" target="_blank" rel="noopener noreferrer"
+                        class="btn btn-ghost control-button" title="View on GitHub">
+                        <i class="bi bi-github"></i>
+                        <span>GitHub</span>
+                    </a>
                 </div>
-
-                <!-- Full height mode: Makes the app use the entire viewport height -->
-                <div class="control-chip icon-only" title="Toggle Full Height Mode">
-                    <input type="checkbox" id="fullHeightModeSwitch" role="switch">
-                    <label class="chip-content" for="fullHeightModeSwitch">
-                        <i class="bi bi-arrows-fullscreen"></i>
-                        <span class="chip-text visually-hidden">Full Height</span>
-                    </label>
-                </div>
-
-                <!-- Theme switcher: Toggles between light and dark modes -->
-                <div class="control-chip icon-only" title="Toggle Dark Mode">
-                    <input type="checkbox" id="themeSwitch" role="switch">
-                    <label class="chip-content" for="themeSwitch">
-                        <i class="bi bi-moon-stars-fill"></i>
-                        <span class="chip-text visually-hidden">Theme</span>
-                    </label>
-                </div>
-
-                <!-- GitHub repository link -->
-                <a href="https://github.com/matinkg/markdown-renderer" target="_blank" rel="noopener noreferrer"
-                    class="btn btn-ghost control-button" title="View on GitHub">
-                    <i class="bi bi-github"></i>
-                    <span>GitHub</span>
-                </a>
             </div>
         </header>
 

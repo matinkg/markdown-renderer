@@ -692,6 +692,10 @@ html[data-bs-theme="dark"] .btn-ghost {
 		padding: 0.4rem 0.75rem;
 	}
 
+	#manualRenderButton .render-text {
+		display: none;
+	}
+
 	.header-controls > .control-chip.icon-only {
 		justify-self: center;
 	}
