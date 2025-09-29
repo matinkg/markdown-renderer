@@ -31,9 +31,53 @@
 
     <title>Markdown Renderer - Live Editor & Preview</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        body {
+            margin: 0;
+        }
+
+        body.loading {
+            background: #ffffff;
+        }
+
+        body.loading > *:not(#page-loader) {
+            visibility: hidden;
+        }
+
+        body.loading #page-loader {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        #page-loader {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            z-index: 9999;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+
+        html[data-bs-theme="dark"] body.loading {
+            background: #0f172a;
+        }
+
+        html[data-bs-theme="dark"] #page-loader {
+            background: #0f172a;
+        }
+    </style>
 </head>
 
-<body>
+<body class="loading">
+    <div id="page-loader" class="page-loader" role="status" aria-live="polite" aria-label="Loading Markdown Renderer">
+        <div class="loader-content">
+            <div class="loader-ring" aria-hidden="true"></div>
+            <p class="loader-title mb-0">Markdown Renderer</p>
+            <p class="loader-caption mb-0">Warming up…</p>
+        </div>
+    </div>
     <!-- Main application container -->
     <div class="app-container container-fluid my-3">
         <!-- Application header with controls and branding -->

@@ -79,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const charCountSpan = document.getElementById('char-count');            // Character count display
     const wordCountSpan = document.getElementById('word-count');            // Word count display
     const copyOutputBtn = document.getElementById('copyOutputBtn');         // Copy output button
+    const pageLoader = document.getElementById('page-loader');              // Initial page loader overlay
     
     // File management elements
     const fileTabsContainer = document.getElementById('file-tabs-container'); // File tabs container
@@ -126,6 +127,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxH = Math.max(tabsHeader.offsetHeight, dirHeader.offsetHeight);
         tabsHeader.style.height = `${maxH}px`;
         dirHeader.style.height = `${maxH}px`;
+    }
+
+    /**
+     * Gracefully hides the page loader overlay once initialization completes
+     * Ensures the transition runs only once and removes the element afterwards
+     */
+    function hidePageLoader() {
+        if (!pageLoader || pageLoader.classList.contains('is-hidden')) {
+            return;
+        }
+
+        document.body.classList.remove('loading');
+        pageLoader.classList.add('is-hidden');
+
+        setTimeout(() => {
+            pageLoader?.remove();
+        }, 600);
     }
 
     /**
@@ -1414,6 +1432,12 @@ ${tempContainer.innerHTML}
             localStorage.setItem('markdownFiles', JSON.stringify(files));
             localStorage.setItem('markdownActiveFileId', activeFileId.toString());
         }
+    });
+
+    window.addEventListener('load', () => {
+        requestAnimationFrame(() => {
+            setTimeout(hidePageLoader, 200);
+        });
     });
 
 });
