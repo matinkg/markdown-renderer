@@ -855,6 +855,16 @@ html.full-height-mode #markdown-input {
 	html.full-height-mode #output-column.full-width {
 		flex: 1;
 	}
+
+	/* When input is visible, hide output on mobile in full-height mode */
+	html.full-height-mode #input-column:not(.hidden) + #output-column {
+		display: none;
+	}
+
+	/* When input is hidden, ensure output is visible */
+	html.full-height-mode #input-column.hidden + #output-column {
+		display: flex;
+	}
 }
 
 .textarea-container {
