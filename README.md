@@ -6,6 +6,10 @@ This project provides a clean interface to type Markdown on one side and see the
 
 **[Live Demo](https://matinkg.github.io/markdown-renderer/)**
 
+## Screenshot
+
+![Screenshot of the Markdown Renderer application in action, showing the split-view interface with Markdown input on the left and the live rendered HTML output on the right.](./screenshot.png)
+
 ## Features
 
 *   **Live Preview:** See your Markdown rendered into HTML as you type (can be toggled).
