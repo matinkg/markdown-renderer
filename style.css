@@ -1311,3 +1311,245 @@ html[data-bs-theme="dark"] #markdown-toolbar #input-counts {
 	border-color: #86b7fe;
 	box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
+
+/* ===== MOBILE OPTIMIZATION - SCALE EVERYTHING TO 0.85 ===== */
+@media (max-width: 768px) {
+	/* Scale root font size to 85% for proportional scaling */
+	html {
+		font-size: 85%;
+	}
+
+	/* Scale containers and layout */
+	.container,
+	.container-fluid {
+		padding-left: 0.85rem;
+		padding-right: 0.85rem;
+	}
+
+	/* Scale header elements */
+	.app-header {
+		padding: 0.72rem 1.06rem;
+		border-radius: 15.3px;
+	}
+
+	.app-title {
+		font-size: 1.49rem;
+	}
+
+	.app-logo {
+		width: 23.8px;
+		height: 23.8px;
+	}
+
+	/* Scale control pills and buttons */
+	.control-chip .chip-content,
+	.control-button {
+		padding: 0.34rem 0.85rem;
+		font-size: 0.72rem;
+		gap: 0.34rem;
+	}
+
+	.control-chip .chip-content i {
+		font-size: 0.85rem;
+	}
+
+	.control-chip.icon-only .chip-content {
+		padding: 0.34rem 0.55rem;
+	}
+
+	/* Scale loader */
+	.page-loader .loader-content {
+		padding: 2.13rem 2.55rem;
+		gap: 1.06rem;
+		border-radius: 1.28rem;
+	}
+
+	.loader-ring {
+		width: 68px;
+		height: 68px;
+	}
+
+	.page-loader .loader-title {
+		font-size: 0.94rem;
+	}
+
+	.page-loader .loader-caption {
+		font-size: 0.72rem;
+		max-width: 204px;
+	}
+
+	/* Scale markdown toolbar */
+	#markdown-toolbar {
+		padding: 0.21rem 0.43rem;
+		min-height: 34px;
+	}
+
+	#markdown-toolbar .toolbar-scrollable {
+		gap: 0.43rem;
+	}
+
+	#markdown-toolbar .btn {
+		padding: 0.21rem 0.32rem;
+		font-size: 0.74rem;
+	}
+
+	#markdown-toolbar .btn i {
+		font-size: 0.77rem;
+	}
+
+	#markdown-toolbar #input-counts {
+		padding: 0.21rem 0.43rem;
+		font-size: 0.64rem;
+	}
+
+	/* Scale editor and output areas */
+	#markdown-input,
+	#markdown-output {
+		padding: 0.85rem;
+		font-size: 0.85rem;
+	}
+
+	/* Scale headings in output */
+	#markdown-output h1 {
+		font-size: 1.7rem;
+	}
+
+	#markdown-output h2 {
+		font-size: 1.49rem;
+	}
+
+	#markdown-output h3 {
+		font-size: 1.28rem;
+	}
+
+	#markdown-output h4 {
+		font-size: 1.06rem;
+	}
+
+	#markdown-output h5 {
+		font-size: 0.96rem;
+	}
+
+	#markdown-output h6 {
+		font-size: 0.85rem;
+	}
+
+	/* Scale code blocks */
+	.code-wrapper {
+		margin: 0.85rem 0;
+		border-radius: 0.34rem;
+	}
+
+	.code-header {
+		padding: 0.34rem 0.68rem;
+		font-size: 0.74rem;
+	}
+
+	.code-wrapper pre {
+		padding: 0.85rem;
+		font-size: 0.77rem;
+	}
+
+	/* Scale inline code */
+	code:not(pre code) {
+		padding: 0.17rem 0.34rem;
+		font-size: 0.77rem;
+	}
+
+	/* Scale blockquotes */
+	blockquote {
+		padding: 0.68rem 0.85rem;
+		margin: 0.85rem 0;
+		border-left-width: 3.4px;
+		font-size: 0.85rem;
+	}
+
+	/* Scale lists */
+	#markdown-output ul,
+	#markdown-output ol {
+		padding-left: 1.7rem;
+	}
+
+	/* Scale tables */
+	#markdown-output table {
+		font-size: 0.77rem;
+	}
+
+	#markdown-output th,
+	#markdown-output td {
+		padding: 0.51rem 0.68rem;
+	}
+
+	/* Scale file tabs if present */
+	.file-tabs .nav-link {
+		padding: 0.34rem 0.68rem;
+		font-size: 0.77rem;
+	}
+
+	/* Scale badges and small elements */
+	.badge {
+		padding: 0.26rem 0.51rem;
+		font-size: 0.68rem;
+	}
+
+	/* Scale spacing utilities */
+	.preview-container {
+		min-height: calc(100vh - 85px);
+	}
+
+	/* Scale borders */
+	.app-header,
+	.markdown-editor-container,
+	#markdown-toolbar,
+	.code-wrapper {
+		border-width: 0.85px;
+	}
+
+	/* Scale shadows */
+	.app-header {
+		box-shadow: 0 10.2px 27.2px rgba(15, 23, 42, 0.102);
+	}
+
+	.btn-modern {
+		box-shadow: 0 12.75px 23.8px rgba(5, 150, 219, 0.272);
+	}
+
+	/* Scale focus rings */
+	.control-chip input:focus-visible + .chip-content,
+	.btn-ghost:focus-visible,
+	.btn-modern:focus-visible {
+		box-shadow: 0 0 0 0.26rem rgba(5, 150, 219, 0.3);
+	}
+}
+
+/* Extra small devices - scale a bit more */
+@media (max-width: 576px) {
+	html {
+		font-size: 80%;
+	}
+
+	.app-header {
+		padding: 0.64rem 0.85rem;
+		border-radius: 12.8px;
+	}
+
+	.app-logo {
+		width: 20.5px;
+		height: 20.5px;
+	}
+
+	.control-chip .chip-content,
+	.control-button {
+		padding: 0.3rem 0.75rem;
+		font-size: 0.68rem;
+	}
+
+	#markdown-toolbar {
+		min-height: 30px;
+	}
+
+	#markdown-input,
+	#markdown-output {
+		padding: 0.64rem;
+	}
+}
