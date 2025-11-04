@@ -1314,9 +1314,9 @@ html[data-bs-theme="dark"] #markdown-toolbar #input-counts {
 
 /* ===== MOBILE OPTIMIZATION - SCALE EVERYTHING TO 0.85 ===== */
 @media (max-width: 768px) {
-	/* Scale root font size to 85% for proportional scaling */
+	/* Scale root font size to 90% for proportional scaling - larger fonts */
 	html {
-		font-size: 85%;
+		font-size: 90%;
 	}
 
 	/* Scale containers and layout */
@@ -1355,6 +1355,24 @@ html[data-bs-theme="dark"] #markdown-toolbar #input-counts {
 
 	.control-chip.icon-only .chip-content {
 		padding: 0.34rem 0.55rem;
+	}
+
+	/* Make direction controls smaller */
+	#direction-controls-container .btn-group-sm .btn {
+		padding: 0.25rem 0.5rem;
+		font-size: 0.65rem;
+	}
+
+	#direction-controls-container .small {
+		font-size: 0.7rem;
+	}
+
+	#direction-controls-container .gap-2 {
+		gap: 0.35rem !important;
+	}
+
+	#direction-controls-container .gap-3 {
+		gap: 0.5rem !important;
 	}
 
 	/* Scale loader */
@@ -1525,7 +1543,7 @@ html[data-bs-theme="dark"] #markdown-toolbar #input-counts {
 /* Extra small devices - scale a bit more */
 @media (max-width: 576px) {
 	html {
-		font-size: 80%;
+		font-size: 85%;
 	}
 
 	.app-header {
@@ -1551,5 +1569,15 @@ html[data-bs-theme="dark"] #markdown-toolbar #input-counts {
 	#markdown-input,
 	#markdown-output {
 		padding: 0.64rem;
+	}
+
+	/* Make direction controls even smaller on very small screens */
+	#direction-controls-container .btn-group-sm .btn {
+		padding: 0.2rem 0.4rem;
+		font-size: 0.6rem;
+	}
+
+	#direction-controls-container .small {
+		font-size: 0.65rem;
 	}
 }
