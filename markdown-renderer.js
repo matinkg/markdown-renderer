@@ -28,38 +28,42 @@ import renderMathInElement from 'katex/dist/contrib/auto-render';
  * Renders markdown text to HTML with math support and syntax highlighting
  * 
  * @param {string} markdownText - The raw markdown text to render
+ * @param {boolean} [isMathEnabled=true] - Whether to render LaTeX math expressions
  * @returns {string} The rendered HTML string
  * 
  * @example
  * const html = render('# Hello World\n\nThis is **bold** text with $x^2$ math.');
  * console.log(html); // Returns HTML with rendered markdown and math
  */
-export function render(markdownText) {
+export function render(markdownText, isMathEnabled = true) {
     // Array to store math expressions temporarily during markdown processing
     const mathBlocks = [];
-    
-    /**
-     * STEP 1: Protect math expressions from markdown processing
-     * 
-     * We need to extract math expressions before markdown processing because:
-     * 1. Markdown might interfere with LaTeX syntax (underscores, asterisks, etc.)
-     * 2. We want to render math after HTML structure is ready
-     * 3. This ensures math expressions are preserved exactly as written
-     */
-    
-    // Replace display math blocks ($$...$$) with placeholders
-    let textWithPlaceholders = markdownText.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
-        const id = mathBlocks.length;
-        mathBlocks.push(match);
-        return `<span class="math-placeholder" data-id="${id}"></span>`;
-    });
+    let textWithPlaceholders = markdownText;
 
-    // Replace inline math expressions ($...$) with placeholders
-    textWithPlaceholders = textWithPlaceholders.replace(/\$([^$\n]+?)\$/g, (match) => {
-        const id = mathBlocks.length;
-        mathBlocks.push(match);
-        return `<span class="math-placeholder" data-id="${id}"></span>`;
-    });
+    if (isMathEnabled) {
+        /**
+         * STEP 1: Protect math expressions from markdown processing
+         * 
+         * We need to extract math expressions before markdown processing because:
+         * 1. Markdown might interfere with LaTeX syntax (underscores, asterisks, etc.)
+         * 2. We want to render math after HTML structure is ready
+         * 3. This ensures math expressions are preserved exactly as written
+         */
+        
+        // Replace display math blocks ($$...$$) with placeholders
+        textWithPlaceholders = markdownText.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
+            const id = mathBlocks.length;
+            mathBlocks.push(match);
+            return `<span class="math-placeholder" data-id="${id}"></span>`;
+        });
+
+        // Replace inline math expressions ($...$) with placeholders
+        textWithPlaceholders = textWithPlaceholders.replace(/\$([^$\n]+?)\$/g, (match) => {
+            const id = mathBlocks.length;
+            mathBlocks.push(match);
+            return `<span class="math-placeholder" data-id="${id}"></span>`;
+        });
+    }
 
     /**
      * STEP 2: Configure markdown parser
@@ -109,34 +113,36 @@ export function render(markdownText) {
     const outputElement = document.createElement('div');
     outputElement.innerHTML = html;
 
-    // Restore math expressions by replacing placeholders with original math text
-    outputElement.querySelectorAll('span.math-placeholder').forEach(placeholder => {
-        const id = parseInt(placeholder.dataset.id, 10);
-        if (id >= 0 && id < mathBlocks.length) {
-            // Replace placeholder with text node containing original math expression
-            const mathTextNode = document.createTextNode(mathBlocks[id]);
-            placeholder.parentNode.replaceChild(mathTextNode, placeholder);
-        }
-    });
-
-    /**
-     * STEP 5: Render LaTeX math expressions using KaTeX
-     * 
-     * KaTeX configuration:
-     * - Display math: $$...$$ (block-level, centered)
-     * - Inline math: $...$ (inline, within text flow)
-     * - throwOnError: false (show error message instead of throwing)
-     */
-    try {
-        renderMathInElement(outputElement, {
-            delimiters: [
-                { left: '$$', right: '$$', display: true },   // Block math
-                { left: '$', right: '$', display: false }     // Inline math
-            ],
-            throwOnError: false  // Show error in place instead of breaking
+    if (isMathEnabled) {
+        // Restore math expressions by replacing placeholders with original math text
+        outputElement.querySelectorAll('span.math-placeholder').forEach(placeholder => {
+            const id = parseInt(placeholder.dataset.id, 10);
+            if (id >= 0 && id < mathBlocks.length) {
+                // Replace placeholder with text node containing original math expression
+                const mathTextNode = document.createTextNode(mathBlocks[id]);
+                placeholder.parentNode.replaceChild(mathTextNode, placeholder);
+            }
         });
-    } catch (error) {
-        console.error("KaTeX rendering error:", error);
+
+        /**
+         * STEP 5: Render LaTeX math expressions using KaTeX
+         * 
+         * KaTeX configuration:
+         * - Display math: $$...$$ (block-level, centered)
+         * - Inline math: $...$ (inline, within text flow)
+         * - throwOnError: false (show error message instead of throwing)
+         */
+        try {
+            renderMathInElement(outputElement, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },   // Block math
+                    { left: '$', right: '$', display: false }     // Inline math
+                ],
+                throwOnError: false  // Show error in place instead of breaking
+            });
+        } catch (error) {
+            console.error("KaTeX rendering error:", error);
+        }
     }
 
     /**

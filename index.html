@@ -254,7 +254,7 @@
                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-2 panel-header-controls"
                         id="direction-controls-container">
                         <!-- Copy output button with styling preservation -->
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center gap-2">
                             <button type="button" class="btn btn-outline-secondary btn-sm" id="copyOutputBtn" title="Copy Output with Styling">
                                 <i class="bi bi-clipboard"></i> Copy
                             </button>
@@ -263,6 +263,13 @@
                         <!-- Text direction controls for different content types -->
                         <div class="d-flex flex-wrap gap-3">
                             <!-- General text direction control -->
+                            <div class="d-flex align-items-center gap-2" title="Set Math Rendering">
+                                <span class="text-nowrap small text-muted"><i class="bi bi-calculator"></i></span>
+                                <div class="btn-group btn-group-sm" role="group" aria-label="Math Rendering">
+                                    <button type="button" class="btn btn-outline-secondary" id="mathOnBtn">On</button>
+                                    <button type="button" class="btn btn-outline-secondary" id="mathOffBtn">Off</button>
+                                </div>
+                            </div>
                             <div class="d-flex align-items-center gap-2" title="Set Text Direction">
                                 <span class="text-nowrap small text-muted"><i class="bi bi-fonts"></i></span>
                                 <div class="btn-group btn-group-sm" role="group" aria-label="Text Direction">

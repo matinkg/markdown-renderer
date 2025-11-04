@@ -65,6 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Rendering controls
     const autoRenderSwitch = document.getElementById('autoRenderSwitch');   // Auto-render toggle
     const manualRenderButton = document.getElementById('manualRenderButton'); // Manual render button
+    const mathOnBtn = document.getElementById('mathOnBtn');
+    const mathOffBtn = document.getElementById('mathOffBtn');
     
     // Text direction controls
     const textDirLtrBtn = document.getElementById('textDirLtrBtn');         // LTR text direction button
@@ -96,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Rendering and display preferences
     let isAutoRenderEnabled = true;          // Whether to render markdown automatically on input
+    let isMathRenderEnabled = true;
     let currentTextDirection = 'ltr';        // Current text direction (ltr/rtl)
     let currentInlineCodeDirection = 'ltr';  // Current inline code direction
     let currentCodeDirection = 'ltr';        // Current code block direction
@@ -471,7 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function renderMarkdown() {
         const markdownText = markdownInput.value;
-        const html = render(markdownText);  // Use imported render function
+        const html = render(markdownText, isMathRenderEnabled);  // Use imported render function
         markdownOutput.innerHTML = html;
 
         // Apply post-processing enhancements
@@ -1249,6 +1252,8 @@ ${tempContainer.innerHTML}
     manualRenderButton.addEventListener('click', renderMarkdown);
     fullHeightModeSwitch.addEventListener('change', toggleFullHeightMode);
 
+    mathOnBtn.addEventListener('click', () => setMathRenderState(true));
+    mathOffBtn.addEventListener('click', () => setMathRenderState(false));
     textDirLtrBtn.addEventListener('click', () => setTextDirection('ltr'));
     textDirRtlBtn.addEventListener('click', () => setTextDirection('rtl'));
     inlineCodeDirLtrBtn.addEventListener('click', () => setInlineCodeDirection('ltr'));
@@ -1401,6 +1406,10 @@ ${tempContainer.innerHTML}
     autoRenderSwitch.checked = isAutoRenderEnabled;
     updateAutoRenderState();
 
+    const savedMathRender = localStorage.getItem('markdownRendererMathRender');
+    const isMathInitiallyEnabled = savedMathRender !== null ? (savedMathRender === 'true') : true;
+    setMathRenderState(isMathInitiallyEnabled);
+
     const savedTextDir = localStorage.getItem('markdownRendererTextDir') || 'ltr';
     setTextDirection(savedTextDir);
 
@@ -1425,6 +1434,14 @@ ${tempContainer.innerHTML}
 
     const debouncedSyncHeaders = debounce(syncHeaderHeights, 100);
     window.addEventListener('resize', debouncedSyncHeaders);
+
+    function setMathRenderState(enabled) {
+        isMathRenderEnabled = enabled;
+        localStorage.setItem('markdownRendererMathRender', isMathRenderEnabled);
+        mathOnBtn.classList.toggle('active', enabled);
+        mathOffBtn.classList.toggle('active', !enabled);
+        renderMarkdown();
+    }
 
     window.addEventListener('beforeunload', () => {
         if (activeFileId && files[activeFileId]) {
