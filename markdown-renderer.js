@@ -41,8 +41,17 @@ export function render(markdownText, isMathEnabled = true) {
     let textWithPlaceholders = markdownText;
 
     if (isMathEnabled) {
+        // Convert LaTeX-style delimiters to dollar-sign delimiters for broader compatibility
+        // Escaped delimiters: \(...\) and \[...\]
+        markdownText = markdownText.replace(/\\\((.*?)\\\)/gs, (match, mathContent) => {
+            return `$${mathContent}$`;
+        });
+        markdownText = markdownText.replace(/\\\[(.*?)\\\]/gs, (match, mathContent) => {
+            return `$$${mathContent}$$`;
+        });
+
         /**
-         * STEP 1: Protect math expressions from markdown processing
+         * STEP 1: Protect mathexpressions from markdown processing
          * 
          * We need to extract math expressions before markdown processing because:
          * 1. Markdown might interfere with LaTeX syntax (underscores, asterisks, etc.)
