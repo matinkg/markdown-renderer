@@ -82,6 +82,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const wordCountSpan = document.getElementById('word-count');            // Word count display
     const copyOutputBtn = document.getElementById('copyOutputBtn');         // Copy output button
     const pageLoader = document.getElementById('page-loader');              // Initial page loader overlay
+    // Font size controls
+    const inputFontSizeRange = document.getElementById('inputFontSizeRange');
+    const outputFontSizeRange = document.getElementById('outputFontSizeRange');
+    const inputFontSizeValue = document.getElementById('inputFontSizeValue');
+    const outputFontSizeValue = document.getElementById('outputFontSizeValue');
     
     // File management elements
     const fileTabsContainer = document.getElementById('file-tabs-container'); // File tabs container
@@ -1236,6 +1241,56 @@ ${tempContainer.innerHTML}
         }
     }
 
+    /* ===== Font Size Controls ===== */
+    function setInputFontSize(sizePx) {
+        let size = sizePx;
+        if (typeof sizePx === 'number') size = `${sizePx}px`;
+        // accept values like '14px' or '14'
+        if (typeof size === 'string' && size.endsWith('px')) {
+            const numeric = parseInt(size.replace('px', ''), 10);
+            if (inputFontSizeRange) inputFontSizeRange.value = numeric;
+            size = `${numeric}px`;
+        } else if (typeof size === 'string') {
+            const numeric = parseInt(size, 10);
+            if (!Number.isNaN(numeric) && inputFontSizeRange) inputFontSizeRange.value = numeric;
+            size = `${numeric}px`;
+        }
+        rootElement.style.setProperty('--input-font-size', size);
+        if (inputFontSizeValue) inputFontSizeValue.textContent = size;
+        localStorage.setItem('markdownRendererInputFontSize', String(size));
+    }
+
+    function setOutputFontSize(sizePx) {
+        let size = sizePx;
+        if (typeof sizePx === 'number') size = `${sizePx}px`;
+        if (typeof size === 'string' && size.endsWith('px')) {
+            const numeric = parseInt(size.replace('px', ''), 10);
+            if (outputFontSizeRange) outputFontSizeRange.value = numeric;
+            size = `${numeric}px`;
+        } else if (typeof size === 'string') {
+            const numeric = parseInt(size, 10);
+            if (!Number.isNaN(numeric) && outputFontSizeRange) outputFontSizeRange.value = numeric;
+            size = `${numeric}px`;
+        }
+        rootElement.style.setProperty('--output-font-size', size);
+        if (outputFontSizeValue) outputFontSizeValue.textContent = size;
+        localStorage.setItem('markdownRendererOutputFontSize', String(size));
+    }
+
+    if (inputFontSizeRange) {
+        inputFontSizeRange.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value, 10);
+            setInputFontSize(val);
+        });
+    }
+
+    if (outputFontSizeRange) {
+        outputFontSizeRange.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value, 10);
+            setOutputFontSize(val);
+        });
+    }
+
 
     const debouncedRender = debounce(renderMarkdown, 300);
 
@@ -1428,6 +1483,23 @@ ${tempContainer.innerHTML}
     const isInputInitiallyVisible = savedInputVisible !== null ? (savedInputVisible === 'true') : true;
     toggleInputSwitch.checked = isInputInitiallyVisible;
     toggleInputArea();
+
+    // Initialize font sizes from localStorage (fall back to CSS variable defaults)
+    const savedInputFont = localStorage.getItem('markdownRendererInputFontSize');
+    const savedOutputFont = localStorage.getItem('markdownRendererOutputFontSize');
+    if (savedInputFont) {
+        setInputFontSize(savedInputFont);
+    } else {
+        // sync UI range & display with current CSS variable
+        const computedInput = getComputedStyle(rootElement).getPropertyValue('--input-font-size').trim() || '14px';
+        setInputFontSize(computedInput);
+    }
+    if (savedOutputFont) {
+        setOutputFontSize(savedOutputFont);
+    } else {
+        const computedOutput = getComputedStyle(rootElement).getPropertyValue('--output-font-size').trim() || '16px';
+        setOutputFontSize(computedOutput);
+    }
 
     updateCounts();
     syncHeaderHeights();

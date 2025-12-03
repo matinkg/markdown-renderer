@@ -154,6 +154,29 @@
                         </label>
                     </div>
 
+                    <!-- Settings dropdown (font sizes) -->
+                    <div class="dropdown">
+                        <button class="btn btn-ghost control-button" type="button" id="fontSizeDropdownBtn" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-offset="0,8" aria-expanded="false" title="Settings">
+                            <i class="bi bi-gear"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end p-3 settings-dropdown" id="fontSizeDropdown" style="min-width: 220px; z-index: 1050;">
+                            <div class="mb-3">
+                                <label for="inputFontSizeRange" class="form-label small mb-1">Input Font Size</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input id="inputFontSizeRange" type="range" class="form-range flex-grow-1" min="10" max="24" value="14" aria-label="Input font size">
+                                    <span id="inputFontSizeValue" class="small text-muted" style="min-width: 36px;">14px</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="outputFontSizeRange" class="form-label small mb-1">Output Font Size</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input id="outputFontSizeRange" type="range" class="form-range flex-grow-1" min="12" max="28" value="16" aria-label="Output font size">
+                                    <span id="outputFontSizeValue" class="small text-muted" style="min-width: 36px;">16px</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- GitHub repository link -->
                     <a href="https://github.com/matinkg/markdown-renderer" target="_blank" rel="noopener noreferrer"
                         class="btn btn-ghost control-button" title="View on GitHub">

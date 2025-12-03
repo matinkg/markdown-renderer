@@ -71,6 +71,10 @@
 
 	/* Layout measurements */
 	--panel-header-height: 31px; /* Standard header height for alignment */
+	
+	/* Font size controls (can be changed at runtime) */
+	--input-font-size: 14px; /* Default font size for editor input */
+	--output-font-size: 16px; /* Default font size for rendered output */
 	--header-bg: rgba(255, 255, 255, 0.85);
 	--header-border: rgba(5, 150, 219, 0.2);
 	--header-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
@@ -147,6 +151,8 @@ header {
 	-webkit-backdrop-filter: blur(18px);
 	transition: background 0.3s ease, border-color 0.3s ease,
 		box-shadow 0.3s ease;
+	position: relative;
+	z-index: 20;
 }
 
 .app-header-brand {
@@ -275,6 +281,11 @@ header {
 .btn-ghost:focus-visible,
 .btn-modern:focus-visible {
 	box-shadow: 0 0 0 0.3rem rgba(5, 150, 219, 0.35);
+}
+
+.settings-dropdown {
+	--bs-dropdown-spacer: 0.5rem;
+	margin-top: var(--bs-dropdown-spacer);
 }
 
 html[data-bs-theme="dark"] .btn-modern {
@@ -460,11 +471,14 @@ html[data-bs-theme="dark"] .page-loader .loader-caption {
 }
 .panel-header-controls#direction-controls-container {
 	justify-content: flex-end;
+	position: relative;
+	z-index: 1;
 }
 
 #markdown-input {
 	font-family: monospace;
 	resize: none;
+	font-size: var(--input-font-size);
 }
 
 .app-header {
@@ -482,6 +496,7 @@ html[data-bs-theme="dark"] .page-loader .loader-caption {
 	word-wrap: break-word;
 	color: var(--body-color);
 	transition: background-color 0.3s ease, border-color 0.3s ease;
+	font-size: var(--output-font-size);
 }
 
 #markdown-output[data-text-direction="ltr"] {
@@ -505,6 +520,25 @@ html[data-bs-theme="dark"] .page-loader .loader-caption {
 	margin-right: 0;
 	margin-left: 0;
 }
+#markdown-output h1 {
+	font-size: 2em;
+}
+#markdown-output h2 {
+	font-size: 1.5em;
+}
+#markdown-output h3 {
+	font-size: 1.25em;
+}
+#markdown-output h4 {
+	font-size: 1em;
+}
+#markdown-output h5 {
+	font-size: 0.875em;
+}
+#markdown-output h6 {
+	font-size: 0.75em;
+}
+
 #markdown-output a {
 	color: var(--link-color);
 }
@@ -1429,27 +1463,27 @@ html[data-bs-theme="dark"] #markdown-toolbar #input-counts {
 
 	/* Scale headings in output */
 	#markdown-output h1 {
-		font-size: 1.7rem;
+		font-size: 2em;
 	}
 
 	#markdown-output h2 {
-		font-size: 1.49rem;
+		font-size: 1.5em;
 	}
 
 	#markdown-output h3 {
-		font-size: 1.28rem;
+		font-size: 1.25em;
 	}
 
 	#markdown-output h4 {
-		font-size: 1.06rem;
+		font-size: 1em;
 	}
 
 	#markdown-output h5 {
-		font-size: 0.96rem;
+		font-size: 0.875em;
 	}
 
 	#markdown-output h6 {
-		font-size: 0.85rem;
+		font-size: 0.75em;
 	}
 
 	/* Scale code blocks */
