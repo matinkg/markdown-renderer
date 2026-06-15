@@ -95,6 +95,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const renameFileModal = document.getElementById('renameFileModal');     // Rename modal dialog
     const fileNameInput = document.getElementById('fileNameInput');         // Rename input field
     const confirmRenameBtn = document.getElementById('confirmRenameBtn');   // Rename confirm button
+    const openFileBtn = document.getElementById('openFileBtn');
+    const saveFileBtn = document.getElementById('saveFileBtn');
+    const fileOpenInput = document.getElementById('file-open-input');
+    const saveFilePrefixInput = document.getElementById('saveFilePrefixInput');
+    const saveFileModal = document.getElementById('saveFileModal');
+    const saveFileNameInput = document.getElementById('saveFileNameInput');
+    const confirmSaveBtn = document.getElementById('confirmSaveBtn');
 
     /**
      * Application State Variables
@@ -415,6 +422,278 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedInput = localStorage.getItem('markdownInputContent') || '';
         const firstFileId = createNewFile('New File', savedInput);
         switchToFile(firstFileId);
+    }
+
+    /**
+     * Sanitizes a file name segment for safe use on disk
+     *
+     * @param {string} name - Raw name segment
+     * @returns {string} Sanitized name
+     */
+    function sanitizeFileNameSegment(name) {
+        return name
+            .replace(/[<>:"/\\|?*\x00-\x1f]/g, '-')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .replace(/^\.+/, '') || 'untitled';
+    }
+
+    /**
+     * Builds a save file name from prefix and tab name
+     *
+     * @param {string} prefix - Optional categorization prefix
+     * @param {string} baseName - Tab/file base name (without extension)
+     * @returns {string} File name with .md extension
+     */
+    function buildSaveFileName(prefix, baseName) {
+        const safeBase = sanitizeFileNameSegment(baseName);
+        const safePrefix = prefix ? sanitizeFileNameSegment(prefix) : '';
+        let name = safePrefix ? `${safePrefix}-${safeBase}` : safeBase;
+        if (!name.toLowerCase().endsWith('.md')) {
+            name += '.md';
+        }
+        return name;
+    }
+
+    /**
+     * Extracts a display name from a file path, stripping common extensions
+     *
+     * @param {string} path - Full file path or name
+     * @returns {string} Base name for the tab
+     */
+    function extractFileNameFromPath(path) {
+        const base = path.split(/[/\\]/).pop() || 'Untitled';
+        return base.replace(/\.(md|markdown|txt)$/i, '') || 'Untitled';
+    }
+
+    /**
+     * Downloads text content as a file (fallback when File System Access API is unavailable)
+     *
+     * @param {string} fileName - Target file name
+     * @param {string} content - File content
+     */
+    function downloadTextFile(fileName, content) {
+        const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = fileName;
+        anchor.click();
+        URL.revokeObjectURL(url);
+    }
+
+    /**
+     * Normalizes user-edited save file name and ensures .md extension
+     *
+     * @param {string} name - Raw file name from input
+     * @returns {string} Safe file name with .md extension
+     */
+    function normalizeSaveFileName(name) {
+        let trimmed = name.trim();
+        if (!trimmed) return 'untitled.md';
+
+        const base = trimmed.split(/[/\\]/).pop().replace(/\.(md|markdown)$/i, '');
+        const safe = sanitizeFileNameSegment(base);
+        return `${safe}.md`;
+    }
+
+    /**
+     * Selects the editable portion of the save file name (without extension)
+     */
+    function selectSaveFileNameForEditing() {
+        const name = saveFileNameInput.value;
+        const dotIndex = name.toLowerCase().lastIndexOf('.md');
+        if (dotIndex > 0) {
+            saveFileNameInput.setSelectionRange(0, dotIndex);
+        } else {
+            saveFileNameInput.select();
+        }
+    }
+
+    /**
+     * Writes content to disk using the File System Access API or download fallback
+     *
+     * @param {string} fileName - Target file name
+     * @param {string} content - File content
+     */
+    async function writeFileToDisk(fileName, content) {
+        try {
+            if (window.showSaveFilePicker) {
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: fileName,
+                    types: [{
+                        description: 'Markdown',
+                        accept: { 'text/markdown': ['.md', '.markdown'] }
+                    }]
+                });
+                const writable = await handle.createWritable();
+                await writable.write(content);
+                await writable.close();
+            } else {
+                downloadTextFile(fileName, content);
+            }
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                console.error('Save failed:', err);
+                downloadTextFile(fileName, content);
+            }
+        }
+    }
+
+    /**
+     * Opens the save dialog with a pre-filled file name for a final edit
+     */
+    function showSaveFileModal() {
+        if (!activeFileId || !files[activeFileId]) return;
+
+        files[activeFileId].content = markdownInput.value;
+        const prefix = saveFilePrefixInput?.value?.trim() || '';
+        saveFileNameInput.value = buildSaveFileName(prefix, files[activeFileId].name);
+
+        const modal = new bootstrap.Modal(saveFileModal);
+        modal.show();
+
+        saveFileModal.addEventListener('shown.bs.modal', () => {
+            saveFileNameInput.focus();
+            selectSaveFileNameForEditing();
+        }, { once: true });
+    }
+
+    /**
+     * Confirms save from the modal and writes the file to disk
+     */
+    async function handleSaveConfirm() {
+        if (!activeFileId || !files[activeFileId]) return;
+
+        const fileName = normalizeSaveFileName(saveFileNameInput.value);
+        const content = markdownInput.value;
+
+        const modal = bootstrap.Modal.getInstance(saveFileModal);
+        if (modal) {
+            modal.hide();
+        }
+
+        await writeFileToDisk(fileName, content);
+    }
+
+    /**
+     * Saves the active file to disk with optional prefix from settings
+     */
+    function saveCurrentFile() {
+        showSaveFileModal();
+    }
+
+    /**
+     * Checks whether a dropped or selected file is a supported markdown/text file
+     *
+     * @param {File} file - File to validate
+     * @returns {boolean} Whether the file can be opened
+     */
+    function isAcceptedMarkdownFile(file) {
+        const name = file.name.toLowerCase();
+        return /\.(md|markdown|txt)$/.test(name)
+            || file.type === 'text/markdown'
+            || file.type === 'text/plain'
+            || file.type === '';
+    }
+
+    /**
+     * Loads one or more local files into new tabs
+     *
+     * @param {File[]} fileList - Files to open
+     */
+    function loadFilesFromDisk(fileList) {
+        const accepted = [...fileList].filter(isAcceptedMarkdownFile);
+        if (accepted.length === 0) return;
+
+        let lastFileId = null;
+        let loaded = 0;
+
+        accepted.forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target.result;
+                const name = extractFileNameFromPath(file.name);
+                lastFileId = createNewFile(name, content);
+                loaded++;
+                if (loaded === accepted.length) {
+                    switchToFile(lastFileId);
+                    setTimeout(scrollTabsToEnd, 50);
+                    if (isAutoRenderEnabled) {
+                        renderMarkdown();
+                    }
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
+
+    /**
+     * Opens a local file from the hidden file input
+     *
+     * @param {Event} event - File input change event
+     */
+    function handleFileOpen(event) {
+        const files = event.target.files;
+        if (files?.length) {
+            loadFilesFromDisk(files);
+        }
+        event.target.value = '';
+    }
+
+    /**
+     * Sets up drag-and-drop file opening on the input panel
+     */
+    function setupFileDropZone() {
+        if (!inputColumn) return;
+
+        const hasDroppedFiles = (event) => (
+            event.dataTransfer?.types && [...event.dataTransfer.types].includes('Files')
+        );
+
+        const clearDropState = () => {
+            inputColumn.classList.remove('file-drop-active');
+        };
+
+        const isLeavingDropZone = (event) => {
+            const related = event.relatedTarget;
+            return !related || !inputColumn.contains(related);
+        };
+
+        inputColumn.addEventListener('dragenter', (event) => {
+            if (!hasDroppedFiles(event)) return;
+            event.preventDefault();
+            inputColumn.classList.add('file-drop-active');
+        });
+
+        inputColumn.addEventListener('dragleave', (event) => {
+            if (!hasDroppedFiles(event)) return;
+            if (isLeavingDropZone(event)) {
+                clearDropState();
+            }
+        });
+
+        inputColumn.addEventListener('dragover', (event) => {
+            if (!hasDroppedFiles(event)) return;
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'copy';
+            inputColumn.classList.add('file-drop-active');
+        });
+
+        inputColumn.addEventListener('drop', (event) => {
+            if (!hasDroppedFiles(event)) return;
+            event.preventDefault();
+            clearDropState();
+            loadFilesFromDisk(event.dataTransfer.files);
+        });
+
+        // Clear overlay when drag is cancelled or ends outside the drop zone
+        document.addEventListener('dragend', clearDropState);
+        document.addEventListener('dragleave', (event) => {
+            if (event.relatedTarget === null) {
+                clearDropState();
+            }
+        });
     }
 
     /**
@@ -1318,6 +1597,27 @@ ${tempContainer.innerHTML}
 
     copyOutputBtn.addEventListener('click', copyOutputWithStyling);
 
+    openFileBtn.addEventListener('click', () => fileOpenInput.click());
+    saveFileBtn.addEventListener('click', saveCurrentFile);
+    fileOpenInput.addEventListener('change', handleFileOpen);
+    setupFileDropZone();
+    confirmSaveBtn.addEventListener('click', handleSaveConfirm);
+
+    if (saveFileNameInput) {
+        saveFileNameInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                handleSaveConfirm();
+            }
+        });
+    }
+
+    if (saveFilePrefixInput) {
+        const debouncedSavePrefix = debounce(() => {
+            localStorage.setItem('markdownRendererSaveFilePrefix', saveFilePrefixInput.value);
+        }, 300);
+        saveFilePrefixInput.addEventListener('input', debouncedSavePrefix);
+    }
 
     markdownToolbar.addEventListener('click', (event) => {
         const button = event.target.closest('button[data-syntax]');
@@ -1341,6 +1641,15 @@ ${tempContainer.innerHTML}
                     break;
                 case 'k':
                     applyMarkdownSyntax('link');
+                    handled = true;
+                    break;
+                case 'o':
+                    fileOpenInput.click();
+                    handled = true;
+                    break;
+                case 's':
+                    event.preventDefault();
+                    saveCurrentFile();
                     handled = true;
                     break;
             }
@@ -1499,6 +1808,10 @@ ${tempContainer.innerHTML}
     } else {
         const computedOutput = getComputedStyle(rootElement).getPropertyValue('--output-font-size').trim() || '16px';
         setOutputFontSize(computedOutput);
+    }
+
+    if (saveFilePrefixInput) {
+        saveFilePrefixInput.value = localStorage.getItem('markdownRendererSaveFilePrefix') || '';
     }
 
     updateCounts();

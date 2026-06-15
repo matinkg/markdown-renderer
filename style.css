@@ -462,6 +462,30 @@ html[data-bs-theme="dark"] .page-loader .loader-caption {
 	height: 100%;
 }
 
+#input-column {
+	position: relative;
+}
+
+#input-column.file-drop-active::after {
+	content: 'Drop file to open';
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(13, 110, 253, 0.08);
+	border: 2px dashed var(--bs-primary, #0d6efd);
+	border-radius: 0.375rem;
+	pointer-events: none;
+	z-index: 20;
+	font-weight: 500;
+	color: var(--bs-primary, #0d6efd);
+}
+
+html[data-bs-theme="dark"] #input-column.file-drop-active::after {
+	background: rgba(13, 110, 253, 0.15);
+}
+
 .panel-header-controls {
 	min-height: var(--panel-header-height);
 	display: flex;

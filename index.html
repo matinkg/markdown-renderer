@@ -167,12 +167,18 @@
                                     <span id="inputFontSizeValue" class="small text-muted" style="min-width: 36px;">14px</span>
                                 </div>
                             </div>
-                            <div>
+                            <div class="mb-3">
                                 <label for="outputFontSizeRange" class="form-label small mb-1">Output Font Size</label>
                                 <div class="d-flex align-items-center gap-2">
                                     <input id="outputFontSizeRange" type="range" class="form-range flex-grow-1" min="12" max="28" value="16" aria-label="Output font size">
                                     <span id="outputFontSizeValue" class="small text-muted" style="min-width: 36px;">16px</span>
                                 </div>
+                            </div>
+                            <div class="pt-3 border-top">
+                                <label for="saveFilePrefixInput" class="form-label small mb-1">Save File Prefix</label>
+                                <input type="text" class="form-control form-control-sm" id="saveFilePrefixInput"
+                                    placeholder="e.g. notes, work" aria-label="Save file prefix" autocomplete="off">
+                                <div class="form-text">Prepended to saved file names for categorization</div>
                             </div>
                         </div>
                     </div>
@@ -211,6 +217,16 @@
                         <div id="markdown-toolbar" class="panel-header-controls">
                             <!-- Scrollable toolbar for smaller screens -->
                             <div class="toolbar-scrollable d-flex align-items-center">
+                                <!-- File actions: Open and Save -->
+                                <div class="btn-group btn-group-sm me-2" role="group" aria-label="File">
+                                    <button type="button" class="btn btn-outline-secondary" id="openFileBtn" title="Open File (Ctrl+O)">
+                                        <i class="bi bi-folder2-open"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" id="saveFileBtn" title="Save File (Ctrl+S)">
+                                        <i class="bi bi-download"></i>
+                                    </button>
+                                </div>
+                                <input type="file" id="file-open-input" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden>
                                 <!-- Text formatting controls: Bold, Italic, Strikethrough -->
                                 <div class="btn-group btn-group-sm me-2" role="group" aria-label="Formatting">
                                     <button type="button" class="btn btn-outline-secondary" title="Bold (Ctrl+B)"
@@ -353,6 +369,27 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" id="confirmRenameBtn">Rename</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save file modal: quick filename edit before writing to disk -->
+    <div class="modal fade" id="saveFileModal" tabindex="-1" aria-labelledby="saveFileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h5 class="modal-title" id="saveFileModalLabel">Save File</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-2">
+                    <label for="saveFileNameInput" class="form-label small mb-1">File name</label>
+                    <input type="text" class="form-control" id="saveFileNameInput" placeholder="filename.md" autocomplete="off">
+                    <div class="form-text">Press Enter to save</div>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="confirmSaveBtn">Save</button>
                 </div>
             </div>
         </div>
