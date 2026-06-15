@@ -1478,11 +1478,15 @@ html[data-bs-theme="dark"] #markdown-toolbar #input-counts {
 		font-size: 0.64rem;
 	}
 
-	/* Scale editor and output areas */
-	#markdown-input,
+	/* Scale editor and output areas (respect user font-size settings) */
+	#markdown-input {
+		padding: 0.85rem;
+		font-size: var(--input-font-size);
+	}
+
 	#markdown-output {
 		padding: 0.85rem;
-		font-size: 0.85rem;
+		font-size: var(--output-font-size);
 	}
 
 	/* Scale headings in output */
