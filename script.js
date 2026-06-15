@@ -54,7 +54,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Layout and column controls
     const toggleInputSwitch = document.getElementById('toggleInputSwitch'); // Toggle to show/hide input panel
     const inputColumn = document.getElementById('input-column');            // Left column container
+    const inputColumnInner = inputColumn ? inputColumn.querySelector('.h-100') : null;
     const outputColumn = document.getElementById('output-column');          // Right column container
+    const previewContainer = document.querySelector('.preview-container');
+    const directionControlsContainer = document.getElementById('direction-controls-container');
     
     // Theme and appearance controls
     const themeSwitch = document.getElementById('themeSwitch');             // Dark/light mode toggle
@@ -124,14 +127,40 @@ document.addEventListener('DOMContentLoaded', () => {
      * UI Synchronization Functions
      */
     
+    function resetHeaderHeights() {
+        if (fileTabsContainer) fileTabsContainer.style.height = '';
+        if (directionControlsContainer) directionControlsContainer.style.height = '';
+    }
+
+    /**
+     * Moves file tabs between the input column and output header
+     * depending on whether the input panel is visible
+     */
+    function relocateFileTabs(isInputVisible) {
+        if (!fileTabsContainer || !directionControlsContainer || !inputColumnInner) return;
+
+        resetHeaderHeights();
+
+        if (isInputVisible) {
+            inputColumnInner.insertBefore(fileTabsContainer, inputColumnInner.firstChild);
+        } else {
+            directionControlsContainer.insertBefore(fileTabsContainer, directionControlsContainer.firstChild);
+        }
+    }
+
     /**
      * Synchronizes header heights between input and output columns
      * Ensures both column headers have the same height for visual alignment
      * Called on window resize and layout changes
      */
     function syncHeaderHeights() {
-        const tabsHeader = document.getElementById('file-tabs-container');
-        const dirHeader = document.getElementById('direction-controls-container');
+        if (!toggleInputSwitch || !toggleInputSwitch.checked) {
+            resetHeaderHeights();
+            return;
+        }
+
+        const tabsHeader = fileTabsContainer;
+        const dirHeader = directionControlsContainer;
         if (!tabsHeader || !dirHeader) return;
         
         // Reset heights to natural values
@@ -1025,6 +1054,12 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function toggleInputArea() {
         const isInputVisible = toggleInputSwitch.checked;
+
+        relocateFileTabs(isInputVisible);
+
+        if (previewContainer) {
+            previewContainer.classList.toggle('input-hidden', !isInputVisible);
+        }
         
         if (isInputVisible) {
             // Show input: restore two-column layout

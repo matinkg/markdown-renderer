@@ -499,6 +499,49 @@ html[data-bs-theme="dark"] #input-column.file-drop-active::after {
 	z-index: 1;
 }
 
+.preview-container.input-hidden #direction-controls-container #file-tabs {
+	min-width: 0;
+}
+
+@media (min-width: 992px) {
+	.preview-container.input-hidden #direction-controls-container {
+		justify-content: flex-start;
+		flex-wrap: nowrap;
+		gap: 0.5rem;
+	}
+
+	.preview-container.input-hidden #direction-controls-container > #file-tabs-container {
+		flex: 0 0 50%;
+		min-width: 0;
+		margin-bottom: 0;
+		border-right: 1px solid var(--border-color);
+		padding-right: 0.5rem;
+	}
+
+	.preview-container.input-hidden #direction-controls-container > div:has(#copyOutputBtn) {
+		margin-right: auto;
+	}
+}
+
+@media (max-width: 991.98px) {
+	#direction-controls-container {
+		gap: 0.5rem !important;
+	}
+
+	.preview-container.input-hidden #direction-controls-container {
+		justify-content: flex-end;
+	}
+
+	.preview-container.input-hidden #direction-controls-container > #file-tabs-container {
+		flex: 0 0 100%;
+		width: 100%;
+		order: -1;
+		border-bottom: 1px solid var(--border-color);
+		padding-bottom: 0.5rem;
+		margin-bottom: 0.5rem;
+	}
+}
+
 #markdown-input {
 	font-family: monospace;
 	resize: none;
